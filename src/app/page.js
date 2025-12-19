@@ -30,6 +30,7 @@ export default function Home() {
   const [updating, setUpdating] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [notification, setNotification] = useState(null);
+  const [filterText, setFilterText] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -72,6 +73,10 @@ export default function Home() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFilterChange = (e) => {
+    setFilterText(e.target.value);
   };
 
   const handleEditInputChange = (e) => {
@@ -196,6 +201,18 @@ export default function Home() {
     }
   };
 
+  // Derived filtered projects
+  const filteredProjects =
+    filterText.trim().length === 0
+      ? projects
+      : projects.filter((project) => {
+          const query = filterText.toLowerCase();
+          const name = project.name?.toLowerCase() || "";
+          const description = project.description?.toLowerCase() || "";
+          // Filter only by Name and Description
+          return name.includes(query) || description.includes(query);
+        });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 font-sans">
       <Notification
@@ -219,8 +236,10 @@ export default function Home() {
           <CreateProjectButton onClick={openModal} />
 
           <ProjectsTable
-            projects={projects}
+            projects={filteredProjects}
             loading={loading}
+            filterText={filterText}
+            onFilterChange={handleFilterChange}
             onEdit={openEditModal}
             onDelete={openDeleteModal}
           />

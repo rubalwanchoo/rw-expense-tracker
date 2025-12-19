@@ -1,16 +1,29 @@
 "use client";
 
+import FilterBox from "./FilterBox";
+
 export default function ProjectsTable({
   projects,
   loading,
+  filterText,
+  onFilterChange,
   onEdit,
   onDelete,
 }) {
   return (
     <div className="mt-12 w-full">
-      <h3 className="mb-4 text-left text-xl font-semibold text-white">
-        Your Projects
-      </h3>
+      <div className="mb-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h3 className="text-left text-xl font-semibold text-white">Your Projects</h3>
+        <div className="w-full sm:w-auto">
+          {onFilterChange && (
+            <FilterBox
+              value={filterText}
+              onChange={onFilterChange}
+              placeholder="Filter projects..."
+            />
+          )}
+        </div>
+      </div>
       <div className="overflow-hidden rounded-xl border border-slate-700/50 bg-slate-800/50">
         <table className="w-full">
           <thead>
