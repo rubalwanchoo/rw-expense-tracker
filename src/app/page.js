@@ -1,279 +1,91 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  fetchProjects as fetchProjectsService,
-  createProject,
-  updateProject,
-  deleteProject,
-} from "@/lib/projects";
-import Notification from "@/components/Notification";
-import AppIcon from "@/components/AppIcon";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
-import CreateProjectButton from "@/components/CreateProjectButton";
-import ProjectsTable from "@/components/ProjectsTable";
-import CreateProjectModal from "@/components/modals/CreateProjectModal";
-import EditProjectModal from "@/components/modals/EditProjectModal";
-import DeleteProjectModal from "@/components/modals/DeleteProjectModal";
 
-export default function Home() {
-  // State Management
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [projectToEdit, setProjectToEdit] = useState(null);
-  const [projectToDelete, setProjectToDelete] = useState(null);
-  const [deletePassword, setDeletePassword] = useState("");
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [updating, setUpdating] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [notification, setNotification] = useState(null);
-  const [filterText, setFilterText] = useState("");
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    created_by: "",
-  });
-  const [editFormData, setEditFormData] = useState({
-    name: "",
-    description: "",
-    modified_by: "",
-  });
+const STATIC_USERNAME = process.env.NEXT_PUBLIC_APP_USERNAME || "";
+const STATIC_PASSWORD = process.env.NEXT_PUBLIC_APP_PASSWORD || "";
 
-  // Notification handler
-  const showNotification = (message, type = "success") => {
-    setNotification({ message, type });
-    setTimeout(() => {
-      setNotification(null);
-    }, 3000);
-  };
+export default function LoginPage() {
+  const router = useRouter();
+  const [form, setForm] = useState({ username: "", password: "" });
+  const [error, setError] = useState(null);
 
-  // Fetch projects on component mount
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-
-  // Data fetching logic
-  const fetchProjects = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await fetchProjectsService();
-      if (error) throw error;
-      setProjects(data);
-    } catch (error) {
-      console.error("Error fetching projects:", error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Form handlers
-  const handleInputChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFilterChange = (e) => {
-    setFilterText(e.target.value);
-  };
-
-  const handleEditInputChange = (e) => {
-    const { name, value } = e.target;
-    setEditFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Modal handlers
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setFormData({
-      name: "",
-      description: "",
-      created_by: "",
-    });
-  };
-
-  const openEditModal = (project) => {
-    setProjectToEdit(project);
-    setEditFormData({
-      name: project.name || "",
-      description: project.description || "",
-      modified_by: "",
-    });
-    setIsEditModalOpen(true);
-  };
-
-  const closeEditModal = () => {
-    setIsEditModalOpen(false);
-    setProjectToEdit(null);
-    setEditFormData({
-      name: "",
-      description: "",
-      modified_by: "",
-    });
-  };
-
-  const openDeleteModal = (project) => {
-    setProjectToDelete(project);
-    setIsDeleteModalOpen(true);
-  };
-
-  const closeDeleteModal = () => {
-    setIsDeleteModalOpen(false);
-    setProjectToDelete(null);
-    setDeletePassword("");
-  };
-
-  // CRUD operations
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      setSaving(true);
-      const { data, error } = await createProject(formData);
-
-      if (error) throw error;
-
-      setProjects((prev) => [data, ...prev]);
-      closeModal();
-      showNotification("Project created successfully!", "success");
-    } catch (error) {
-      console.error("Error creating project:", error.message);
-      showNotification("Failed to create project. Please try again.", "error");
-    } finally {
-      setSaving(false);
+    if (
+      form.username.trim() === STATIC_USERNAME &&
+      form.password === STATIC_PASSWORD
+    ) {
+      localStorage.setItem("app_logged_in", "true");
+      setError(null);
+      router.replace("/dashboard");
+    } else {
+      setError("Invalid login");
     }
   };
-
-  const handleEditSubmit = async (e) => {
-    e.preventDefault();
-    if (!projectToEdit) return;
-
-    try {
-      setUpdating(true);
-      const { data, error } = await updateProject(
-        projectToEdit.id,
-        editFormData
-      );
-
-      if (error) throw error;
-
-      setProjects((prev) =>
-        prev.map((p) => (p.id === projectToEdit.id ? data : p))
-      );
-      closeEditModal();
-      showNotification("Project updated successfully!", "success");
-    } catch (error) {
-      console.error("Error updating project:", error.message);
-      showNotification("Failed to update project. Please try again.", "error");
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  const handleDelete = async (e) => {
-    e.preventDefault();
-    if (!projectToDelete) return;
-
-    // Validate password
-    const correctPassword = process.env.NEXT_PUBLIC_PROJECT_DELETE_PASSWORD;
-    if (deletePassword !== correctPassword) {
-      showNotification("Incorrect delete password. Please try again.", "error");
-      return;
-    }
-
-    try {
-      setDeleting(true);
-      const { success, error } = await deleteProject(projectToDelete.id);
-
-      if (error) throw error;
-      if (!success) throw new Error("Delete operation failed");
-
-      setProjects((prev) => prev.filter((p) => p.id !== projectToDelete.id));
-      closeDeleteModal();
-      showNotification("Project deleted successfully!", "delete");
-    } catch (error) {
-      console.error("Error deleting project:", error.message);
-      showNotification("Failed to delete project. Please try again.", "error");
-    } finally {
-      setDeleting(false);
-    }
-  };
-
-  // Derived filtered projects
-  const filteredProjects =
-    filterText.trim().length === 0
-      ? projects
-      : projects.filter((project) => {
-          const query = filterText.toLowerCase();
-          const name = project.name?.toLowerCase() || "";
-          const description = project.description?.toLowerCase() || "";
-          // Filter only by Name and Description
-          return name.includes(query) || description.includes(query);
-        });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 font-sans">
-      <Notification
-        notification={notification}
-        onClose={() => setNotification(null)}
-      />
-      <AppIcon />
-      <Header />
-
-      <main className="mx-auto max-w-4xl px-6 py-16">
-        <div className="flex flex-col items-center justify-center text-center">
-          <div className="mb-8">
-            <h2 className="mb-3 text-3xl font-semibold text-white">
-              Track Your Expenses
-            </h2>
-            <p className="text-lg text-slate-400">
-              Keep your finances organized and under control
-            </p>
-          </div>
-
-          <CreateProjectButton onClick={openModal} />
-
-          <ProjectsTable
-            projects={filteredProjects}
-            loading={loading}
-            filterText={filterText}
-            onFilterChange={handleFilterChange}
-            onEdit={openEditModal}
-            onDelete={openDeleteModal}
-          />
+      <Header showAppIcon />
+      <main className="mx-auto flex min-h-[70vh] max-w-xl items-center px-6">
+        <div className="w-full rounded-2xl border border-slate-700/60 bg-slate-800/70 p-8 shadow-2xl backdrop-blur">
+          <h2 className="mb-6 text-2xl font-semibold text-white">Sign in</h2>
+          <form className="space-y-5" onSubmit={handleSubmit}>
+            <div>
+              <label
+                htmlFor="login_username"
+                className="mb-2 block text-sm font-medium text-slate-300"
+              >
+                Username
+              </label>
+              <input
+                id="login_username"
+                name="username"
+                type="text"
+                value={form.username}
+                onChange={handleChange}
+                required
+                className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-white placeholder-slate-400 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                placeholder="Enter username"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="login_password"
+                className="mb-2 block text-sm font-medium text-slate-300"
+              >
+                Password
+              </label>
+              <input
+                id="login_password"
+                name="password"
+                type="password"
+                value={form.password}
+                onChange={handleChange}
+                required
+                className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-white placeholder-slate-400 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                placeholder="Enter password"
+              />
+            </div>
+            {error && (
+              <p className="text-sm font-medium text-red-400">{error}</p>
+            )}
+            <button
+              type="submit"
+              className="w-full rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-3 font-semibold text-white transition-all hover:shadow-lg hover:shadow-emerald-500/25"
+            >
+              Login
+            </button>
+          </form>
         </div>
       </main>
-
-      <CreateProjectModal
-        isOpen={isModalOpen}
-        formData={formData}
-        saving={saving}
-        onClose={closeModal}
-        onSubmit={handleSubmit}
-        onInputChange={handleInputChange}
-      />
-
-      <EditProjectModal
-        isOpen={isEditModalOpen}
-        project={projectToEdit}
-        formData={editFormData}
-        updating={updating}
-        onClose={closeEditModal}
-        onSubmit={handleEditSubmit}
-        onInputChange={handleEditInputChange}
-      />
-
-      <DeleteProjectModal
-        isOpen={isDeleteModalOpen}
-        project={projectToDelete}
-        deletePassword={deletePassword}
-        deleting={deleting}
-        onClose={closeDeleteModal}
-        onSubmit={handleDelete}
-        onPasswordChange={(e) => setDeletePassword(e.target.value)}
-      />
     </div>
   );
 }
