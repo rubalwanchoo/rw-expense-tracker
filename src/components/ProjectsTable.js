@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import FilterBox from "./FilterBox";
 
 export default function ProjectsTable({
@@ -10,6 +11,11 @@ export default function ProjectsTable({
   onEdit,
   onDelete,
 }) {
+  const router = useRouter();
+
+  const handleRowClick = (project) => {
+    router.push(`/dashboard/transactions/${project.id}`);
+  };
   return (
     <div className="mt-12 w-full">
       <div className="mb-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -83,7 +89,8 @@ export default function ProjectsTable({
               projects.map((project) => (
                 <tr
                   key={project.id}
-                  className="border-b border-slate-700/30 transition-colors hover:bg-slate-700/20"
+                  onClick={() => handleRowClick(project)}
+                  className="cursor-pointer border-b border-slate-700/30 transition-all duration-200 hover:bg-slate-700/30 hover:shadow-lg"
                 >
                   <td className="px-6 py-4 text-left text-white">
                     {project.name}
@@ -106,7 +113,10 @@ export default function ProjectsTable({
                       <button
                         className="group rounded-lg p-2 text-blue-500 transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-300"
                         title="Edit"
-                        onClick={() => onEdit(project)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEdit(project);
+                        }}
                       >
                         <svg
                           className="h-5 w-5 transition-transform duration-200 group-hover:scale-125 group-hover:rotate-12"
@@ -125,7 +135,10 @@ export default function ProjectsTable({
                       <button
                         className="group rounded-lg p-2 text-red-500 transition-all duration-200 hover:bg-red-500/20 hover:text-red-300"
                         title="Delete"
-                        onClick={() => onDelete(project)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDelete(project);
+                        }}
                       >
                         <svg
                           className="h-5 w-5 transition-transform duration-200 group-hover:scale-125 group-hover:animate-pulse"
