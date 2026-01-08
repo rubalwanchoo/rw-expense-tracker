@@ -311,11 +311,14 @@ export default function TransactionsPage() {
                 />
                 {(dateRangeStart || dateRangeEnd) && (
                   <button
-                    onClick={() => {
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       setDateRangeStart("");
                       setDateRangeEnd("");
                     }}
-                    className="rounded-lg border border-slate-600 bg-slate-700/50 px-2 py-1.5 text-xs font-medium text-slate-400 transition-all duration-200 hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-400 sm:px-3 sm:py-2"
+                    className="min-h-[36px] min-w-[44px] rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-xs font-medium text-slate-400 transition-all duration-200 active:bg-red-500/20 active:text-red-400 sm:hover:border-red-500/50 sm:hover:bg-red-500/10 sm:hover:text-red-400"
                     title="Clear date range"
                   >
                     Clear
