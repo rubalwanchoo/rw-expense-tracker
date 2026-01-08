@@ -41,6 +41,7 @@ export const createTransaction = async (transactionData) => {
           project_id: transactionData.project_id,
           trans_date: transactionData.trans_date,
           amount: parseFloat(transactionData.amount),
+          type: transactionData.type,
           description: transactionData.description,
           merchant: transactionData.merchant,
           source: transactionData.source,
@@ -69,6 +70,7 @@ export const updateTransaction = async (transactionId, updateData) => {
       .update({
         trans_date: updateData.trans_date,
         amount: parseFloat(updateData.amount),
+        type: updateData.type,
         description: updateData.description,
         merchant: updateData.merchant,
         source: updateData.source,

@@ -36,6 +36,7 @@ export default function TransactionsPage() {
   const [formData, setFormData] = useState({
     trans_date: "",
     amount: "",
+    type: "",
     description: "",
     merchant: "",
     source: "",
@@ -44,6 +45,7 @@ export default function TransactionsPage() {
   const [editFormData, setEditFormData] = useState({
     trans_date: "",
     amount: "",
+    type: "",
     description: "",
     merchant: "",
     source: "",
@@ -129,6 +131,7 @@ export default function TransactionsPage() {
     setFormData({
       trans_date: "",
       amount: "",
+      type: "",
       description: "",
       merchant: "",
       source: "",
@@ -140,6 +143,7 @@ export default function TransactionsPage() {
     setEditFormData({
       trans_date: transaction.trans_date || "",
       amount: transaction.amount || "",
+      type: transaction.type || "",
       description: transaction.description || "",
       merchant: transaction.merchant || "",
       source: transaction.source || "",
@@ -153,6 +157,7 @@ export default function TransactionsPage() {
     setEditFormData({
       trans_date: "",
       amount: "",
+      type: "",
       description: "",
       merchant: "",
       source: "",
@@ -180,6 +185,7 @@ export default function TransactionsPage() {
         project_id: params.id,
         trans_date: formData.trans_date,
         amount: formData.amount,
+        type: formData.type,
         description: formData.description,
         merchant: formData.merchant,
         source: formData.source,
@@ -207,6 +213,7 @@ export default function TransactionsPage() {
       const { data, error } = await updateTransaction(transactionToEdit.id, {
         trans_date: editFormData.trans_date,
         amount: editFormData.amount,
+        type: editFormData.type,
         description: editFormData.description,
         merchant: editFormData.merchant,
         source: editFormData.source,
@@ -337,7 +344,7 @@ export default function TransactionsPage() {
               <thead>
                 <tr className="border-b border-slate-700/50 bg-slate-800/80">
                   <th className="px-6 py-4 text-left text-sm font-semibold text-emerald-400">
-                    Trans_Date
+                    Date
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-emerald-400">
                     Amount
@@ -388,10 +395,31 @@ export default function TransactionsPage() {
                       className="border-b border-slate-700/30 transition-colors hover:bg-slate-700/20"
                     >
                       <td className="px-6 py-4 text-left text-white">
-                        {transaction.trans_date || "-"}
+                        <div className="flex flex-col gap-2">
+                          <span
+                            className={`-mt-2 text-[10px] font-medium uppercase tracking-wide ${
+                              transaction.type === "Income"
+                                ? "text-emerald-400"
+                                : transaction.type === "Expense"
+                                ? "text-red-400"
+                                : "text-slate-500"
+                            }`}
+                          >
+                            {transaction.type || ""}
+                          </span>
+                          <span>{transaction.trans_date || "-"}</span>
+                        </div>
                       </td>
-                      <td className="px-6 py-4 text-left text-slate-300">
-                        {transaction.amount || "-"}
+                      <td className={`px-6 py-4 text-left font-medium ${
+                        transaction.type === "Income"
+                          ? "text-emerald-400"
+                          : transaction.type === "Expense"
+                          ? "text-red-400"
+                          : "text-slate-300"
+                      }`}>
+                        {transaction.amount != null
+                          ? `$${parseFloat(transaction.amount).toFixed(2)}`
+                          : "-"}
                       </td>
                       <td className="px-6 py-4 text-left text-slate-300">
                         {transaction.description || "-"}
@@ -494,6 +522,26 @@ export default function TransactionsPage() {
                   className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-white placeholder-slate-400 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   placeholder="Enter amount"
                 />
+              </div>
+              <div>
+                <label
+                  htmlFor="type"
+                  className="mb-2 block text-sm font-medium text-slate-300"
+                >
+                  Type
+                </label>
+                <select
+                  id="type"
+                  name="type"
+                  value={formData.type}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-white transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                >
+                  <option value="" disabled>Select type</option>
+                  <option value="Income">Income</option>
+                  <option value="Expense">Expense</option>
+                </select>
               </div>
               <div>
                 <label
@@ -608,6 +656,26 @@ export default function TransactionsPage() {
                   className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-white placeholder-slate-400 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   placeholder="Enter amount"
                 />
+              </div>
+              <div>
+                <label
+                  htmlFor="edit_type"
+                  className="mb-2 block text-sm font-medium text-slate-300"
+                >
+                  Type
+                </label>
+                <select
+                  id="edit_type"
+                  name="type"
+                  value={editFormData.type}
+                  onChange={handleEditInputChange}
+                  required
+                  className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-white transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                >
+                  <option value="" disabled>Select type</option>
+                  <option value="Income">Income</option>
+                  <option value="Expense">Expense</option>
+                </select>
               </div>
               <div>
                 <label
