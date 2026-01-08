@@ -290,24 +290,24 @@ export default function TransactionsPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2 text-xs sm:gap-3">
-                <span className="text-slate-400 font-medium">Range:</span>
+              <div className="flex flex-wrap items-center gap-1 text-xs sm:gap-3">
+                <span className="text-slate-400 font-medium text-[10px] sm:text-xs">Range:</span>
                 <DateInput
                   id="dateRangeStart"
                   name="dateRangeStart"
                   value={dateRangeStart}
                   onChange={(e) => setDateRangeStart(e.target.value)}
                   size="small"
-                  className="w-32 sm:w-40"
+                  className="w-[130px] sm:w-40"
                 />
-                <span className="text-slate-500">to</span>
+                <span className="text-slate-500 text-[10px] sm:text-xs">to</span>
                 <DateInput
                   id="dateRangeEnd"
                   name="dateRangeEnd"
                   value={dateRangeEnd}
                   onChange={(e) => setDateRangeEnd(e.target.value)}
                   size="small"
-                  className="w-32 sm:w-40"
+                  className="w-[130px] sm:w-40"
                 />
                 {(dateRangeStart || dateRangeEnd) && (
                   <button
