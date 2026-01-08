@@ -50,3 +50,79 @@ body {
     transform: translateY(-10px) rotate(-2deg);
   }
 }
+
+/* Modern Date Input Styling */
+.date-input-modern {
+  color-scheme: dark;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.date-input-modern::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  cursor: pointer;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.date-input-modern::-webkit-datetime-edit {
+  padding: 0;
+}
+
+.date-input-modern::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+}
+
+.date-input-modern::-webkit-datetime-edit-text {
+  color: #64748b;
+  padding: 0 4px;
+}
+
+.date-input-modern::-webkit-datetime-edit-month-field,
+.date-input-modern::-webkit-datetime-edit-day-field,
+.date-input-modern::-webkit-datetime-edit-year-field {
+  color: white;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.date-input-modern::-webkit-datetime-edit-month-field:focus,
+.date-input-modern::-webkit-datetime-edit-day-field:focus,
+.date-input-modern::-webkit-datetime-edit-year-field:focus {
+  background-color: #10b981;
+  color: white;
+  outline: none;
+}
+
+.date-input-modern::-webkit-datetime-edit-month-field:hover,
+.date-input-modern::-webkit-datetime-edit-day-field:hover,
+.date-input-modern::-webkit-datetime-edit-year-field:hover {
+  background-color: rgba(16, 185, 129, 0.2);
+}
+
+/* Small variant */
+.date-input-small::-webkit-datetime-edit-month-field,
+.date-input-small::-webkit-datetime-edit-day-field,
+.date-input-small::-webkit-datetime-edit-year-field {
+  padding: 1px 2px;
+}
+
+/* Firefox styling */
+.date-input-modern::-moz-calendar-picker-indicator {
+  opacity: 0;
+}
+
+/* Focus glow effect */
+.date-input-modern:focus {
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15), 
+              0 4px 12px rgba(16, 185, 129, 0.1);
+}
+
+/* Placeholder styling when empty */
+.date-input-modern:invalid::-webkit-datetime-edit {
+  color: #64748b;
+}

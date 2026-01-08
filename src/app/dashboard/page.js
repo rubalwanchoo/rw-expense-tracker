@@ -10,6 +10,7 @@ import {
 import Notification from "@/components/Notification";
 import AppIcon from "@/components/AppIcon";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import CreateProjectButton from "@/components/CreateProjectButton";
 import ProjectsTable from "@/components/ProjectsTable";
 import CreateProjectModal from "@/components/modals/CreateProjectModal";
@@ -35,6 +36,8 @@ export default function DashboardPage() {
   const [deleting, setDeleting] = useState(false);
   const [notification, setNotification] = useState(null);
   const [filterText, setFilterText] = useState("");
+  const [sortColumn, setSortColumn] = useState("dtm_created");
+  const [sortDirection, setSortDirection] = useState("desc");
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -213,17 +216,52 @@ export default function DashboardPage() {
     }
   };
 
-  // Derived filtered projects
-  const filteredProjects =
-    filterText.trim().length === 0
-      ? projects
-      : projects.filter((project) => {
-          const query = filterText.toLowerCase();
-          const name = project.name?.toLowerCase() || "";
-          const description = project.description?.toLowerCase() || "";
-          // Filter only by Name and Description
-          return name.includes(query) || description.includes(query);
-        });
+  // Sort handler
+  const handleSort = (column) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
+
+  // Derived filtered and sorted projects
+  const filteredProjects = (() => {
+    let result =
+      filterText.trim().length === 0
+        ? [...projects]
+        : projects.filter((project) => {
+            const query = filterText.toLowerCase();
+            const name = project.name?.toLowerCase() || "";
+            const description = project.description?.toLowerCase() || "";
+            return name.includes(query) || description.includes(query);
+          });
+
+    // Sort the results
+    result.sort((a, b) => {
+      let aVal, bVal;
+      if (sortColumn === "name") {
+        aVal = (a.name || "").toLowerCase();
+        bVal = (b.name || "").toLowerCase();
+      } else if (sortColumn === "description") {
+        aVal = (a.description || "").toLowerCase();
+        bVal = (b.description || "").toLowerCase();
+      } else if (sortColumn === "dtm_created") {
+        aVal = a.dtm_created || "";
+        bVal = b.dtm_created || "";
+      } else if (sortColumn === "dtm_modified") {
+        aVal = a.dtm_modified || "";
+        bVal = b.dtm_modified || "";
+      }
+
+      if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return result;
+  })();
 
   const handleLogout = () => {
     if (typeof window !== "undefined") {
@@ -262,6 +300,9 @@ export default function DashboardPage() {
             onFilterChange={handleFilterChange}
             onEdit={openEditModal}
             onDelete={openDeleteModal}
+            sortColumn={sortColumn}
+            sortDirection={sortDirection}
+            onSort={handleSort}
           />
         </div>
       </main>
@@ -294,6 +335,8 @@ export default function DashboardPage() {
         onSubmit={handleDelete}
         onPasswordChange={(e) => setDeletePassword(e.target.value)}
       />
+
+      <Footer />
     </div>
   );
 }

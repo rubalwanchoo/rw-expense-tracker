@@ -1,5 +1,7 @@
 "use client";
 
+import DateInput from "@/components/DateInput";
+
 export default function CreateTransactionModal({
   isOpen,
   formData,
@@ -22,14 +24,12 @@ export default function CreateTransactionModal({
             >
               Transaction Date
             </label>
-            <input
+            <DateInput
               id="trans_date"
               name="trans_date"
-              type="date"
               value={formData.trans_date}
               onChange={onInputChange}
               required
-              className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-white placeholder-slate-400 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
             />
           </div>
           <div>

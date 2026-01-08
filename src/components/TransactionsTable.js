@@ -1,5 +1,7 @@
 "use client";
 
+import SortIcon from "./SortIcon";
+
 export default function TransactionsTable({
   transactions,
   loading,
@@ -9,24 +11,6 @@ export default function TransactionsTable({
   onEdit,
   onDelete,
 }) {
-  const SortIcon = ({ column }) => {
-    if (sortColumn !== column) {
-      return (
-        <svg className="ml-1 h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-        </svg>
-      );
-    }
-    return sortDirection === "asc" ? (
-      <svg className="ml-1 h-4 w-4 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-      </svg>
-    ) : (
-      <svg className="ml-1 h-4 w-4 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-      </svg>
-    );
-  };
 
   return (
     <div className="w-full">
@@ -40,7 +24,7 @@ export default function TransactionsTable({
               >
                 <div className="flex items-center">
                   Date
-                  <SortIcon column="trans_date" />
+                  <SortIcon column="trans_date" sortColumn={sortColumn} sortDirection={sortDirection} />
                 </div>
               </th>
               <th
@@ -49,17 +33,35 @@ export default function TransactionsTable({
               >
                 <div className="flex items-center">
                   Amount
-                  <SortIcon column="amount" />
+                  <SortIcon column="amount" sortColumn={sortColumn} sortDirection={sortDirection} />
                 </div>
               </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-emerald-400">
-                Description
+              <th
+                className="cursor-pointer px-6 py-4 text-left text-sm font-semibold text-emerald-400 transition-colors hover:text-emerald-300"
+                onClick={() => onSort("description")}
+              >
+                <div className="flex items-center">
+                  Description
+                  <SortIcon column="description" sortColumn={sortColumn} sortDirection={sortDirection} />
+                </div>
               </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-emerald-400">
-                Merchant
+              <th
+                className="cursor-pointer px-6 py-4 text-left text-sm font-semibold text-emerald-400 transition-colors hover:text-emerald-300"
+                onClick={() => onSort("merchant")}
+              >
+                <div className="flex items-center">
+                  Merchant
+                  <SortIcon column="merchant" sortColumn={sortColumn} sortDirection={sortDirection} />
+                </div>
               </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-emerald-400">
-                Source
+              <th
+                className="cursor-pointer px-6 py-4 text-left text-sm font-semibold text-emerald-400 transition-colors hover:text-emerald-300"
+                onClick={() => onSort("source")}
+              >
+                <div className="flex items-center">
+                  Source
+                  <SortIcon column="source" sortColumn={sortColumn} sortDirection={sortDirection} />
+                </div>
               </th>
               <th className="px-6 py-4 text-center text-sm font-semibold text-emerald-400">
                 Actions

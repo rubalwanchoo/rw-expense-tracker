@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import FilterBox from "./FilterBox";
+import SortIcon from "./SortIcon";
 
 export default function ProjectsTable({
   projects,
@@ -10,6 +11,9 @@ export default function ProjectsTable({
   onFilterChange,
   onEdit,
   onDelete,
+  sortColumn,
+  sortDirection,
+  onSort,
 }) {
   const router = useRouter();
 
@@ -34,17 +38,41 @@ export default function ProjectsTable({
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-700/50 bg-slate-800/80">
-              <th className="px-6 py-4 text-left text-sm font-semibold text-emerald-400">
-                Name
+              <th
+                className="cursor-pointer px-6 py-4 text-left text-sm font-semibold text-emerald-400 transition-colors hover:text-emerald-300"
+                onClick={() => onSort && onSort("name")}
+              >
+                <div className="flex items-center">
+                  Name
+                  {onSort && <SortIcon column="name" sortColumn={sortColumn} sortDirection={sortDirection} />}
+                </div>
               </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-emerald-400">
-                Description
+              <th
+                className="cursor-pointer px-6 py-4 text-left text-sm font-semibold text-emerald-400 transition-colors hover:text-emerald-300"
+                onClick={() => onSort && onSort("description")}
+              >
+                <div className="flex items-center">
+                  Description
+                  {onSort && <SortIcon column="description" sortColumn={sortColumn} sortDirection={sortDirection} />}
+                </div>
               </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-emerald-400">
-                Created
+              <th
+                className="cursor-pointer px-6 py-4 text-left text-sm font-semibold text-emerald-400 transition-colors hover:text-emerald-300"
+                onClick={() => onSort && onSort("dtm_created")}
+              >
+                <div className="flex items-center">
+                  Created
+                  {onSort && <SortIcon column="dtm_created" sortColumn={sortColumn} sortDirection={sortDirection} />}
+                </div>
               </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-emerald-400">
-                Last Updated
+              <th
+                className="cursor-pointer px-6 py-4 text-left text-sm font-semibold text-emerald-400 transition-colors hover:text-emerald-300"
+                onClick={() => onSort && onSort("dtm_modified")}
+              >
+                <div className="flex items-center">
+                  Last Updated
+                  {onSort && <SortIcon column="dtm_modified" sortColumn={sortColumn} sortDirection={sortDirection} />}
+                </div>
               </th>
               <th className="px-6 py-4 text-center text-sm font-semibold text-emerald-400">
                 Actions
