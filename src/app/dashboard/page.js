@@ -279,14 +279,14 @@ export default function DashboardPage() {
       />
       <Header showLogout onLogout={handleLogout} />
 
-      <main className="relative mx-auto max-w-4xl px-6 py-16">
+      <main className="relative mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-16">
         <AppIcon />
         <div className="flex flex-col items-center justify-center text-center">
-          <div className="mb-8">
-            <h2 className="mb-3 text-3xl font-semibold text-white">
+          <div className="mb-6 sm:mb-8">
+            <h2 className="mb-2 text-2xl font-semibold text-white sm:mb-3 sm:text-3xl">
               Track Your Expenses
             </h2>
-            <p className="text-lg text-slate-400">
+            <p className="text-base text-slate-400 sm:text-lg">
               Keep your finances organized and under control
             </p>
           </div>

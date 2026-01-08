@@ -34,9 +34,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 font-sans">
       <Header showAppIcon />
-      <main className="mx-auto flex min-h-[70vh] max-w-xl items-center px-6">
-        <div className="w-full rounded-2xl border border-slate-700/60 bg-slate-800/70 p-8 shadow-2xl backdrop-blur">
-          <h2 className="mb-6 text-2xl font-semibold text-white">Sign in</h2>
+      <main className="mx-auto flex min-h-[70vh] max-w-xl items-center px-4 sm:px-6">
+        <div className="w-full rounded-2xl border border-slate-700/60 bg-slate-800/70 p-6 shadow-2xl backdrop-blur sm:p-8">
+          <h2 className="mb-6 text-xl font-semibold text-white sm:text-2xl">Sign in</h2>
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div>
               <label

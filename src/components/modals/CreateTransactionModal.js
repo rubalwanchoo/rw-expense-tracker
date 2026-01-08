@@ -13,10 +13,10 @@ export default function CreateTransactionModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-2xl border border-slate-700/60 bg-slate-800/95 p-8 shadow-2xl">
-        <h3 className="mb-6 text-2xl font-semibold text-white">Add Transaction</h3>
-        <form onSubmit={onSubmit} className="space-y-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-700/60 bg-slate-800/95 p-5 shadow-2xl sm:p-8">
+        <h3 className="mb-4 text-xl font-semibold text-white sm:mb-6 sm:text-2xl">Add Transaction</h3>
+        <form onSubmit={onSubmit} className="space-y-4 sm:space-y-5">
           <div>
             <label
               htmlFor="trans_date"

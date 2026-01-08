@@ -34,12 +34,12 @@ export default function ProjectsTable({
           )}
         </div>
       </div>
-      <div className="overflow-hidden rounded-xl border border-slate-700/50 bg-slate-800/50">
-        <table className="w-full">
+      <div className="overflow-x-auto rounded-xl border border-slate-700/50 bg-slate-800/50">
+        <table className="w-full min-w-[640px]">
           <thead>
             <tr className="border-b border-slate-700/50 bg-slate-800/80">
               <th
-                className="cursor-pointer px-6 py-4 text-left text-sm font-semibold text-emerald-400 transition-colors hover:text-emerald-300"
+                className="cursor-pointer whitespace-nowrap px-3 py-3 text-left text-xs font-semibold text-emerald-400 transition-colors hover:text-emerald-300 sm:px-6 sm:py-4 sm:text-sm"
                 onClick={() => onSort && onSort("name")}
               >
                 <div className="flex items-center">
@@ -48,7 +48,7 @@ export default function ProjectsTable({
                 </div>
               </th>
               <th
-                className="cursor-pointer px-6 py-4 text-left text-sm font-semibold text-emerald-400 transition-colors hover:text-emerald-300"
+                className="cursor-pointer whitespace-nowrap px-3 py-3 text-left text-xs font-semibold text-emerald-400 transition-colors hover:text-emerald-300 sm:px-6 sm:py-4 sm:text-sm"
                 onClick={() => onSort && onSort("description")}
               >
                 <div className="flex items-center">
@@ -57,7 +57,7 @@ export default function ProjectsTable({
                 </div>
               </th>
               <th
-                className="cursor-pointer px-6 py-4 text-left text-sm font-semibold text-emerald-400 transition-colors hover:text-emerald-300"
+                className="cursor-pointer whitespace-nowrap px-3 py-3 text-left text-xs font-semibold text-emerald-400 transition-colors hover:text-emerald-300 sm:px-6 sm:py-4 sm:text-sm"
                 onClick={() => onSort && onSort("dtm_created")}
               >
                 <div className="flex items-center">
@@ -66,15 +66,15 @@ export default function ProjectsTable({
                 </div>
               </th>
               <th
-                className="cursor-pointer px-6 py-4 text-left text-sm font-semibold text-emerald-400 transition-colors hover:text-emerald-300"
+                className="cursor-pointer whitespace-nowrap px-3 py-3 text-left text-xs font-semibold text-emerald-400 transition-colors hover:text-emerald-300 sm:px-6 sm:py-4 sm:text-sm"
                 onClick={() => onSort && onSort("dtm_modified")}
               >
                 <div className="flex items-center">
-                  Last Updated
+                  Updated
                   {onSort && <SortIcon column="dtm_modified" sortColumn={sortColumn} sortDirection={sortDirection} />}
                 </div>
               </th>
-              <th className="px-6 py-4 text-center text-sm font-semibold text-emerald-400">
+              <th className="whitespace-nowrap px-3 py-3 text-center text-xs font-semibold text-emerald-400 sm:px-6 sm:py-4 sm:text-sm">
                 Actions
               </th>
             </tr>
@@ -120,23 +120,23 @@ export default function ProjectsTable({
                   onClick={() => handleRowClick(project)}
                   className="cursor-pointer border-b border-slate-700/30 transition-all duration-200 hover:bg-slate-700/30 hover:shadow-lg"
                 >
-                  <td className="px-6 py-4 text-left text-white">
+                  <td className="whitespace-nowrap px-3 py-3 text-left text-sm text-white sm:px-6 sm:py-4">
                     {project.name}
                   </td>
-                  <td className="px-6 py-4 text-left text-slate-300">
+                  <td className="max-w-[150px] truncate px-3 py-3 text-left text-sm text-slate-300 sm:max-w-none sm:px-6 sm:py-4">
                     {project.description || "-"}
                   </td>
-                  <td className="px-6 py-4 text-left text-slate-300">
+                  <td className="whitespace-nowrap px-3 py-3 text-left text-xs text-slate-300 sm:px-6 sm:py-4 sm:text-sm">
                     {project.dtm_created
-                      ? new Date(project.dtm_created).toLocaleString()
+                      ? new Date(project.dtm_created).toLocaleDateString()
                       : "-"}
                   </td>
-                  <td className="px-6 py-4 text-left text-slate-300">
+                  <td className="whitespace-nowrap px-3 py-3 text-left text-xs text-slate-300 sm:px-6 sm:py-4 sm:text-sm">
                     {project.dtm_modified
-                      ? new Date(project.dtm_modified).toLocaleString()
+                      ? new Date(project.dtm_modified).toLocaleDateString()
                       : "-"}
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-3 py-3 text-right sm:px-6 sm:py-4">
                     <div className="flex items-center justify-center gap-2">
                       <button
                         className="group rounded-lg p-2 text-blue-500 transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-300"

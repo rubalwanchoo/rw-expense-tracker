@@ -14,12 +14,12 @@ export default function TransactionsTable({
 
   return (
     <div className="w-full">
-      <div className="overflow-hidden rounded-xl border border-slate-700/50 bg-slate-800/50">
-        <table className="w-full">
+      <div className="overflow-x-auto rounded-xl border border-slate-700/50 bg-slate-800/50">
+        <table className="w-full min-w-[700px]">
           <thead>
             <tr className="border-b border-slate-700/50 bg-slate-800/80">
               <th
-                className="cursor-pointer px-6 py-4 text-left text-sm font-semibold text-emerald-400 transition-colors hover:text-emerald-300"
+                className="cursor-pointer whitespace-nowrap px-3 py-3 text-left text-xs font-semibold text-emerald-400 transition-colors hover:text-emerald-300 sm:px-6 sm:py-4 sm:text-sm"
                 onClick={() => onSort("trans_date")}
               >
                 <div className="flex items-center">
@@ -28,7 +28,7 @@ export default function TransactionsTable({
                 </div>
               </th>
               <th
-                className="cursor-pointer px-6 py-4 text-left text-sm font-semibold text-emerald-400 transition-colors hover:text-emerald-300"
+                className="cursor-pointer whitespace-nowrap px-3 py-3 text-left text-xs font-semibold text-emerald-400 transition-colors hover:text-emerald-300 sm:px-6 sm:py-4 sm:text-sm"
                 onClick={() => onSort("amount")}
               >
                 <div className="flex items-center">
@@ -37,16 +37,16 @@ export default function TransactionsTable({
                 </div>
               </th>
               <th
-                className="cursor-pointer px-6 py-4 text-left text-sm font-semibold text-emerald-400 transition-colors hover:text-emerald-300"
+                className="cursor-pointer whitespace-nowrap px-3 py-3 text-left text-xs font-semibold text-emerald-400 transition-colors hover:text-emerald-300 sm:px-6 sm:py-4 sm:text-sm"
                 onClick={() => onSort("description")}
               >
                 <div className="flex items-center">
-                  Description
+                  Desc
                   <SortIcon column="description" sortColumn={sortColumn} sortDirection={sortDirection} />
                 </div>
               </th>
               <th
-                className="cursor-pointer px-6 py-4 text-left text-sm font-semibold text-emerald-400 transition-colors hover:text-emerald-300"
+                className="cursor-pointer whitespace-nowrap px-3 py-3 text-left text-xs font-semibold text-emerald-400 transition-colors hover:text-emerald-300 sm:px-6 sm:py-4 sm:text-sm"
                 onClick={() => onSort("merchant")}
               >
                 <div className="flex items-center">
@@ -55,7 +55,7 @@ export default function TransactionsTable({
                 </div>
               </th>
               <th
-                className="cursor-pointer px-6 py-4 text-left text-sm font-semibold text-emerald-400 transition-colors hover:text-emerald-300"
+                className="cursor-pointer whitespace-nowrap px-3 py-3 text-left text-xs font-semibold text-emerald-400 transition-colors hover:text-emerald-300 sm:px-6 sm:py-4 sm:text-sm"
                 onClick={() => onSort("source")}
               >
                 <div className="flex items-center">
@@ -63,7 +63,7 @@ export default function TransactionsTable({
                   <SortIcon column="source" sortColumn={sortColumn} sortDirection={sortDirection} />
                 </div>
               </th>
-              <th className="px-6 py-4 text-center text-sm font-semibold text-emerald-400">
+              <th className="whitespace-nowrap px-3 py-3 text-center text-xs font-semibold text-emerald-400 sm:px-6 sm:py-4 sm:text-sm">
                 Actions
               </th>
             </tr>
@@ -108,10 +108,10 @@ export default function TransactionsTable({
                   key={transaction.id}
                   className="border-b border-slate-700/30 transition-colors hover:bg-slate-700/20"
                 >
-                  <td className="px-6 py-4 text-left text-white">
-                    <div className="flex flex-col gap-2">
+                  <td className="whitespace-nowrap px-3 py-3 text-left text-sm text-white sm:px-6 sm:py-4">
+                    <div className="flex flex-col gap-1">
                       <span
-                        className={`-mt-2 text-[10px] font-medium uppercase tracking-wide ${
+                        className={`text-[9px] font-medium uppercase tracking-wide sm:text-[10px] ${
                           transaction.type === "Income"
                             ? "text-emerald-400"
                             : transaction.type === "Expense"
@@ -121,11 +121,11 @@ export default function TransactionsTable({
                       >
                         {transaction.type || ""}
                       </span>
-                      <span>{transaction.trans_date || "-"}</span>
+                      <span className="text-xs sm:text-sm">{transaction.trans_date || "-"}</span>
                     </div>
                   </td>
                   <td
-                    className={`px-6 py-4 text-left font-medium ${
+                    className={`whitespace-nowrap px-3 py-3 text-left text-xs font-medium sm:px-6 sm:py-4 sm:text-sm ${
                       transaction.type === "Income"
                         ? "text-emerald-400"
                         : transaction.type === "Expense"
@@ -137,16 +137,16 @@ export default function TransactionsTable({
                       ? `$${parseFloat(transaction.amount).toFixed(2)}`
                       : "-"}
                   </td>
-                  <td className="px-6 py-4 text-left text-slate-300">
+                  <td className="max-w-[100px] truncate px-3 py-3 text-left text-xs text-slate-300 sm:max-w-none sm:px-6 sm:py-4 sm:text-sm">
                     {transaction.description || "-"}
                   </td>
-                  <td className="px-6 py-4 text-left text-slate-300">
+                  <td className="max-w-[80px] truncate px-3 py-3 text-left text-xs text-slate-300 sm:max-w-none sm:px-6 sm:py-4 sm:text-sm">
                     {transaction.merchant || "-"}
                   </td>
-                  <td className="px-6 py-4 text-left text-slate-300">
+                  <td className="max-w-[80px] truncate px-3 py-3 text-left text-xs text-slate-300 sm:max-w-none sm:px-6 sm:py-4 sm:text-sm">
                     {transaction.source || "-"}
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-3 py-3 text-right sm:px-6 sm:py-4">
                     <div className="flex items-center justify-center gap-2">
                       <button
                         className="group rounded-lg p-2 text-blue-500 transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-300"

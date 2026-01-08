@@ -11,14 +11,14 @@ export default function CreateProjectModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       ></div>
-      <div className="relative z-10 w-full max-w-md rounded-2xl border border-slate-700/50 bg-slate-800 p-6 shadow-2xl">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-white">
+      <div className="relative z-10 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-700/50 bg-slate-800 p-5 shadow-2xl sm:p-6">
+        <div className="mb-4 flex items-center justify-between sm:mb-6">
+          <h2 className="text-lg font-semibold text-white sm:text-xl">
             Create New Project
           </h2>
           <button

@@ -12,13 +12,13 @@ export default function DeleteTransactionModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-2xl border border-slate-700/60 bg-slate-800/95 p-8 shadow-2xl">
-        <h3 className="mb-4 text-2xl font-semibold text-white">Delete Transaction</h3>
-        <p className="mb-6 text-slate-400">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-700/60 bg-slate-800/95 p-5 shadow-2xl sm:p-8">
+        <h3 className="mb-3 text-xl font-semibold text-white sm:mb-4 sm:text-2xl">Delete Transaction</h3>
+        <p className="mb-4 text-sm text-slate-400 sm:mb-6 sm:text-base">
           Are you sure you want to delete this transaction? This action cannot be undone.
         </p>
-        <form onSubmit={onSubmit} className="space-y-5">
+        <form onSubmit={onSubmit} className="space-y-4 sm:space-y-5">
           <div>
             <label
               htmlFor="delete_password"

@@ -240,13 +240,13 @@ export default function TransactionsPage() {
       />
       <Header showLogout onLogout={handleLogout} />
 
-      <main className="relative mx-auto max-w-4xl px-6 py-8">
+      <main className="relative mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
         <AppIcon />
         
         {/* Back Button */}
         <button
           onClick={handleBack}
-          className="group mb-6 flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-emerald-400 transition-all duration-300 hover:bg-emerald-500/10 hover:text-emerald-300"
+          className="group mb-4 flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium text-emerald-400 transition-all duration-300 hover:bg-emerald-500/10 hover:text-emerald-300 sm:mb-6 sm:px-4 sm:py-2 sm:text-sm"
         >
           <svg
             className="h-5 w-5 transition-transform duration-300 group-hover:-translate-x-1"
@@ -265,40 +265,40 @@ export default function TransactionsPage() {
         </button>
 
         {/* Project Header */}
-        <div className="mb-8 rounded-2xl border border-slate-700/60 bg-slate-800/70 p-6 backdrop-blur">
-          <div className="flex items-start justify-between">
+        <div className="mb-6 rounded-2xl border border-slate-700/60 bg-slate-800/70 p-4 backdrop-blur sm:mb-8 sm:p-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex-1">
-              <h2 className="mb-2 text-2xl font-bold text-white">
+              <h2 className="mb-2 text-xl font-bold text-white sm:text-2xl">
                 {project?.name || "Project"}
               </h2>
               {project?.description && (
-                <p className="text-slate-400">{project.description}</p>
+                <p className="text-sm text-slate-400 sm:text-base">{project.description}</p>
               )}
             </div>
-            <div className="flex flex-col items-end gap-3 ml-6">
-              <div className="flex gap-6">
-                <div className="text-right">
-                  <p className="text-xs uppercase tracking-wide text-slate-500 mb-1">Total Income</p>
-                  <p className="text-xl font-bold text-emerald-400">
+            <div className="flex flex-col gap-3">
+              <div className="flex gap-4 sm:gap-6">
+                <div className="text-left sm:text-right">
+                  <p className="text-[10px] uppercase tracking-wide text-slate-500 mb-1 sm:text-xs">Total Income</p>
+                  <p className="text-lg font-bold text-emerald-400 sm:text-xl">
                     ${totalIncome.toFixed(2)}
                   </p>
                 </div>
-                <div className="text-right">
-                  <p className="text-xs uppercase tracking-wide text-slate-500 mb-1">Total Expenses</p>
-                  <p className="text-xl font-bold text-red-400">
+                <div className="text-left sm:text-right">
+                  <p className="text-[10px] uppercase tracking-wide text-slate-500 mb-1 sm:text-xs">Total Expenses</p>
+                  <p className="text-lg font-bold text-red-400 sm:text-xl">
                     ${totalExpenses.toFixed(2)}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 text-xs">
-                <span className="text-slate-400 font-medium">Date Range:</span>
+              <div className="flex flex-wrap items-center gap-2 text-xs sm:gap-3">
+                <span className="text-slate-400 font-medium">Range:</span>
                 <DateInput
                   id="dateRangeStart"
                   name="dateRangeStart"
                   value={dateRangeStart}
                   onChange={(e) => setDateRangeStart(e.target.value)}
                   size="small"
-                  className="w-40"
+                  className="w-32 sm:w-40"
                 />
                 <span className="text-slate-500">to</span>
                 <DateInput
@@ -307,7 +307,7 @@ export default function TransactionsPage() {
                   value={dateRangeEnd}
                   onChange={(e) => setDateRangeEnd(e.target.value)}
                   size="small"
-                  className="w-40"
+                  className="w-32 sm:w-40"
                 />
                 {(dateRangeStart || dateRangeEnd) && (
                   <button
@@ -315,7 +315,7 @@ export default function TransactionsPage() {
                       setDateRangeStart("");
                       setDateRangeEnd("");
                     }}
-                    className="ml-1 rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-xs font-medium text-slate-400 transition-all duration-200 hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-400"
+                    className="rounded-lg border border-slate-600 bg-slate-700/50 px-2 py-1.5 text-xs font-medium text-slate-400 transition-all duration-200 hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-400 sm:px-3 sm:py-2"
                     title="Clear date range"
                   >
                     Clear
@@ -324,25 +324,25 @@ export default function TransactionsPage() {
               </div>
             </div>
           </div>
-          <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-500">
+          <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500 sm:mt-4 sm:gap-4 sm:text-sm">
             <span>
-              Created: {project?.dtm_created ? new Date(project.dtm_created).toLocaleString() : "-"}
+              Created: {project?.dtm_created ? new Date(project.dtm_created).toLocaleDateString() : "-"}
             </span>
             <span>
-              Last Updated: {project?.dtm_modified ? new Date(project.dtm_modified).toLocaleString() : "-"}
+              Updated: {project?.dtm_modified ? new Date(project.dtm_modified).toLocaleDateString() : "-"}
             </span>
           </div>
         </div>
 
         {/* Transactions Section */}
-        <div className="rounded-2xl border border-slate-700/60 bg-slate-800/70 p-6 backdrop-blur">
-          <div className="mb-6 flex items-center justify-between">
-            <h3 className="text-xl font-semibold text-white">Transactions</h3>
-            <div className="flex items-center gap-3">
+        <div className="rounded-2xl border border-slate-700/60 bg-slate-800/70 p-4 backdrop-blur sm:p-6">
+          <div className="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
+            <h3 className="text-lg font-semibold text-white sm:text-xl">Transactions</h3>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
               <FilterBox
                 value={filterText}
                 onChange={handleFilterChange}
-                placeholder="Filter transactions..."
+                placeholder="Filter..."
               />
               <AddTransactionButton onClick={openCreateModal} />
             </div>
