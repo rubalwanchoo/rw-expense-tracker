@@ -3,6 +3,12 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import {
+  fetchTransactions as fetchTransactionsService,
+  createTransaction,
+  updateTransaction,
+  deleteTransaction,
+} from "@/lib/transactions";
 import Header from "@/components/Header";
 import AppIcon from "@/components/AppIcon";
 import Notification from "@/components/Notification";
@@ -51,7 +57,7 @@ export default function TransactionsPage() {
     }, 3000);
   };
 
-  // Auth check and fetch project details
+  // Auth check and fetch project details + transactions
   useEffect(() => {
     const authed =
       typeof window !== "undefined" &&
@@ -78,8 +84,19 @@ export default function TransactionsPage() {
       }
     };
 
+    const loadTransactions = async () => {
+      try {
+        const { data, error } = await fetchTransactionsService(params.id);
+        if (error) throw error;
+        setTransactions(data);
+      } catch (error) {
+        console.error("Error fetching transactions:", error.message);
+      }
+    };
+
     if (params.id) {
       fetchProject();
+      loadTransactions();
     }
   }, [params.id, router]);
 
@@ -158,13 +175,19 @@ export default function TransactionsPage() {
     e.preventDefault();
     try {
       setSaving(true);
-      // Create new transaction with unique ID
-      const newTransaction = {
-        id: Date.now(),
-        ...formData,
+      // Create transaction in Supabase with project_id from the master project
+      const { data, error } = await createTransaction({
         project_id: params.id,
-      };
-      setTransactions((prev) => [newTransaction, ...prev]);
+        trans_date: formData.trans_date,
+        amount: formData.amount,
+        description: formData.description,
+        merchant: formData.merchant,
+        source: formData.source,
+      });
+
+      if (error) throw error;
+
+      setTransactions((prev) => [data, ...prev]);
       closeModal();
       showNotification("Transaction added successfully!", "success");
     } catch (error) {
@@ -181,10 +204,18 @@ export default function TransactionsPage() {
 
     try {
       setUpdating(true);
+      const { data, error } = await updateTransaction(transactionToEdit.id, {
+        trans_date: editFormData.trans_date,
+        amount: editFormData.amount,
+        description: editFormData.description,
+        merchant: editFormData.merchant,
+        source: editFormData.source,
+      });
+
+      if (error) throw error;
+
       setTransactions((prev) =>
-        prev.map((t) =>
-          t.id === transactionToEdit.id ? { ...t, ...editFormData } : t
-        )
+        prev.map((t) => (t.id === transactionToEdit.id ? data : t))
       );
       closeEditModal();
       showNotification("Transaction updated successfully!", "success");
@@ -209,6 +240,11 @@ export default function TransactionsPage() {
 
     try {
       setDeleting(true);
+      const { success, error } = await deleteTransaction(transactionToDelete.id);
+
+      if (error) throw error;
+      if (!success) throw new Error("Delete operation failed");
+
       setTransactions((prev) => prev.filter((t) => t.id !== transactionToDelete.id));
       closeDeleteModal();
       showNotification("Transaction deleted successfully!", "delete");
