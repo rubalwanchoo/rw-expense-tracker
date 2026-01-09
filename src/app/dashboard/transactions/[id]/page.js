@@ -24,12 +24,13 @@ export default function TransactionsPage() {
   const [transactions, setTransactions] = useState([]);
   const [notification, setNotification] = useState(null);
   const [filterText, setFilterText] = useState("");
-  const [sortColumn, setSortColumn] = useState("trans_date");
-  const [sortDirection, setSortDirection] = useState("desc");
   
   // Date range for totals
   const [dateRangeStart, setDateRangeStart] = useState("");
   const [dateRangeEnd, setDateRangeEnd] = useState("");
+  
+  // Sort direction for date (asc = oldest first, desc = newest first)
+  const [sortDirection, setSortDirection] = useState("desc");
 
   // Modal visibility states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -137,7 +138,6 @@ export default function TransactionsPage() {
             amount: parsedData.amount || 0,
             type: parsedData.type || "Expense",
             description: parsedData.description || "Scanned receipt",
-            merchant: parsedData.merchant || "Unknown",
             source: parsedData.source || "NA", // Default to NA if null
           };
 
@@ -214,16 +214,6 @@ export default function TransactionsPage() {
     setTransactions((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Sort handler
-  const handleSort = (column) => {
-    if (sortColumn === column) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortColumn(column);
-      setSortDirection("asc");
-    }
-  };
-
   // Filter transactions by date range for totals
   const dateFilteredTransactions = transactions.filter((t) => {
     if (!t.trans_date) return true;
@@ -242,7 +232,7 @@ export default function TransactionsPage() {
     .filter((t) => t.type === "Expense")
     .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
 
-  // Derived filtered and sorted transactions
+  // Derived filtered transactions (sorted by date based on sortDirection)
   const filteredTransactions = (() => {
     let result =
       filterText.trim().length === 0
@@ -250,38 +240,22 @@ export default function TransactionsPage() {
         : transactions.filter((transaction) => {
             const query = filterText.toLowerCase();
             const description = transaction.description?.toLowerCase() || "";
-            const merchant = transaction.merchant?.toLowerCase() || "";
             const source = transaction.source?.toLowerCase() || "";
             return (
               description.includes(query) ||
-              merchant.includes(query) ||
               source.includes(query)
             );
           });
 
-    // Sort the results
+    // Sort by date based on sortDirection
     result.sort((a, b) => {
-      let aVal, bVal;
-      if (sortColumn === "trans_date") {
-        aVal = a.trans_date || "";
-        bVal = b.trans_date || "";
-      } else if (sortColumn === "amount") {
-        aVal = parseFloat(a.amount) || 0;
-        bVal = parseFloat(b.amount) || 0;
-      } else if (sortColumn === "description") {
-        aVal = (a.description || "").toLowerCase();
-        bVal = (b.description || "").toLowerCase();
-      } else if (sortColumn === "merchant") {
-        aVal = (a.merchant || "").toLowerCase();
-        bVal = (b.merchant || "").toLowerCase();
-      } else if (sortColumn === "source") {
-        aVal = (a.source || "").toLowerCase();
-        bVal = (b.source || "").toLowerCase();
+      const aVal = a.trans_date || "";
+      const bVal = b.trans_date || "";
+      if (sortDirection === "desc") {
+        return bVal.localeCompare(aVal); // Newest first
+      } else {
+        return aVal.localeCompare(bVal); // Oldest first
       }
-      
-      if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
-      if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
-      return 0;
     });
 
     return result;
@@ -422,12 +396,48 @@ export default function TransactionsPage() {
             </div>
           </div>
 
+          {/* Sort Option + Counts */}
+          <div className="mb-3 flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-400">Sort by Date:</span>
+              <button
+                onClick={() => setSortDirection(sortDirection === "desc" ? "asc" : "desc")}
+                className="flex items-center gap-1.5 rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-1.5 text-xs font-medium text-slate-300 transition-all duration-200 hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-400"
+              >
+                {sortDirection === "desc" ? (
+                  <>
+                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                    Newest First
+                  </>
+                ) : (
+                  <>
+                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                    </svg>
+                    Oldest First
+                  </>
+                )}
+              </button>
+            </div>
+            
+            {/* Transaction Counts */}
+            <div className="flex items-center gap-3 text-xs">
+              <span className="flex items-center gap-1.5 rounded-md bg-red-500/10 px-2 py-1 text-red-400">
+                <span className="font-medium">Expenses:</span>
+                <span className="font-bold">{filteredTransactions.filter(t => t.type === "Expense").length}</span>
+              </span>
+              <span className="flex items-center gap-1.5 rounded-md bg-emerald-500/10 px-2 py-1 text-emerald-400">
+                <span className="font-medium">Income:</span>
+                <span className="font-bold">{filteredTransactions.filter(t => t.type === "Income").length}</span>
+              </span>
+            </div>
+          </div>
+
           <TransactionsTable
             transactions={filteredTransactions}
             loading={false}
-            sortColumn={sortColumn}
-            sortDirection={sortDirection}
-            onSort={handleSort}
             onEdit={openEditModal}
             onDelete={openDeleteModal}
           />

@@ -35,8 +35,6 @@ export default function DashboardPage() {
   const [deleting, setDeleting] = useState(false);
   const [notification, setNotification] = useState(null);
   const [filterText, setFilterText] = useState("");
-  const [sortColumn, setSortColumn] = useState("dtm_created");
-  const [sortDirection, setSortDirection] = useState("desc");
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -215,17 +213,7 @@ export default function DashboardPage() {
     }
   };
 
-  // Sort handler
-  const handleSort = (column) => {
-    if (sortColumn === column) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortColumn(column);
-      setSortDirection("asc");
-    }
-  };
-
-  // Derived filtered and sorted projects
+  // Derived filtered projects (sorted by created date, newest first)
   const filteredProjects = (() => {
     let result =
       filterText.trim().length === 0
@@ -237,26 +225,11 @@ export default function DashboardPage() {
             return name.includes(query) || description.includes(query);
           });
 
-    // Sort the results
+    // Sort by created date (newest first)
     result.sort((a, b) => {
-      let aVal, bVal;
-      if (sortColumn === "name") {
-        aVal = (a.name || "").toLowerCase();
-        bVal = (b.name || "").toLowerCase();
-      } else if (sortColumn === "description") {
-        aVal = (a.description || "").toLowerCase();
-        bVal = (b.description || "").toLowerCase();
-      } else if (sortColumn === "dtm_created") {
-        aVal = a.dtm_created || "";
-        bVal = b.dtm_created || "";
-      } else if (sortColumn === "dtm_modified") {
-        aVal = a.dtm_modified || "";
-        bVal = b.dtm_modified || "";
-      }
-
-      if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
-      if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
-      return 0;
+      const aVal = a.dtm_created || "";
+      const bVal = b.dtm_created || "";
+      return bVal.localeCompare(aVal); // Descending order
     });
 
     return result;
@@ -298,9 +271,6 @@ export default function DashboardPage() {
             onFilterChange={handleFilterChange}
             onEdit={openEditModal}
             onDelete={openDeleteModal}
-            sortColumn={sortColumn}
-            sortDirection={sortDirection}
-            onSort={handleSort}
           />
         </div>
       </main>

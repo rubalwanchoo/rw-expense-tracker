@@ -28,7 +28,6 @@ export const fetchTransactions = async (projectId) => {
  * @param {string} transactionData.trans_date - Transaction date
  * @param {number} transactionData.amount - Transaction amount
  * @param {string} transactionData.description - Transaction description
- * @param {string} transactionData.merchant - Merchant name
  * @param {string} transactionData.source - Payment source
  * @returns {Promise<{data: Object|null, error: Error|null}>}
  */
@@ -43,7 +42,6 @@ export const createTransaction = async (transactionData) => {
           amount: parseFloat(transactionData.amount),
           type: transactionData.type,
           description: transactionData.description,
-          merchant: transactionData.merchant,
           source: transactionData.source,
         },
       ])
@@ -72,7 +70,6 @@ export const updateTransaction = async (transactionId, updateData) => {
         amount: parseFloat(updateData.amount),
         type: updateData.type,
         description: updateData.description,
-        merchant: updateData.merchant,
         source: updateData.source,
       })
       .eq("id", transactionId)

@@ -34,7 +34,6 @@ export default function TransactionModals({
     amount: "",
     type: "",
     description: "",
-    merchant: "",
     source: "",
   });
 
@@ -46,7 +45,6 @@ export default function TransactionModals({
         amount: initialFormData.amount != null ? String(initialFormData.amount) : "",
         type: initialFormData.type || "Expense",
         description: initialFormData.description || "",
-        merchant: initialFormData.merchant || "",
         source: initialFormData.source || "",
       });
     }
@@ -57,7 +55,6 @@ export default function TransactionModals({
     amount: "",
     type: "",
     description: "",
-    merchant: "",
     source: "",
   });
 
@@ -86,7 +83,6 @@ export default function TransactionModals({
       amount: "",
       type: "",
       description: "",
-      merchant: "",
       source: "",
     });
     onCloseCreateModal();
@@ -98,7 +94,6 @@ export default function TransactionModals({
       amount: "",
       type: "",
       description: "",
-      merchant: "",
       source: "",
     });
     onCloseEditModal();
@@ -116,7 +111,6 @@ export default function TransactionModals({
       amount: transactionToEdit.amount || "",
       type: transactionToEdit.type || "",
       description: transactionToEdit.description || "",
-      merchant: transactionToEdit.merchant || "",
       source: transactionToEdit.source || "",
     });
   }
@@ -132,7 +126,6 @@ export default function TransactionModals({
         amount: formData.amount,
         type: formData.type,
         description: formData.description,
-        merchant: formData.merchant,
         source: formData.source,
       });
 
@@ -160,7 +153,6 @@ export default function TransactionModals({
         amount: editFormData.amount,
         type: editFormData.type,
         description: editFormData.description,
-        merchant: editFormData.merchant,
         source: editFormData.source,
       });
 

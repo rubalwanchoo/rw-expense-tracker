@@ -90,23 +90,6 @@ export default function CreateTransactionModal({
           </div>
           <div>
             <label
-              htmlFor="merchant"
-              className="mb-2 block text-sm font-medium text-slate-300"
-            >
-              Merchant
-            </label>
-            <input
-              id="merchant"
-              name="merchant"
-              type="text"
-              value={formData.merchant}
-              onChange={onInputChange}
-              className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-white placeholder-slate-400 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-              placeholder="Enter merchant name"
-            />
-          </div>
-          <div>
-            <label
               htmlFor="source"
               className="mb-2 block text-sm font-medium text-slate-300"
             >

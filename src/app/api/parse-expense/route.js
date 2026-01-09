@@ -33,7 +33,6 @@ Return ONLY a valid JSON ARRAY of transaction objects. Each transaction should h
     "amount": numeric amount (no currency symbols, just the number),
     "type": "Expense" or "Income",
     "description": "description of this specific item/transaction",
-    "merchant": "name of the store/merchant",
     "source": "payment method if visible (Credit Card, Cash, Debit, etc.)"
   }
 ]
