@@ -5,7 +5,6 @@ import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { fetchTransactions as fetchTransactionsService } from "@/lib/transactions";
 import Header from "@/components/Header";
-import AppIcon from "@/components/AppIcon";
 import Notification from "@/components/Notification";
 import Footer from "@/components/Footer";
 import FilterBox from "@/components/FilterBox";
@@ -241,7 +240,6 @@ export default function TransactionsPage() {
       <Header showLogout onLogout={handleLogout} />
 
       <main className="relative mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
-        <AppIcon />
         
         {/* Back Button */}
         <button
