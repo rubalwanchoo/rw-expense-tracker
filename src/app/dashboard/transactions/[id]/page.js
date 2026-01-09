@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { fetchTransactions as fetchTransactionsService, createTransaction } from "@/lib/transactions";
+import { fetchTransactions as fetchTransactionsService, createTransaction, deleteMultipleTransactions } from "@/lib/transactions";
 import Header from "@/components/Header";
 import Notification from "@/components/Notification";
 import Footer from "@/components/Footer";
@@ -74,6 +74,15 @@ export default function TransactionsPage() {
   
   // Loading state for receipt processing
   const [isProcessingReceipt, setIsProcessingReceipt] = useState(false);
+  
+  // Multi-select state
+  const [selectedTransactionIds, setSelectedTransactionIds] = useState([]);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [bulkDeletePassword, setBulkDeletePassword] = useState("");
+  
+  // Combined disabled state
+  const isTableDisabled = isProcessingReceipt || isBulkDeleting;
 
   // Notification handler
   const showNotification = (message, type = "success") => {
@@ -333,6 +342,73 @@ export default function TransactionsPage() {
     setTransactions((prev) => prev.filter((t) => t.id !== id));
   };
 
+  // Open bulk delete confirmation modal
+  const openBulkDeleteModal = () => {
+    if (selectedTransactionIds.length === 0) return;
+    setIsBulkDeleteModalOpen(true);
+  };
+
+  // Close bulk delete confirmation modal
+  const closeBulkDeleteModal = () => {
+    setIsBulkDeleteModalOpen(false);
+    setBulkDeletePassword("");
+  };
+
+  // Handle bulk delete of selected transactions
+  const handleBulkDeleteConfirm = async (e) => {
+    e.preventDefault();
+    if (selectedTransactionIds.length === 0) return;
+    
+    // Validate password
+    const correctPassword = process.env.NEXT_PUBLIC_PROJECT_DELETE_PASSWORD;
+    if (bulkDeletePassword !== correctPassword) {
+      showNotification("Incorrect delete password. Please try again.", "error");
+      return;
+    }
+    
+    setIsBulkDeleteModalOpen(false);
+    setBulkDeletePassword("");
+    setIsBulkDeleting(true);
+    
+    try {
+      const { successCount, errorCount, error } = await deleteMultipleTransactions(
+        selectedTransactionIds,
+        params.id
+      );
+      
+      if (error) {
+        showNotification("Failed to delete transactions. Please try again.", "error");
+      } else {
+        // Remove deleted transactions from local state
+        setTransactions((prev) => 
+          prev.filter((t) => !selectedTransactionIds.includes(t.id))
+        );
+        
+        // Clear selection
+        setSelectedTransactionIds([]);
+        
+        // Update project modified date
+        updateProjectModifiedDate();
+        
+        if (errorCount > 0) {
+          showNotification(`Deleted ${successCount}, failed ${errorCount}`, "success");
+        } else {
+          showNotification(`${successCount} transaction(s) deleted successfully!`, "delete");
+        }
+      }
+    } catch (error) {
+      console.error("Error during bulk delete:", error);
+      showNotification("Failed to delete transactions. Please try again.", "error");
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
+
+  // Handle selection change from table
+  const handleSelectionChange = (newSelectedIds) => {
+    setSelectedTransactionIds(newSelectedIds);
+  };
+
   // Filter transactions by date range for totals
   const dateFilteredTransactions = transactions.filter((t) => {
     if (!t.trans_date) return true;
@@ -561,14 +637,37 @@ export default function TransactionsPage() {
                 placeholder="Filter..."
               />
             </div>
-            <div className="flex flex-wrap gap-2">
-              <AddTransactionButton onClick={openCreateModal} disabled={isProcessingReceipt} />
+            <div className="flex flex-wrap items-center gap-2">
+              <AddTransactionButton onClick={openCreateModal} disabled={isTableDisabled} />
               <ScanReceiptButton 
                 onExpenseParsed={handleExpenseParsed} 
                 onScanStart={handleScanStart}
                 onScanError={handleScanError}
-                disabled={isProcessingReceipt} 
+                disabled={isTableDisabled} 
               />
+              {/* Bulk Delete Button - shown when items are selected */}
+              {selectedTransactionIds.length > 0 && (
+                <button
+                  onClick={openBulkDeleteModal}
+                  disabled={isTableDisabled}
+                  className="flex items-center gap-2 rounded-lg border border-red-500/50 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-400 transition-all hover:bg-red-500/20 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                  <span>Delete ({selectedTransactionIds.length})</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -611,14 +710,18 @@ export default function TransactionsPage() {
             </div>
           </div>
 
-          {/* Processing Receipt Overlay - Fixed to viewport */}
-          {isProcessingReceipt && (
+          {/* Processing Overlay - Fixed to viewport */}
+          {(isProcessingReceipt || isBulkDeleting) && (
             <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm">
               <div className="rounded-2xl border border-slate-700/60 bg-slate-800/95 p-8 shadow-2xl">
                 <div className="flex flex-col items-center">
-                  <div className="h-12 w-12 animate-spin rounded-full border-4 border-emerald-400 border-t-transparent"></div>
-                  <p className="mt-4 text-lg font-medium text-emerald-400">Processing receipt...</p>
-                  <p className="mt-1 text-sm text-slate-400">Creating transactions</p>
+                  <div className={`h-12 w-12 animate-spin rounded-full border-4 border-t-transparent ${isBulkDeleting ? "border-red-400" : "border-emerald-400"}`}></div>
+                  <p className={`mt-4 text-lg font-medium ${isBulkDeleting ? "text-red-400" : "text-emerald-400"}`}>
+                    {isBulkDeleting ? "Deleting transactions..." : "Processing receipt..."}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-400">
+                    {isBulkDeleting ? `Removing ${selectedTransactionIds.length} item(s)` : "Creating transactions"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -630,7 +733,9 @@ export default function TransactionsPage() {
             loading={false}
             onEdit={openEditModal}
             onDelete={openDeleteModal}
-            disabled={isProcessingReceipt}
+            disabled={isTableDisabled}
+            selectedIds={selectedTransactionIds}
+            onSelectionChange={handleSelectionChange}
           />
         </div>
       </main>
@@ -651,6 +756,106 @@ export default function TransactionsPage() {
         onCloseDeleteModal={closeDeleteModal}
         initialFormData={scannedFormData}
       />
+
+      {/* Bulk Delete Confirmation Modal */}
+      {isBulkDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={closeBulkDeleteModal}
+          ></div>
+          <div className="relative z-10 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-700/50 bg-slate-800 p-5 shadow-2xl sm:p-6">
+            <div className="mb-4 flex items-center justify-between sm:mb-6">
+              <h2 className="text-lg font-semibold text-white sm:text-xl">Delete Transactions</h2>
+              <button
+                onClick={closeBulkDeleteModal}
+                className="rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-700 hover:text-white"
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleBulkDeleteConfirm}>
+              <div className="mb-6">
+                <div className="mb-4 flex justify-center">
+                  <div className="rounded-full bg-red-500/20 p-4">
+                    <svg
+                      className="h-8 w-8 text-red-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <p className="text-center text-slate-300">
+                  Are you sure you want to delete{" "}
+                  <span className="font-semibold text-white">
+                    {selectedTransactionIds.length} transaction{selectedTransactionIds.length !== 1 ? "s" : ""}
+                  </span>
+                  ?
+                </p>
+                <p className="mt-2 text-center text-sm text-slate-400">
+                  This action cannot be undone.
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <label
+                  htmlFor="bulk_delete_password"
+                  className="mb-2 block text-sm font-medium text-slate-300"
+                >
+                  Delete Password <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="password"
+                  id="bulk_delete_password"
+                  name="bulk_delete_password"
+                  value={bulkDeletePassword}
+                  onChange={(e) => setBulkDeletePassword(e.target.value)}
+                  required
+                  placeholder="Enter delete password"
+                  className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-white placeholder-slate-400 transition-colors focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={closeBulkDeleteModal}
+                  className="flex-1 rounded-lg border border-slate-600 px-4 py-3 font-medium text-slate-300 transition-colors hover:bg-slate-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 rounded-lg bg-gradient-to-r from-red-500 to-red-600 px-4 py-3 font-medium text-white transition-all hover:shadow-lg hover:shadow-red-500/25"
+                >
+                  Delete {selectedTransactionIds.length} Item{selectedTransactionIds.length !== 1 ? "s" : ""}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

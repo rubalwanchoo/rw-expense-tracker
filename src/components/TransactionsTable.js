@@ -6,7 +6,33 @@ export default function TransactionsTable({
   onEdit,
   onDelete,
   disabled = false,
+  selectedIds = [],
+  onSelectionChange,
 }) {
+  // Handle individual checkbox toggle
+  const handleCheckboxChange = (transactionId) => {
+    if (!onSelectionChange) return;
+    
+    if (selectedIds.includes(transactionId)) {
+      onSelectionChange(selectedIds.filter(id => id !== transactionId));
+    } else {
+      onSelectionChange([...selectedIds, transactionId]);
+    }
+  };
+
+  // Handle select all checkbox
+  const handleSelectAll = () => {
+    if (!onSelectionChange) return;
+    
+    if (selectedIds.length === transactions.length) {
+      onSelectionChange([]);
+    } else {
+      onSelectionChange(transactions.map(t => t.id));
+    }
+  };
+
+  const isAllSelected = transactions.length > 0 && selectedIds.length === transactions.length;
+  const isSomeSelected = selectedIds.length > 0 && selectedIds.length < transactions.length;
 
   return (
     <div className="w-full">
@@ -38,13 +64,73 @@ export default function TransactionsTable({
           </div>
         ) : (
           <div>
+            {/* Select All Header */}
+            {onSelectionChange && (
+              <div className="flex items-center gap-3 border-b-2 border-slate-600 bg-slate-700/30 px-3 py-2 sm:px-4">
+                <button
+                  type="button"
+                  onClick={handleSelectAll}
+                  disabled={disabled}
+                  className={`flex h-2.5 w-2.5 flex-shrink-0 items-center justify-center rounded-sm border transition-all duration-200 ${
+                    disabled 
+                      ? "cursor-not-allowed opacity-50" 
+                      : "cursor-pointer hover:border-emerald-400"
+                  } ${
+                    isAllSelected
+                      ? "border-emerald-500 bg-emerald-500/20 text-emerald-400"
+                      : isSomeSelected
+                      ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-400"
+                      : "border-slate-500 bg-slate-700/50 text-transparent"
+                  }`}
+                >
+                  {isAllSelected ? (
+                    <svg className="h-1.5 w-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : isSomeSelected ? (
+                    <svg className="h-1.5 w-1.5" fill="currentColor" viewBox="0 0 24 24">
+                      <rect x="2" y="9" width="20" height="6" rx="1" />
+                    </svg>
+                  ) : null}
+                </button>
+                <span className="text-xs font-medium text-slate-400">
+                  {selectedIds.length > 0 
+                    ? `${selectedIds.length} selected` 
+                    : "Select all"}
+                </span>
+              </div>
+            )}
             {transactions.map((transaction, index) => (
               <div
                 key={transaction.id}
-                className={`flex items-center justify-between gap-3 px-3 py-3 transition-all duration-200 hover:bg-slate-700/50 sm:px-4 ${
+                className={`flex items-center gap-3 px-3 py-3 transition-all duration-200 hover:bg-slate-700/50 sm:px-4 ${
                   index !== transactions.length - 1 ? "border-b-2 border-slate-600" : ""
-                }`}
+                } ${selectedIds.includes(transaction.id) ? "bg-emerald-500/10" : ""}`}
               >
+                {/* Checkbox */}
+                {onSelectionChange && (
+                  <button
+                    type="button"
+                    onClick={() => handleCheckboxChange(transaction.id)}
+                    disabled={disabled}
+                    className={`flex h-2.5 w-2.5 flex-shrink-0 items-center justify-center rounded-sm border transition-all duration-200 ${
+                      disabled 
+                        ? "cursor-not-allowed opacity-50" 
+                        : "cursor-pointer hover:border-emerald-400"
+                    } ${
+                      selectedIds.includes(transaction.id)
+                        ? "border-emerald-500 bg-emerald-500/20 text-emerald-400"
+                        : "border-slate-500 bg-slate-700/50 text-transparent"
+                    }`}
+                  >
+                    {selectedIds.includes(transaction.id) && (
+                      <svg className="h-1.5 w-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                )}
+                
                 {/* Transaction Info - Stacked, Left Aligned */}
                 <div className="flex-1 space-y-0.5 text-left">
                   {/* Type Badge + Amount */}
@@ -61,7 +147,7 @@ export default function TransactionsTable({
                       {transaction.type || "N/A"}
                     </span>
                     <span
-                      className={`text-sm font-bold ${
+                      className={`text-base font-bold ${
                         transaction.type === "Income"
                           ? "text-emerald-400"
                           : transaction.type === "Expense"

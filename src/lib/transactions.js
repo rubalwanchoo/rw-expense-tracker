@@ -119,3 +119,36 @@ export const deleteTransaction = async (transactionId) => {
     return { success: false, error };
   }
 };
+
+/**
+ * Delete multiple transactions from Supabase
+ * @param {string[]} transactionIds - Array of transaction IDs to delete
+ * @param {string} projectId - Project ID to update modified timestamp
+ * @returns {Promise<{successCount: number, errorCount: number, error: Error|null}>}
+ */
+export const deleteMultipleTransactions = async (transactionIds, projectId) => {
+  let successCount = 0;
+  let errorCount = 0;
+
+  try {
+    // Delete all transactions in one query using 'in' filter
+    const { error } = await supabase
+      .from("transactions")
+      .delete()
+      .in("id", transactionIds);
+
+    if (error) throw error;
+    
+    successCount = transactionIds.length;
+    
+    // Update the project's dtm_modified timestamp
+    if (projectId) {
+      await touchProjectModified(projectId);
+    }
+    
+    return { successCount, errorCount: 0, error: null };
+  } catch (error) {
+    console.error("Error deleting multiple transactions:", error.message);
+    return { successCount: 0, errorCount: transactionIds.length, error };
+  }
+};
