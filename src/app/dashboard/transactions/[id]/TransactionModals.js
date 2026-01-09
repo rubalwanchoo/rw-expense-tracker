@@ -115,11 +115,20 @@ export default function TransactionModals({
     });
   }
 
+  // Helper to get logged in username
+  const getUsername = () => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("app_username") || "system";
+    }
+    return "system";
+  };
+
   // CRUD operations
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setSaving(true);
+      const username = getUsername();
       const { data, error } = await createTransaction({
         project_id: projectId,
         trans_date: formData.trans_date,
@@ -127,7 +136,7 @@ export default function TransactionModals({
         type: formData.type,
         description: formData.description,
         source: formData.source,
-      });
+      }, username);
 
       if (error) throw error;
 
@@ -148,13 +157,14 @@ export default function TransactionModals({
 
     try {
       setUpdating(true);
+      const username = getUsername();
       const { data, error } = await updateTransaction(transactionToEdit.id, {
         trans_date: editFormData.trans_date,
         amount: editFormData.amount,
         type: editFormData.type,
         description: editFormData.description,
         source: editFormData.source,
-      });
+      }, username);
 
       if (error) throw error;
 

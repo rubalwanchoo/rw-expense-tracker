@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { touchProjectModified } from "./projects";
 
 /**
  * Fetch all transactions for a specific project from Supabase
@@ -29,10 +30,13 @@ export const fetchTransactions = async (projectId) => {
  * @param {number} transactionData.amount - Transaction amount
  * @param {string} transactionData.description - Transaction description
  * @param {string} transactionData.source - Payment source
+ * @param {string} username - Logged in username
  * @returns {Promise<{data: Object|null, error: Error|null}>}
  */
-export const createTransaction = async (transactionData) => {
+export const createTransaction = async (transactionData, username = "system") => {
   try {
+    const now = new Date().toISOString();
+    const user = username || "system"; // Ensure never null
     const { data, error } = await supabase
       .from("transactions")
       .insert([
@@ -43,11 +47,19 @@ export const createTransaction = async (transactionData) => {
           type: transactionData.type,
           description: transactionData.description,
           source: transactionData.source,
+          dtm_created: now,
+          dtm_modified: now,
+          created_by: user,
+          modified_by: user,
         },
       ])
       .select();
 
     if (error) throw error;
+    
+    // Update the project's dtm_modified timestamp
+    await touchProjectModified(transactionData.project_id);
+    
     return { data: data[0], error: null };
   } catch (error) {
     console.error("Error creating transaction:", error.message);
@@ -59,10 +71,13 @@ export const createTransaction = async (transactionData) => {
  * Update an existing transaction in Supabase
  * @param {string} transactionId - Transaction ID to update
  * @param {Object} updateData - Updated transaction data
+ * @param {string} username - Logged in username
  * @returns {Promise<{data: Object|null, error: Error|null}>}
  */
-export const updateTransaction = async (transactionId, updateData) => {
+export const updateTransaction = async (transactionId, updateData, username = "system") => {
   try {
+    const now = new Date().toISOString();
+    const user = username || "system"; // Ensure never null
     const { data, error } = await supabase
       .from("transactions")
       .update({
@@ -71,6 +86,8 @@ export const updateTransaction = async (transactionId, updateData) => {
         type: updateData.type,
         description: updateData.description,
         source: updateData.source,
+        dtm_modified: now,
+        modified_by: user,
       })
       .eq("id", transactionId)
       .select();

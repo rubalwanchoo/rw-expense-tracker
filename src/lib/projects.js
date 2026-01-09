@@ -84,6 +84,30 @@ export const updateProject = async (projectId, updateData) => {
 };
 
 /**
+ * Update project's dtm_modified timestamp
+ * @param {string} projectId - Project ID to update
+ * @returns {Promise<{data: Object|null, error: Error|null}>}
+ */
+export const touchProjectModified = async (projectId) => {
+  try {
+    const now = new Date().toISOString();
+    const { data, error } = await supabase
+      .from("projects")
+      .update({
+        dtm_modified: now,
+      })
+      .eq("id", projectId)
+      .select();
+
+    if (error) throw error;
+    return { data: data[0], error: null };
+  } catch (error) {
+    console.error("Error updating project modified date:", error.message);
+    return { data: null, error };
+  }
+};
+
+/**
  * Delete a project from Supabase
  * @param {string} projectId - Project ID to delete
  * @returns {Promise<{success: boolean, error: Error|null}>}

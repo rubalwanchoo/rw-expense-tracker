@@ -45,6 +45,7 @@ export default function LoginPage() {
       form.password === STATIC_PASSWORD
     ) {
       localStorage.setItem("app_logged_in", "true");
+      localStorage.setItem("app_username", form.username.trim());
       
       // Save or clear credentials based on Remember Me
       if (rememberMe) {

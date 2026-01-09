@@ -25,12 +25,42 @@ export default function TransactionsPage() {
   const [notification, setNotification] = useState(null);
   const [filterText, setFilterText] = useState("");
   
-  // Date range for totals
+  // Date range for totals (applied values)
   const [dateRangeStart, setDateRangeStart] = useState("");
   const [dateRangeEnd, setDateRangeEnd] = useState("");
   
+  // Pending date range (values in the modal before Apply is pressed)
+  const [pendingDateStart, setPendingDateStart] = useState("");
+  const [pendingDateEnd, setPendingDateEnd] = useState("");
+  
   // Sort direction for date (asc = oldest first, desc = newest first)
   const [sortDirection, setSortDirection] = useState("desc");
+  
+  // Date range picker dropdown
+  const [isDateRangeOpen, setIsDateRangeOpen] = useState(false);
+  
+  // Open date range modal and sync pending values with current values
+  const openDateRangeModal = () => {
+    setPendingDateStart(dateRangeStart);
+    setPendingDateEnd(dateRangeEnd);
+    setIsDateRangeOpen(true);
+  };
+  
+  // Apply the pending date range
+  const applyDateRange = () => {
+    setDateRangeStart(pendingDateStart);
+    setDateRangeEnd(pendingDateEnd);
+    setIsDateRangeOpen(false);
+  };
+  
+  // Clear date range
+  const clearDateRange = () => {
+    setPendingDateStart("");
+    setPendingDateEnd("");
+    setDateRangeStart("");
+    setDateRangeEnd("");
+    setIsDateRangeOpen(false);
+  };
 
   // Modal visibility states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -41,6 +71,9 @@ export default function TransactionsPage() {
   
   // Scanned receipt data
   const [scannedFormData, setScannedFormData] = useState(null);
+  
+  // Loading state for receipt processing
+  const [isProcessingReceipt, setIsProcessingReceipt] = useState(false);
 
   // Notification handler
   const showNotification = (message, type = "success") => {
@@ -118,12 +151,15 @@ export default function TransactionsPage() {
   };
 
   // Helper function to normalize date from receipt scan
-  // If year is missing or seems wrong, assume current year
+  // If year is missing or seems wrong:
+  // - If month/day has already passed this year → use current year
+  // - If month/day is in the future this year → use last year
   const normalizeTransactionDate = (dateStr) => {
     if (!dateStr) return new Date().toISOString().split('T')[0];
     
-    const currentYear = new Date().getFullYear();
     const today = new Date();
+    const currentYear = today.getFullYear();
+    const lastYear = currentYear - 1;
     
     // Try to parse the date
     let parsedDate = new Date(dateStr);
@@ -135,23 +171,46 @@ export default function TransactionsPage() {
     }
     
     const parsedYear = parsedDate.getFullYear();
+    const parsedMonth = parsedDate.getMonth(); // 0-indexed
+    const parsedDay = parsedDate.getDate();
     
-    // If year seems wrong (too old like 2018-2020, or in the future)
-    // Receipts usually have just month/day, so assume current year
-    if (parsedYear < currentYear - 1 || parsedYear > currentYear) {
-      // Replace the year with current year
-      const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
-      const day = String(parsedDate.getDate()).padStart(2, '0');
-      const correctedDate = `${currentYear}-${month}-${day}`;
-      console.log(`  📅 Date "${dateStr}" corrected to "${correctedDate}" (assumed current year)`);
-      return correctedDate;
+    // If year seems wrong (too old or in the future beyond current year)
+    // Smart logic: check if month/day has elapsed in current year
+    if (parsedYear < lastYear || parsedYear > currentYear) {
+      // Create date with current year to compare
+      const dateThisYear = new Date(currentYear, parsedMonth, parsedDay);
+      
+      // If the date this year is in the future, use last year
+      // Otherwise use current year
+      let targetYear;
+      if (dateThisYear > today) {
+        targetYear = lastYear;
+        console.log(`  📅 Date "${dateStr}" → ${targetYear}-${String(parsedMonth + 1).padStart(2, '0')}-${String(parsedDay).padStart(2, '0')} (month/day hasn't occurred yet this year, using last year)`);
+      } else {
+        targetYear = currentYear;
+        console.log(`  📅 Date "${dateStr}" → ${targetYear}-${String(parsedMonth + 1).padStart(2, '0')}-${String(parsedDay).padStart(2, '0')} (month/day has passed, using current year)`);
+      }
+      
+      const month = String(parsedMonth + 1).padStart(2, '0');
+      const day = String(parsedDay).padStart(2, '0');
+      return `${targetYear}-${month}-${day}`;
     }
     
-    // Return in YYYY-MM-DD format
+    // Return in YYYY-MM-DD format (year is already valid)
     const year = parsedDate.getFullYear();
-    const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
-    const day = String(parsedDate.getDate()).padStart(2, '0');
+    const month = String(parsedMonth + 1).padStart(2, '0');
+    const day = String(parsedDay).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  };
+
+  // Called when scan starts (modal closed, API call in progress)
+  const handleScanStart = () => {
+    setIsProcessingReceipt(true);
+  };
+
+  // Called when scan fails
+  const handleScanError = () => {
+    setIsProcessingReceipt(false);
   };
 
   // Handle scanned receipt data - auto-create multiple transactions
@@ -181,7 +240,12 @@ export default function TransactionsPage() {
 
           console.log(`  → Creating: ${transactionData.description} ($${transactionData.amount})`);
 
-          const { data, error } = await createTransaction(transactionData);
+          // Get logged in username
+          const username = typeof window !== "undefined" 
+            ? localStorage.getItem("app_username") || "system" 
+            : "system";
+          
+          const { data, error } = await createTransaction(transactionData, username);
 
           if (error) {
             console.error("Error creating transaction:", error);
@@ -196,9 +260,14 @@ export default function TransactionsPage() {
         }
       }
 
-      // Add all created transactions to the list
+      // Add all created transactions to the list and update project modified date
       if (createdTransactions.length > 0) {
         setTransactions((prev) => [...createdTransactions, ...prev]);
+        // Update project's modified date in local state
+        setProject((prev) => ({
+          ...prev,
+          dtm_modified: new Date().toISOString(),
+        }));
       }
 
       // Show appropriate notification
@@ -214,6 +283,9 @@ export default function TransactionsPage() {
     } catch (error) {
       console.error("Error creating transactions from scan:", error);
       showNotification("Failed to create transactions. Please try again.", "error");
+    } finally {
+      // Release loading state
+      setIsProcessingReceipt(false);
     }
   };
 
@@ -237,9 +309,18 @@ export default function TransactionsPage() {
     setTransactionToDelete(null);
   };
 
+  // Helper to update project's modified date in local state
+  const updateProjectModifiedDate = () => {
+    setProject((prev) => ({
+      ...prev,
+      dtm_modified: new Date().toISOString(),
+    }));
+  };
+
   // Transaction update callbacks
   const handleTransactionCreated = (newTransaction) => {
     setTransactions((prev) => [newTransaction, ...prev]);
+    updateProjectModifiedDate();
   };
 
   const handleTransactionUpdated = (id, updatedTransaction) => {
@@ -356,54 +437,105 @@ export default function TransactionsPage() {
                 <p className="text-sm text-slate-400 sm:text-base">{project.description}</p>
               )}
             </div>
-            <div className="flex flex-col gap-3">
-              <div className="flex gap-4 sm:gap-6">
-                <div className="text-left sm:text-right">
-                  <p className="text-[10px] uppercase tracking-wide text-slate-500 mb-1 sm:text-xs">Total Income</p>
-                  <p className="text-lg font-bold text-emerald-400 sm:text-xl">
-                    ${totalIncome.toFixed(2)}
-                  </p>
-                </div>
-                <div className="text-left sm:text-right">
-                  <p className="text-[10px] uppercase tracking-wide text-slate-500 mb-1 sm:text-xs">Total Expenses</p>
-                  <p className="text-lg font-bold text-red-400 sm:text-xl">
-                    ${totalExpenses.toFixed(2)}
-                  </p>
-                </div>
+            <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+              <div className="text-left sm:text-right">
+                <p className="text-[10px] uppercase tracking-wide text-slate-500 mb-1 sm:text-xs">Total Income</p>
+                <p className="text-lg font-bold text-emerald-400 sm:text-xl">
+                  ${totalIncome.toFixed(2)}
+                </p>
               </div>
-              <div className="flex flex-wrap items-center gap-1 text-xs sm:gap-3">
-                <span className="text-slate-400 font-medium text-[10px] sm:text-xs">Range:</span>
-                <DateInput
-                  id="dateRangeStart"
-                  name="dateRangeStart"
-                  value={dateRangeStart}
-                  onChange={(e) => setDateRangeStart(e.target.value)}
-                  size="small"
-                  className="w-[130px] sm:w-40"
-                />
-                <span className="text-slate-500 text-[10px] sm:text-xs">to</span>
-                <DateInput
-                  id="dateRangeEnd"
-                  name="dateRangeEnd"
-                  value={dateRangeEnd}
-                  onChange={(e) => setDateRangeEnd(e.target.value)}
-                  size="small"
-                  className="w-[130px] sm:w-40"
-                />
+              <div className="text-left sm:text-right">
+                <p className="text-[10px] uppercase tracking-wide text-slate-500 mb-1 sm:text-xs">Total Expenses</p>
+                <p className="text-lg font-bold text-red-400 sm:text-xl">
+                  ${totalExpenses.toFixed(2)}
+                </p>
+              </div>
+              {/* Date Range Picker */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={openDateRangeModal}
+                  className="flex items-center gap-2 rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-xs font-medium text-slate-300 transition-all duration-200 hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-400"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span>
+                    {dateRangeStart || dateRangeEnd
+                      ? `${dateRangeStart || "Start"} → ${dateRangeEnd || "End"}`
+                      : "Date Range"}
+                  </span>
+                </button>
+                {/* Clear button - only shown when date range is selected */}
                 {(dateRangeStart || dateRangeEnd) && (
                   <button
                     type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setDateRangeStart("");
-                      setDateRangeEnd("");
-                    }}
-                    className="min-h-[36px] min-w-[44px] rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-xs font-medium text-slate-400 transition-all duration-200 active:bg-red-500/20 active:text-red-400 sm:hover:border-red-500/50 sm:hover:bg-red-500/10 sm:hover:text-red-400"
+                    onClick={clearDateRange}
+                    className="rounded-lg p-2 text-slate-400 transition-all duration-200 hover:bg-red-500/20 hover:text-red-400"
                     title="Clear date range"
                   >
-                    Clear
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                   </button>
+                )}
+
+                {/* Date Range Modal */}
+                {isDateRangeOpen && (
+                  <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+                    <div className="w-full max-w-sm rounded-2xl border border-slate-700/60 bg-slate-800/95 p-5 shadow-2xl">
+                      <div className="mb-4 flex items-center justify-between">
+                        <span className="text-lg font-semibold text-white">Select Date Range</span>
+                        <button
+                          type="button"
+                          onClick={() => setIsDateRangeOpen(false)}
+                          className="rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-700 hover:text-white"
+                        >
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="mb-2 block text-sm font-medium text-slate-300">From</label>
+                          <DateInput
+                            id="pendingDateStart"
+                            name="pendingDateStart"
+                            value={pendingDateStart}
+                            onChange={(e) => setPendingDateStart(e.target.value)}
+                            className="w-full"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-2 block text-sm font-medium text-slate-300">To</label>
+                          <DateInput
+                            id="pendingDateEnd"
+                            name="pendingDateEnd"
+                            value={pendingDateEnd}
+                            onChange={(e) => setPendingDateEnd(e.target.value)}
+                            className="w-full"
+                          />
+                        </div>
+                        <div className="flex gap-3 pt-3">
+                          <button
+                            type="button"
+                            onClick={clearDateRange}
+                            className="flex-1 rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-sm font-medium text-slate-400 transition-all hover:bg-red-500/10 hover:text-red-400"
+                          >
+                            Clear
+                          </button>
+                          <button
+                            type="button"
+                            onClick={applyDateRange}
+                            className="flex-1 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-3 text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-emerald-500/25"
+                          >
+                            Apply
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -430,8 +562,13 @@ export default function TransactionsPage() {
               />
             </div>
             <div className="flex flex-wrap gap-2">
-              <AddTransactionButton onClick={openCreateModal} />
-              <ScanReceiptButton onExpenseParsed={handleExpenseParsed} />
+              <AddTransactionButton onClick={openCreateModal} disabled={isProcessingReceipt} />
+              <ScanReceiptButton 
+                onExpenseParsed={handleExpenseParsed} 
+                onScanStart={handleScanStart}
+                onScanError={handleScanError}
+                disabled={isProcessingReceipt} 
+              />
             </div>
           </div>
 
@@ -474,11 +611,26 @@ export default function TransactionsPage() {
             </div>
           </div>
 
+          {/* Processing Receipt Overlay - Fixed to viewport */}
+          {isProcessingReceipt && (
+            <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm">
+              <div className="rounded-2xl border border-slate-700/60 bg-slate-800/95 p-8 shadow-2xl">
+                <div className="flex flex-col items-center">
+                  <div className="h-12 w-12 animate-spin rounded-full border-4 border-emerald-400 border-t-transparent"></div>
+                  <p className="mt-4 text-lg font-medium text-emerald-400">Processing receipt...</p>
+                  <p className="mt-1 text-sm text-slate-400">Creating transactions</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Transactions Table */}
           <TransactionsTable
             transactions={filteredTransactions}
             loading={false}
             onEdit={openEditModal}
             onDelete={openDeleteModal}
+            disabled={isProcessingReceipt}
           />
         </div>
       </main>

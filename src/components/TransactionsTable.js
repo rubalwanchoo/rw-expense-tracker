@@ -5,6 +5,7 @@ export default function TransactionsTable({
   loading,
   onEdit,
   onDelete,
+  disabled = false,
 }) {
 
   return (
@@ -90,9 +91,10 @@ export default function TransactionsTable({
                 {/* Actions */}
                 <div className="flex items-center gap-1">
                   <button
-                    className="group rounded-md p-1.5 text-blue-500 transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-300"
+                    className="group rounded-md p-1.5 text-blue-500 transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-300 disabled:cursor-not-allowed disabled:opacity-50"
                     title="Edit"
                     onClick={() => onEdit(transaction)}
+                    disabled={disabled}
                   >
                     <svg
                       className="h-4 w-4 transition-transform duration-200 group-hover:scale-110"
@@ -109,9 +111,10 @@ export default function TransactionsTable({
                     </svg>
                   </button>
                   <button
-                    className="group rounded-md p-1.5 text-red-500 transition-all duration-200 hover:bg-red-500/20 hover:text-red-300"
+                    className="group rounded-md p-1.5 text-red-500 transition-all duration-200 hover:bg-red-500/20 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
                     title="Delete"
                     onClick={() => onDelete(transaction)}
+                    disabled={disabled}
                   >
                     <svg
                       className="h-4 w-4 transition-transform duration-200 group-hover:scale-110"

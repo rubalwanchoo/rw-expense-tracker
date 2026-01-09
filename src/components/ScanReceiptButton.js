@@ -2,9 +2,8 @@
 
 import { useRef, useState } from "react";
 
-export default function ScanReceiptButton({ onExpenseParsed, disabled }) {
+export default function ScanReceiptButton({ onExpenseParsed, onScanStart, onScanError, disabled }) {
   const fileInputRef = useRef(null);
-  const [scanning, setScanning] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [bankSource, setBankSource] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
@@ -54,15 +53,21 @@ export default function ScanReceiptButton({ onExpenseParsed, disabled }) {
       return;
     }
 
+    // Capture values before closing modal
+    const fileToUpload = selectedFile;
+    const sourceToApply = bankSource.trim();
+    
+    // Close modal immediately and notify parent that scanning has started
+    handleCloseModal();
+    if (onScanStart) onScanStart();
+    
     try {
-      setScanning(true);
-      
       console.log("\n%c========== RECEIPT SCAN (Browser) ==========", "color: #10b981; font-weight: bold;");
-      console.log("📷 Uploading image:", selectedFile.name, `(${(selectedFile.size / 1024).toFixed(2)} KB)`);
-      console.log("🏦 Bank Source:", bankSource);
+      console.log("📷 Uploading image:", fileToUpload.name, `(${(fileToUpload.size / 1024).toFixed(2)} KB)`);
+      console.log("🏦 Bank Source:", sourceToApply);
 
       const formData = new FormData();
-      formData.append("image", selectedFile);
+      formData.append("image", fileToUpload);
 
       const response = await fetch("/api/parse-expense", {
         method: "POST",
@@ -84,10 +89,10 @@ export default function ScanReceiptButton({ onExpenseParsed, disabled }) {
         // Apply the user-provided bank source to all transactions
         transactions = transactions.map(t => ({
           ...t,
-          source: bankSource.trim(),
+          source: sourceToApply,
         }));
         
-        console.log(`\n%c✅ PARSED ${transactions.length} TRANSACTION(S) with source "${bankSource}":`, "color: #10b981; font-weight: bold;");
+        console.log(`\n%c✅ PARSED ${transactions.length} TRANSACTION(S) with source "${sourceToApply}":`, "color: #10b981; font-weight: bold;");
         transactions.forEach((t, i) => {
           console.log(`%cTransaction ${i + 1}:`, "color: #3b82f6;");
           console.table(t);
@@ -95,13 +100,11 @@ export default function ScanReceiptButton({ onExpenseParsed, disabled }) {
         console.log("%c========== SCAN COMPLETE ==========\n", "color: #10b981; font-weight: bold;");
         
         onExpenseParsed(transactions);
-        handleCloseModal();
       }
     } catch (error) {
       console.error("%c❌ Error scanning receipt:", "color: #ef4444; font-weight: bold;", error);
       alert(error.message || "Failed to scan receipt. Please try again.");
-    } finally {
-      setScanning(false);
+      if (onScanError) onScanError();
     }
   };
 
@@ -110,7 +113,7 @@ export default function ScanReceiptButton({ onExpenseParsed, disabled }) {
       <button
         type="button"
         onClick={handleButtonClick}
-        disabled={disabled || scanning}
+        disabled={disabled}
         className="flex items-center gap-2 rounded-lg border border-emerald-500/50 bg-emerald-500/10 px-3 py-2 text-sm font-medium text-emerald-400 transition-all hover:bg-emerald-500/20 hover:text-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <svg
@@ -194,24 +197,16 @@ export default function ScanReceiptButton({ onExpenseParsed, disabled }) {
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  disabled={scanning}
-                  className="flex-1 rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 font-semibold text-slate-300 transition-colors hover:bg-slate-700 disabled:opacity-50"
+                  className="flex-1 rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 font-semibold text-slate-300 transition-colors hover:bg-slate-700"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={scanning || !selectedFile || !bankSource.trim()}
+                  disabled={!selectedFile || !bankSource.trim()}
                   className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-3 font-semibold text-white transition-all hover:shadow-lg hover:shadow-emerald-500/25 disabled:opacity-50"
                 >
-                  {scanning ? (
-                    <>
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                      <span>Scanning...</span>
-                    </>
-                  ) : (
-                    <span>Scan & Import</span>
-                  )}
+                  <span>Scan & Import</span>
                 </button>
               </div>
             </form>
