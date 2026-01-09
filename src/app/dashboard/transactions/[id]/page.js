@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { fetchTransactions as fetchTransactionsService } from "@/lib/transactions";
+import { fetchTransactions as fetchTransactionsService, createTransaction } from "@/lib/transactions";
 import Header from "@/components/Header";
 import Notification from "@/components/Notification";
 import Footer from "@/components/Footer";
 import FilterBox from "@/components/FilterBox";
 import AddTransactionButton from "@/components/AddTransactionButton";
+import ScanReceiptButton from "@/components/ScanReceiptButton";
 import TransactionsTable from "@/components/TransactionsTable";
 import DateInput from "@/components/DateInput";
 import TransactionModals from "./TransactionModals";
@@ -36,6 +37,9 @@ export default function TransactionsPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [transactionToEdit, setTransactionToEdit] = useState(null);
   const [transactionToDelete, setTransactionToDelete] = useState(null);
+  
+  // Scanned receipt data
+  const [scannedFormData, setScannedFormData] = useState(null);
 
   // Notification handler
   const showNotification = (message, type = "success") => {
@@ -107,7 +111,73 @@ export default function TransactionsPage() {
 
   // Modal handlers
   const openCreateModal = () => setIsCreateModalOpen(true);
-  const closeCreateModal = () => setIsCreateModalOpen(false);
+  const closeCreateModal = () => {
+    setIsCreateModalOpen(false);
+    setScannedFormData(null); // Reset scanned data when closing
+  };
+
+  // Handle scanned receipt data - auto-create multiple transactions
+  const handleExpenseParsed = async (parsedDataArray) => {
+    try {
+      // Ensure we have an array
+      const transactionsToCreate = Array.isArray(parsedDataArray) ? parsedDataArray : [parsedDataArray];
+      
+      console.log(`📝 Creating ${transactionsToCreate.length} transaction(s) from scanned data...`);
+
+      const createdTransactions = [];
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const parsedData of transactionsToCreate) {
+        try {
+          // Prepare transaction data with defaults for null values
+          const transactionData = {
+            project_id: params.id,
+            trans_date: parsedData.trans_date || new Date().toISOString().split('T')[0],
+            amount: parsedData.amount || 0,
+            type: parsedData.type || "Expense",
+            description: parsedData.description || "Scanned receipt",
+            merchant: parsedData.merchant || "Unknown",
+            source: parsedData.source || "NA", // Default to NA if null
+          };
+
+          console.log(`  → Creating: ${transactionData.description} ($${transactionData.amount})`);
+
+          const { data, error } = await createTransaction(transactionData);
+
+          if (error) {
+            console.error("Error creating transaction:", error);
+            errorCount++;
+          } else {
+            createdTransactions.push(data);
+            successCount++;
+          }
+        } catch (itemError) {
+          console.error("Error processing transaction item:", itemError);
+          errorCount++;
+        }
+      }
+
+      // Add all created transactions to the list
+      if (createdTransactions.length > 0) {
+        setTransactions((prev) => [...createdTransactions, ...prev]);
+      }
+
+      // Show appropriate notification
+      if (successCount > 0 && errorCount === 0) {
+        showNotification(`${successCount} transaction(s) created from receipt!`, "success");
+      } else if (successCount > 0 && errorCount > 0) {
+        showNotification(`${successCount} created, ${errorCount} failed`, "success");
+      } else {
+        showNotification("Failed to create transactions. Please try again.", "error");
+      }
+
+      console.log(`✅ Created ${successCount} transaction(s), ${errorCount} error(s)`);
+    } catch (error) {
+      console.error("Error creating transactions from scan:", error);
+      showNotification("Failed to create transactions. Please try again.", "error");
+    }
+  };
 
   const openEditModal = (transaction) => {
     setTransactionToEdit(transaction);
@@ -345,7 +415,10 @@ export default function TransactionsPage() {
                 onChange={handleFilterChange}
                 placeholder="Filter..."
               />
-              <AddTransactionButton onClick={openCreateModal} />
+              <div className="flex gap-2">
+                <ScanReceiptButton onExpenseParsed={handleExpenseParsed} />
+                <AddTransactionButton onClick={openCreateModal} />
+              </div>
             </div>
           </div>
 
@@ -375,6 +448,7 @@ export default function TransactionsPage() {
         isDeleteModalOpen={isDeleteModalOpen}
         transactionToDelete={transactionToDelete}
         onCloseDeleteModal={closeDeleteModal}
+        initialFormData={scannedFormData}
       />
 
       <Footer />

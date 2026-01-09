@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   createTransaction,
   updateTransaction,
@@ -25,6 +25,8 @@ export default function TransactionModals({
   isDeleteModalOpen,
   transactionToDelete,
   onCloseDeleteModal,
+  // Pre-filled data from receipt scan
+  initialFormData,
 }) {
   // Form data states
   const [formData, setFormData] = useState({
@@ -35,6 +37,20 @@ export default function TransactionModals({
     merchant: "",
     source: "",
   });
+
+  // Update form data when initialFormData changes (from receipt scan)
+  useEffect(() => {
+    if (initialFormData) {
+      setFormData({
+        trans_date: initialFormData.trans_date || "",
+        amount: initialFormData.amount != null ? String(initialFormData.amount) : "",
+        type: initialFormData.type || "Expense",
+        description: initialFormData.description || "",
+        merchant: initialFormData.merchant || "",
+        source: initialFormData.source || "",
+      });
+    }
+  }, [initialFormData]);
 
   const [editFormData, setEditFormData] = useState({
     trans_date: "",
