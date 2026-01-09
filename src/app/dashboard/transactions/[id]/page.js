@@ -117,6 +117,43 @@ export default function TransactionsPage() {
     setScannedFormData(null); // Reset scanned data when closing
   };
 
+  // Helper function to normalize date from receipt scan
+  // If year is missing or seems wrong, assume current year
+  const normalizeTransactionDate = (dateStr) => {
+    if (!dateStr) return new Date().toISOString().split('T')[0];
+    
+    const currentYear = new Date().getFullYear();
+    const today = new Date();
+    
+    // Try to parse the date
+    let parsedDate = new Date(dateStr);
+    
+    // If invalid date, return today
+    if (isNaN(parsedDate.getTime())) {
+      console.log(`  ⚠️ Invalid date "${dateStr}", using today's date`);
+      return today.toISOString().split('T')[0];
+    }
+    
+    const parsedYear = parsedDate.getFullYear();
+    
+    // If year seems wrong (too old like 2018-2020, or in the future)
+    // Receipts usually have just month/day, so assume current year
+    if (parsedYear < currentYear - 1 || parsedYear > currentYear) {
+      // Replace the year with current year
+      const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(parsedDate.getDate()).padStart(2, '0');
+      const correctedDate = `${currentYear}-${month}-${day}`;
+      console.log(`  📅 Date "${dateStr}" corrected to "${correctedDate}" (assumed current year)`);
+      return correctedDate;
+    }
+    
+    // Return in YYYY-MM-DD format
+    const year = parsedDate.getFullYear();
+    const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(parsedDate.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Handle scanned receipt data - auto-create multiple transactions
   const handleExpenseParsed = async (parsedDataArray) => {
     try {
@@ -132,9 +169,10 @@ export default function TransactionsPage() {
       for (const parsedData of transactionsToCreate) {
         try {
           // Prepare transaction data with defaults for null values
+          // Use normalizeTransactionDate to fix year issues from receipt parsing
           const transactionData = {
             project_id: params.id,
-            trans_date: parsedData.trans_date || new Date().toISOString().split('T')[0],
+            trans_date: normalizeTransactionDate(parsedData.trans_date),
             amount: parsedData.amount || 0,
             type: parsedData.type || "Expense",
             description: parsedData.description || "Scanned receipt",
@@ -233,11 +271,12 @@ export default function TransactionsPage() {
     .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
 
   // Derived filtered transactions (sorted by date based on sortDirection)
+  // Uses dateFilteredTransactions as base so date range filter affects the table
   const filteredTransactions = (() => {
     let result =
       filterText.trim().length === 0
-        ? [...transactions]
-        : transactions.filter((transaction) => {
+        ? [...dateFilteredTransactions]
+        : dateFilteredTransactions.filter((transaction) => {
             const query = filterText.toLowerCase();
             const description = transaction.description?.toLowerCase() || "";
             const source = transaction.source?.toLowerCase() || "";
@@ -380,19 +419,19 @@ export default function TransactionsPage() {
         </div>
 
         {/* Transactions Section */}
-        <div className="rounded-2xl border border-slate-700/60 bg-slate-800/70 p-4 backdrop-blur sm:p-6">
-          <div className="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
-            <h3 className="text-lg font-semibold text-white sm:text-xl">Transactions</h3>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+        <div className="overflow-hidden rounded-2xl border border-slate-700/60 bg-slate-800/70 p-4 backdrop-blur sm:p-6">
+          <div className="mb-4 flex flex-col gap-3 sm:mb-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <h3 className="text-lg font-semibold text-white sm:text-xl">Transactions</h3>
               <FilterBox
                 value={filterText}
                 onChange={handleFilterChange}
                 placeholder="Filter..."
               />
-              <div className="flex gap-2">
-                <ScanReceiptButton onExpenseParsed={handleExpenseParsed} />
-                <AddTransactionButton onClick={openCreateModal} />
-              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <AddTransactionButton onClick={openCreateModal} />
+              <ScanReceiptButton onExpenseParsed={handleExpenseParsed} />
             </div>
           </div>
 
