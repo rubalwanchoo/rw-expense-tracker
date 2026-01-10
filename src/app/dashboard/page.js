@@ -196,6 +196,16 @@ export default function DashboardPage() {
     e.preventDefault();
     if (!projectToDelete) return;
 
+    // Check if project has transactions
+    const hasTransactions =
+      (projectTotals[projectToDelete.id]?.income || 0) > 0 ||
+      (projectTotals[projectToDelete.id]?.expenses || 0) > 0;
+
+    if (hasTransactions) {
+      showNotification("Please delete all transactions first before deleting this project.", "error");
+      return;
+    }
+
     // Validate password
     const correctPassword = process.env.NEXT_PUBLIC_PROJECT_DELETE_PASSWORD;
     if (deletePassword !== correctPassword) {
