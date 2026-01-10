@@ -29,12 +29,24 @@ export default function ScanReceiptModal({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Create preview URL when file is selected
+  // Create preview URL when file is selected - with error handling for iOS
   useEffect(() => {
     if (selectedFile) {
-      const url = URL.createObjectURL(selectedFile);
-      setPreviewUrl(url);
-      return () => URL.revokeObjectURL(url);
+      try {
+        const url = URL.createObjectURL(selectedFile);
+        setPreviewUrl(url);
+        return () => {
+          try {
+            URL.revokeObjectURL(url);
+          } catch (e) {
+            console.warn("Error revoking object URL:", e);
+          }
+        };
+      } catch (error) {
+        console.warn("Could not create preview URL:", error);
+        // Set a placeholder or skip preview on error
+        setPreviewUrl(null);
+      }
     } else {
       setPreviewUrl(null);
     }
@@ -51,22 +63,37 @@ export default function ScanReceiptModal({
   };
 
   const handleFileSelect = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    try {
+      const file = e.target.files?.[0];
+      if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      alert("Please select an image file");
-      return;
+      // On iOS, file.type might be empty for camera captures
+      // Allow files with no type (iOS camera) or image types
+      const isImage = !file.type || file.type.startsWith("image/") || 
+                      file.name.match(/\.(jpg|jpeg|png|gif|webp|heic|heif)$/i);
+      
+      if (!isImage) {
+        alert("Please select an image file");
+        return;
+      }
+
+      // Validate file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        alert("Image size must be less than 10MB");
+        return;
+      }
+
+      console.log("File selected:", {
+        name: file.name,
+        type: file.type,
+        size: file.size
+      });
+
+      setSelectedFile(file);
+    } catch (error) {
+      console.error("Error selecting file:", error);
+      alert("Error selecting file. Please try again.");
     }
-
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      alert("Image size must be less than 10MB");
-      return;
-    }
-
-    setSelectedFile(file);
   };
 
   const handleClearImage = () => {
@@ -90,15 +117,20 @@ export default function ScanReceiptModal({
       return;
     }
 
-    // Pass values to parent and close modal
-    onScanSubmit(selectedFile, bankSource.trim());
-    
-    // Reset form
-    setBankSource("");
-    setSelectedFile(null);
-    setPreviewUrl(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+    try {
+      // Pass values to parent and close modal
+      onScanSubmit(selectedFile, bankSource.trim());
+      
+      // Reset form
+      setBankSource("");
+      setSelectedFile(null);
+      setPreviewUrl(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch (error) {
+      console.error("Error submitting:", error);
+      alert("Error processing image. Please try again.");
     }
   };
 
@@ -165,18 +197,24 @@ export default function ScanReceiptModal({
             </span>
 
             {/* Image Preview or Selection */}
-            {selectedFile && previewUrl ? (
+            {selectedFile ? (
               <div className="relative">
                 <div className="overflow-hidden rounded-lg border border-slate-600 bg-slate-700/50">
-                  <img
-                    src={previewUrl}
-                    alt="Receipt preview"
-                    className="max-h-48 w-full object-contain"
-                  />
+                  {previewUrl ? (
+                    <img
+                      src={previewUrl}
+                      alt="Receipt preview"
+                      className="max-h-48 w-full object-contain"
+                    />
+                  ) : (
+                    <div className="flex h-32 items-center justify-center">
+                      <span className="text-sm text-slate-400">Image selected (preview unavailable)</span>
+                    </div>
+                  )}
                 </div>
                 <div className="mt-2 flex items-center justify-between">
                   <p className="text-xs text-emerald-400">
-                    {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+                    {selectedFile.name || "Photo"} ({(selectedFile.size / 1024).toFixed(1)} KB)
                   </p>
                   <button
                     type="button"
@@ -217,7 +255,6 @@ export default function ScanReceiptModal({
                   <p className="mt-1 text-xs text-slate-400">PNG, JPG, GIF up to 10MB</p>
                 </div>
                 {/* File input inside label - native iOS action sheet will appear */}
-                {/* Note: accept attribute removed for iOS Chrome compatibility */}
                 <input
                   ref={fileInputRef}
                   id="receiptImageInput"

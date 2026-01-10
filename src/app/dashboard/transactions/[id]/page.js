@@ -228,17 +228,28 @@ export default function TransactionsPage() {
     setIsProcessingReceipt(true);
 
     try {
-      console.log("\n%c========== RECEIPT SCAN (Browser) ==========", "color: #10b981; font-weight: bold;");
-      console.log("📷 Uploading image:", file.name, `(${(file.size / 1024).toFixed(2)} KB)`);
-      console.log("🏦 Bank Source:", bankSource);
+      // Validate file exists
+      if (!file) {
+        throw new Error("No file provided");
+      }
 
+      console.log("\n%c========== RECEIPT SCAN (Browser) ==========", "color: #10b981; font-weight: bold;");
+      console.log("📷 Uploading image:", file.name || "photo", `(${((file.size || 0) / 1024).toFixed(2)} KB)`);
+      console.log("🏦 Bank Source:", bankSource);
+      console.log("File type:", file.type || "unknown");
+
+      // Create FormData and append file
       const formData = new FormData();
-      formData.append("image", file);
+      formData.append("image", file, file.name || "photo.jpg");
+
+      console.log("FormData created, sending to API...");
 
       const response = await fetch("/api/parse-expense", {
         method: "POST",
         body: formData,
       });
+
+      console.log("API response status:", response.status);
 
       const result = await response.json();
       
@@ -268,10 +279,11 @@ export default function TransactionsPage() {
         await handleExpenseParsed(transactions);
       } else {
         setIsProcessingReceipt(false);
+        showNotification("No data found in receipt", "error");
       }
     } catch (error) {
       console.error("%c❌ Error scanning receipt:", "color: #ef4444; font-weight: bold;", error);
-      alert(error.message || "Failed to scan receipt. Please try again.");
+      showNotification(error.message || "Failed to scan receipt. Please try again.", "error");
       setIsProcessingReceipt(false);
     }
   };
