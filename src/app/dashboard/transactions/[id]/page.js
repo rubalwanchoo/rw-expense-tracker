@@ -164,18 +164,35 @@ export default function TransactionsPage() {
     setScannedFormData(null); // Reset scanned data when closing
   };
 
+  // Helper function to get current date in EST timezone
+  const getESTDate = () => {
+    const estFormatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+    const parts = estFormatter.formatToParts(new Date());
+    return {
+      year: parseInt(parts.find(p => p.type === 'year').value, 10),
+      month: parseInt(parts.find(p => p.type === 'month').value, 10),
+      day: parseInt(parts.find(p => p.type === 'day').value, 10),
+    };
+  };
+
   // Helper function to normalize date from receipt scan
+  // All dates are treated as EST timezone
   // If year is missing or seems wrong:
   // - If month/day has already passed this year → use current year
   // - If month/day is in the future this year → use last year
   const normalizeTransactionDate = (dateStr) => {
+    const est = getESTDate();
+    
     if (!dateStr) {
-      const today = new Date();
-      return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      return `${est.year}-${String(est.month).padStart(2, '0')}-${String(est.day).padStart(2, '0')}`;
     }
     
-    const today = new Date();
-    const currentYear = today.getFullYear();
+    const currentYear = est.year;
     const lastYear = currentYear - 1;
     
     // Parse date string directly to avoid timezone issues
@@ -183,20 +200,20 @@ export default function TransactionsPage() {
     const dateMatch = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})$/);
     
     if (!dateMatch) {
-      console.log(`  ⚠️ Invalid date format "${dateStr}", using today's date`);
-      return `${currentYear}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      console.log(`  ⚠️ Invalid date format "${dateStr}", using today's date (EST)`);
+      return `${est.year}-${String(est.month).padStart(2, '0')}-${String(est.day).padStart(2, '0')}`;
     }
     
     const parsedYear = parseInt(dateMatch[1], 10);
-    const parsedMonth = parseInt(dateMatch[2], 10) - 1; // 0-indexed for comparison
+    const parsedMonth = parseInt(dateMatch[2], 10); // 1-indexed
     const parsedDay = parseInt(dateMatch[3], 10);
     
     // If year seems wrong (too old or in the future beyond current year)
     // Smart logic: check if month/day has elapsed in current year
     if (parsedYear < lastYear || parsedYear > currentYear) {
-      // Compare month/day to determine which year to use
-      const todayMonth = today.getMonth(); // 0-indexed
-      const todayDay = today.getDate();
+      // Compare month/day to determine which year to use (using EST)
+      const todayMonth = est.month; // 1-indexed
+      const todayDay = est.day;
       
       // If the date this year is in the future, use last year
       // Otherwise use current year
@@ -205,22 +222,17 @@ export default function TransactionsPage() {
       
       if (isInFuture) {
         targetYear = lastYear;
-        console.log(`  📅 Date "${dateStr}" → ${targetYear}-${String(parsedMonth + 1).padStart(2, '0')}-${String(parsedDay).padStart(2, '0')} (month/day hasn't occurred yet this year, using last year)`);
+        console.log(`  📅 Date "${dateStr}" → ${targetYear}-${String(parsedMonth).padStart(2, '0')}-${String(parsedDay).padStart(2, '0')} (month/day hasn't occurred yet this year, using last year)`);
       } else {
         targetYear = currentYear;
-        console.log(`  📅 Date "${dateStr}" → ${targetYear}-${String(parsedMonth + 1).padStart(2, '0')}-${String(parsedDay).padStart(2, '0')} (month/day has passed, using current year)`);
+        console.log(`  📅 Date "${dateStr}" → ${targetYear}-${String(parsedMonth).padStart(2, '0')}-${String(parsedDay).padStart(2, '0')} (month/day has passed, using current year)`);
       }
       
-      const month = String(parsedMonth + 1).padStart(2, '0');
-      const day = String(parsedDay).padStart(2, '0');
-      return `${targetYear}-${month}-${day}`;
+      return `${targetYear}-${String(parsedMonth).padStart(2, '0')}-${String(parsedDay).padStart(2, '0')}`;
     }
     
     // Return the date as-is (year is already valid)
-    // Use the parsed values directly to avoid timezone issues
-    const month = String(parsedMonth + 1).padStart(2, '0');
-    const day = String(parsedDay).padStart(2, '0');
-    return `${parsedYear}-${month}-${day}`;
+    return `${parsedYear}-${String(parsedMonth).padStart(2, '0')}-${String(parsedDay).padStart(2, '0')}`;
   };
 
   // Scan Receipt Modal handlers

@@ -74,11 +74,17 @@ export async function POST(request) {
       openAIApiKey: process.env.OPENAI_API_KEY,
     });
 
-    // Get current date for context
-    const today = new Date();
-    const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth() + 1;
-    const currentDay = today.getDate();
+    // Get current date in EST timezone
+    const estFormatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+    const estParts = estFormatter.formatToParts(new Date());
+    const currentYear = parseInt(estParts.find(p => p.type === 'year').value, 10);
+    const currentMonth = parseInt(estParts.find(p => p.type === 'month').value, 10);
+    const currentDay = parseInt(estParts.find(p => p.type === 'day').value, 10);
 
     // Create the prompt for expense extraction - returns array of transactions
     const prompt = `You are a precise data extraction expert. Your task is to extract transaction data from this document image.
@@ -202,10 +208,17 @@ VERIFICATION CHECKLIST (complete before responding):
       const transactionsArray = Array.isArray(parsedData) ? parsedData : [parsedData];
       
       // Post-process: validate and fix dates using raw_date if available
-      const today = new Date();
-      const currentYear = today.getFullYear();
-      const currentMonth = today.getMonth() + 1;
-      const currentDay = today.getDate();
+      // Use EST timezone for all date calculations
+      const estFormatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/New_York',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
+      const estParts = estFormatter.formatToParts(new Date());
+      const currentYear = parseInt(estParts.find(p => p.type === 'year').value, 10);
+      const currentMonth = parseInt(estParts.find(p => p.type === 'month').value, 10);
+      const currentDay = parseInt(estParts.find(p => p.type === 'day').value, 10);
 
       const validatedTransactions = transactionsArray.map((t, idx) => {
         let finalDate = t.trans_date;
