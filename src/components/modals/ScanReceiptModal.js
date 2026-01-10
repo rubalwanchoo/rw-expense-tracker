@@ -167,7 +167,7 @@ export default function ScanReceiptModal({
             </svg>
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           {/* Bank Account Source Input */}
           <div>
             <label
@@ -183,7 +183,10 @@ export default function ScanReceiptModal({
               onChange={(e) => setBankSource(e.target.value)}
               placeholder="e.g., Chase Checking, Amex Credit Card"
               className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-white placeholder-slate-400 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-              required
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck="false"
             />
             <p className="mt-1 text-xs text-slate-500">
               This will be applied to all transactions from this receipt
@@ -232,7 +235,7 @@ export default function ScanReceiptModal({
               /* Use label instead of button for iOS compatibility */
               <label
                 htmlFor="receiptImageInput"
-                className="flex w-full cursor-pointer flex-col items-center gap-3 rounded-lg border-2 border-dashed border-emerald-500/50 bg-emerald-500/10 p-6 text-emerald-400 transition-all hover:border-emerald-400 hover:bg-emerald-500/20"
+                className="relative flex w-full cursor-pointer flex-col items-center gap-3 rounded-lg border-2 border-dashed border-emerald-500/50 bg-emerald-500/10 p-6 text-emerald-400 transition-all hover:border-emerald-400 hover:bg-emerald-500/20"
               >
                 <svg className="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -255,12 +258,23 @@ export default function ScanReceiptModal({
                   <p className="mt-1 text-xs text-slate-400">PNG, JPG, GIF up to 10MB</p>
                 </div>
                 {/* File input inside label - native iOS action sheet will appear */}
+                {/* Using opacity:0 instead of sr-only for better iOS compatibility */}
                 <input
                   ref={fileInputRef}
                   id="receiptImageInput"
                   type="file"
                   onChange={handleFileSelect}
-                  className="sr-only"
+                  style={{
+                    position: 'absolute',
+                    width: '1px',
+                    height: '1px',
+                    padding: 0,
+                    margin: '-1px',
+                    overflow: 'hidden',
+                    clip: 'rect(0, 0, 0, 0)',
+                    whiteSpace: 'nowrap',
+                    border: 0,
+                  }}
                 />
               </label>
             )}
