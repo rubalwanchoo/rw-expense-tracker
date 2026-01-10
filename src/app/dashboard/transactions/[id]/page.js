@@ -956,6 +956,11 @@ export default function TransactionsPage() {
               <p className="mt-1 text-sm text-slate-400">
                 {isBulkDeleting ? `Removing ${selectedTransactionIds.length} item(s)` : "Analyzing receipt..."}
               </p>
+              {!isBulkDeleting && (
+                <p className="mt-4 text-xs text-slate-500">
+                  This may take around 3 mins
+                </p>
+              )}
             </div>
           </div>
         </div>
