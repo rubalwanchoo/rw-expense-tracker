@@ -221,6 +221,19 @@ export default function TransactionsPage() {
   const openScanReceiptModal = () => setIsScanReceiptModalOpen(true);
   const closeScanReceiptModal = () => setIsScanReceiptModalOpen(false);
 
+  // Helper function to convert File to base64
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        // Result is data:image/...;base64,XXXX
+        resolve(reader.result);
+      };
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
+    });
+  };
+
   // Handle scan receipt submission from modal
   const handleScanSubmit = async (file, bankSource) => {
     // Close modal and show loading
@@ -234,19 +247,25 @@ export default function TransactionsPage() {
       }
 
       console.log("\n%c========== RECEIPT SCAN (Browser) ==========", "color: #10b981; font-weight: bold;");
-      console.log("📷 Uploading image:", file.name || "photo", `(${((file.size || 0) / 1024).toFixed(2)} KB)`);
+      console.log("📷 Processing image:", file.name || "photo", `(${((file.size || 0) / 1024).toFixed(2)} KB)`);
       console.log("🏦 Bank Source:", bankSource);
       console.log("File type:", file.type || "unknown");
 
-      // Create FormData and append file
-      const formData = new FormData();
-      formData.append("image", file, file.name || "photo.jpg");
+      // Convert file to base64 on client side (more compatible with iOS)
+      console.log("Converting to base64...");
+      const base64Data = await fileToBase64(file);
+      console.log("Base64 conversion complete, length:", base64Data.length);
 
-      console.log("FormData created, sending to API...");
-
+      // Send as JSON instead of FormData (avoids iOS File handling issues)
       const response = await fetch("/api/parse-expense", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          image: base64Data,
+          filename: file.name || "photo.jpg",
+        }),
       });
 
       console.log("API response status:", response.status);

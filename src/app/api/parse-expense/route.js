@@ -3,18 +3,57 @@ import { HumanMessage } from "@langchain/core/messages";
 
 export async function POST(request) {
   try {
-    const formData = await request.formData();
-    const imageFile = formData.get("image");
+    let base64Image;
+    let mimeType = "image/jpeg";
+    let imageName = "image";
 
-    if (!imageFile) {
-      return Response.json({ error: "No image provided" }, { status: 400 });
+    // Check content type to determine how to parse the request
+    const contentType = request.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+      // Handle JSON request (base64 image from iOS/mobile)
+      const jsonData = await request.json();
+      
+      if (!jsonData.image) {
+        return Response.json({ error: "No image provided" }, { status: 400 });
+      }
+
+      // Extract base64 data from data URL (data:image/jpeg;base64,XXXX)
+      const dataUrl = jsonData.image;
+      const matches = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+      
+      if (matches) {
+        mimeType = matches[1];
+        base64Image = matches[2];
+      } else {
+        // Assume it's already just base64
+        base64Image = dataUrl;
+      }
+      
+      imageName = jsonData.filename || "photo.jpg";
+      
+      console.log("\n========== RECEIPT SCAN START (JSON) ==========");
+      console.log("📷 Image received:", imageName, `(${(base64Image.length / 1024).toFixed(2)} KB base64)`);
+
+    } else {
+      // Handle FormData request (traditional file upload)
+      const formData = await request.formData();
+      const imageFile = formData.get("image");
+
+      if (!imageFile) {
+        return Response.json({ error: "No image provided" }, { status: 400 });
+      }
+
+      // Convert image to base64
+      const bytes = await imageFile.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      base64Image = buffer.toString("base64");
+      mimeType = imageFile.type || "image/jpeg";
+      imageName = imageFile.name || "image";
+
+      console.log("\n========== RECEIPT SCAN START (FormData) ==========");
+      console.log("📷 Image received:", imageName, `(${(bytes.byteLength / 1024).toFixed(2)} KB)`);
     }
-
-    // Convert image to base64
-    const bytes = await imageFile.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const base64Image = buffer.toString("base64");
-    const mimeType = imageFile.type || "image/jpeg";
 
     // Initialize GPT-4o-mini Vision model (cost-effective option)
     const model = new ChatOpenAI({
@@ -45,8 +84,6 @@ Important:
 - If you can't determine a field, use null
 - Return ONLY the JSON array, no additional text`;
 
-    console.log("\n========== RECEIPT SCAN START ==========");
-    console.log("📷 Image received:", imageFile.name, `(${(bytes.byteLength / 1024).toFixed(2)} KB)`);
     console.log("🤖 Sending to GPT-4o-mini for analysis...\n");
 
     // Send image to GPT-4 Vision
