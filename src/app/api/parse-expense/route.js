@@ -67,9 +67,9 @@ export async function POST(request) {
       console.log("📷 Image received:", imageName, `(${(bytes.byteLength / 1024).toFixed(2)} KB)`);
     }
 
-    // Initialize GPT-4o-mini Vision model (cost-effective option)
+    // Initialize GPT-4o Vision model (best accuracy for OCR)
     const model = new ChatOpenAI({
-      modelName: "gpt-4o-mini",
+      modelName: "gpt-4o",
       temperature: 0,
       openAIApiKey: process.env.OPENAI_API_KEY,
     });
@@ -131,7 +131,7 @@ RULES:
 - If single receipt with just a total, create one object with merchant name as description
 - Return ONLY the JSON array, nothing else`;
 
-    console.log("🤖 Sending to GPT-4o-mini for analysis...\n");
+    console.log("🤖 Sending to GPT-4o for analysis...\n");
 
     // Send image to GPT-4 Vision
     const response = await model.invoke([
