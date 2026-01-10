@@ -69,12 +69,6 @@ export default function ScanReceiptModal({
     setSelectedFile(file);
   };
 
-  const handleChooseFile = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
   const handleClearImage = () => {
     setSelectedFile(null);
     setPreviewUrl(null);
@@ -166,20 +160,11 @@ export default function ScanReceiptModal({
 
           {/* Image Input Section */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-300">
+            <span className="mb-2 block text-sm font-medium text-slate-300">
               Receipt Image <span className="text-red-400">*</span>
-            </label>
+            </span>
 
-            {/* Hidden file input - on iOS this shows action sheet with Camera/Photo Library options */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileSelect}
-              className="hidden"
-            />
-
-            {/* Image Preview or Selection Button */}
+            {/* Image Preview or Selection */}
             {selectedFile && previewUrl ? (
               <div className="relative">
                 <div className="overflow-hidden rounded-lg border border-slate-600 bg-slate-700/50">
@@ -206,10 +191,10 @@ export default function ScanReceiptModal({
                 </div>
               </div>
             ) : (
-              <button
-                type="button"
-                onClick={handleChooseFile}
-                className="flex w-full flex-col items-center gap-3 rounded-lg border-2 border-dashed border-emerald-500/50 bg-emerald-500/10 p-6 text-emerald-400 transition-all hover:border-emerald-400 hover:bg-emerald-500/20"
+              /* Use label instead of button for iOS compatibility */
+              <label
+                htmlFor="receiptImageInput"
+                className="flex w-full cursor-pointer flex-col items-center gap-3 rounded-lg border-2 border-dashed border-emerald-500/50 bg-emerald-500/10 p-6 text-emerald-400 transition-all hover:border-emerald-400 hover:bg-emerald-500/20"
               >
                 <svg className="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -231,7 +216,16 @@ export default function ScanReceiptModal({
                   </span>
                   <p className="mt-1 text-xs text-slate-400">PNG, JPG, GIF up to 10MB</p>
                 </div>
-              </button>
+                {/* File input inside label - native iOS action sheet will appear */}
+                <input
+                  ref={fileInputRef}
+                  id="receiptImageInput"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  className="sr-only"
+                />
+              </label>
             )}
           </div>
 
