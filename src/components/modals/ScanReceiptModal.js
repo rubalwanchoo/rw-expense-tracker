@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 
 export default function ScanReceiptModal({
   isOpen,
@@ -8,14 +8,48 @@ export default function ScanReceiptModal({
   onScanSubmit,
 }) {
   const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
   const [bankSource, setBankSource] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const isSmallScreen = window.innerWidth <= 768;
+      
+      setIsMobile(mobileRegex.test(userAgent.toLowerCase()) || (isTouchDevice && isSmallScreen));
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Create preview URL when file is selected
+  useEffect(() => {
+    if (selectedFile) {
+      const url = URL.createObjectURL(selectedFile);
+      setPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setPreviewUrl(null);
+    }
+  }, [selectedFile]);
 
   const handleCloseModal = () => {
     setBankSource("");
     setSelectedFile(null);
+    setPreviewUrl(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = "";
     }
     onClose();
   };
@@ -39,6 +73,29 @@ export default function ScanReceiptModal({
     setSelectedFile(file);
   };
 
+  const handleTakePhoto = () => {
+    if (cameraInputRef.current) {
+      cameraInputRef.current.click();
+    }
+  };
+
+  const handleChooseFile = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleClearImage = () => {
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = "";
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -58,8 +115,12 @@ export default function ScanReceiptModal({
     // Reset form
     setBankSource("");
     setSelectedFile(null);
+    setPreviewUrl(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = "";
     }
   };
 
@@ -119,27 +180,121 @@ export default function ScanReceiptModal({
             </p>
           </div>
 
-          {/* File Input */}
+          {/* Image Input Section */}
           <div>
-            <label
-              htmlFor="receiptImage"
-              className="mb-2 block text-sm font-medium text-slate-300"
-            >
+            <label className="mb-2 block text-sm font-medium text-slate-300">
               Receipt Image <span className="text-red-400">*</span>
             </label>
+
+            {/* Hidden file inputs */}
+            {/* Camera input for mobile - uses back camera */}
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            {/* Regular file input for gallery/desktop */}
             <input
               ref={fileInputRef}
-              id="receiptImage"
               type="file"
               accept="image/*"
               onChange={handleFileSelect}
-              className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-white file:mr-4 file:rounded-md file:border-0 file:bg-emerald-500/20 file:px-3 file:py-1 file:text-sm file:font-medium file:text-emerald-400 hover:file:bg-emerald-500/30"
-              required
+              className="hidden"
             />
-            {selectedFile && (
-              <p className="mt-1 text-xs text-emerald-400">
-                Selected: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
-              </p>
+
+            {/* Image Preview or Selection Buttons */}
+            {selectedFile && previewUrl ? (
+              <div className="relative">
+                <div className="overflow-hidden rounded-lg border border-slate-600 bg-slate-700/50">
+                  <img
+                    src={previewUrl}
+                    alt="Receipt preview"
+                    className="max-h-48 w-full object-contain"
+                  />
+                </div>
+                <div className="mt-2 flex items-center justify-between">
+                  <p className="text-xs text-emerald-400">
+                    {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleClearImage}
+                    className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-red-400 transition-colors hover:bg-red-500/20"
+                  >
+                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {isMobile ? (
+                  /* Mobile: Show Camera and Gallery buttons */
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={handleTakePhoto}
+                      className="flex flex-1 flex-col items-center gap-2 rounded-lg border-2 border-dashed border-emerald-500/50 bg-emerald-500/10 p-4 text-emerald-400 transition-all hover:border-emerald-400 hover:bg-emerald-500/20"
+                    >
+                      <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
+                      <span className="text-sm font-medium">Take Photo</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleChooseFile}
+                      className="flex flex-1 flex-col items-center gap-2 rounded-lg border-2 border-dashed border-slate-500/50 bg-slate-700/30 p-4 text-slate-400 transition-all hover:border-slate-400 hover:bg-slate-700/50"
+                    >
+                      <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                      <span className="text-sm font-medium">Gallery</span>
+                    </button>
+                  </div>
+                ) : (
+                  /* Desktop: Show file picker button */
+                  <button
+                    type="button"
+                    onClick={handleChooseFile}
+                    className="flex w-full flex-col items-center gap-3 rounded-lg border-2 border-dashed border-slate-500/50 bg-slate-700/30 p-6 text-slate-400 transition-all hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-400"
+                  >
+                    <svg className="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <div className="text-center">
+                      <span className="text-sm font-medium">Click to upload receipt image</span>
+                      <p className="mt-1 text-xs text-slate-500">PNG, JPG, GIF up to 10MB</p>
+                    </div>
+                  </button>
+                )}
+              </div>
             )}
           </div>
 
