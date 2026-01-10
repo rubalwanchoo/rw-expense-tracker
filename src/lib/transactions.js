@@ -2,6 +2,46 @@ import { supabase } from "./supabase";
 import { touchProjectModified } from "./projects";
 
 /**
+ * Fetch transaction totals (income/expenses) for all projects
+ * @returns {Promise<{data: Object, error: Error|null}>}
+ * Returns an object keyed by project_id with {income, expenses} totals
+ */
+export const fetchProjectTotals = async () => {
+  try {
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("project_id, type, amount");
+
+    if (error) throw error;
+
+    // Aggregate totals by project
+    const totals = {};
+    (data || []).forEach((t) => {
+      const projectId = t.project_id;
+      if (!projectId) return; // Skip if no project_id
+      
+      if (!totals[projectId]) {
+        totals[projectId] = { income: 0, expenses: 0 };
+      }
+      
+      const amount = parseFloat(t.amount) || 0;
+      const type = (t.type || "").toLowerCase();
+      
+      if (type === "income") {
+        totals[projectId].income += amount;
+      } else {
+        totals[projectId].expenses += amount;
+      }
+    });
+
+    return { data: totals, error: null };
+  } catch (error) {
+    console.error("Error fetching project totals:", error.message);
+    return { data: {}, error };
+  }
+};
+
+/**
  * Fetch all transactions for a specific project from Supabase
  * @param {string} projectId - The project ID to fetch transactions for
  * @returns {Promise<{data: Array, error: Error|null}>}

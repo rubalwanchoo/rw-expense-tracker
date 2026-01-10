@@ -5,6 +5,7 @@ import FilterBox from "./FilterBox";
 
 export default function ProjectsTable({
   projects,
+  projectTotals = {},
   loading,
   filterText,
   onFilterChange,
@@ -69,9 +70,21 @@ export default function ProjectsTable({
               >
                 {/* Project Info - Stacked, Left Aligned */}
                 <div className="flex-1 space-y-0.5 text-left">
-                  <p className="text-sm font-semibold text-white">
-                    Project - {project.name}
-                  </p>
+                  <div className="flex flex-wrap items-center gap-4">
+                    {/* Project Name */}
+                    <p className="text-sm font-semibold text-white">
+                      Project - {project.name}
+                    </p>
+                    {/* Income/Expenses Labels - with extra spacing */}
+                    <div className="flex gap-2">
+                      <span className="rounded bg-emerald-500/20 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
+                        Income: ${(projectTotals[project.id]?.income || 0).toFixed(2)}
+                      </span>
+                      <span className="rounded bg-red-500/20 px-2 py-0.5 text-[10px] font-medium text-red-400">
+                        Expenses: ${(projectTotals[project.id]?.expenses || 0).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
                   <p className="text-xs text-slate-400 line-clamp-1">
                     {project.description || "No description"}
                   </p>

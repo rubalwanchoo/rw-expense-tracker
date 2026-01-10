@@ -7,6 +7,7 @@ import {
   updateProject,
   deleteProject,
 } from "@/lib/projects";
+import { fetchProjectTotals } from "@/lib/transactions";
 import Notification from "@/components/Notification";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -29,6 +30,7 @@ export default function DashboardPage() {
   const [projectToDelete, setProjectToDelete] = useState(null);
   const [deletePassword, setDeletePassword] = useState("");
   const [projects, setProjects] = useState([]);
+  const [projectTotals, setProjectTotals] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -71,9 +73,15 @@ export default function DashboardPage() {
   const fetchProjects = async () => {
     try {
       setLoading(true);
-      const { data, error } = await fetchProjectsService();
-      if (error) throw error;
-      setProjects(data);
+      // Fetch projects and totals in parallel
+      const [projectsResult, totalsResult] = await Promise.all([
+        fetchProjectsService(),
+        fetchProjectTotals(),
+      ]);
+      
+      if (projectsResult.error) throw projectsResult.error;
+      setProjects(projectsResult.data);
+      setProjectTotals(totalsResult.data || {});
     } catch (error) {
       console.error("Error fetching projects:", error.message);
     } finally {
@@ -266,6 +274,7 @@ export default function DashboardPage() {
 
           <ProjectsTable
             projects={filteredProjects}
+            projectTotals={projectTotals}
             loading={loading}
             filterText={filterText}
             onFilterChange={handleFilterChange}
