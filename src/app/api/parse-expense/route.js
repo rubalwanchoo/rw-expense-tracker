@@ -87,88 +87,71 @@ export async function POST(request) {
     const currentDay = parseInt(estParts.find(p => p.type === 'day').value, 10);
 
     // Create the prompt for expense extraction - returns array of transactions
-    const prompt = `You are a precise data extraction expert. Your task is to extract transaction data from this document image.
+    const prompt = `You are an OCR and data extraction expert. Extract transaction data from this image.
 
-═══════════════════════════════════════════════════════════════
-CRITICAL: THE DOCUMENT HAS 3 MAIN COLUMNS PER ROW:
-  1. DATE (MM/DD format) - when the transaction occurred
-  2. DESCRIPTION - what was purchased or the merchant name  
-  3. DOLLAR AMOUNT - how much was spent (e.g., $12.34)
+IMPORTANT: Today's date is ${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(currentDay).padStart(2, '0')} (EST timezone).
 
-YOU MUST NOT MIX UP ROWS. Each row's DATE, DESCRIPTION, and AMOUNT belong together.
-═══════════════════════════════════════════════════════════════
+STEP 1: CAREFULLY READ EACH DATE CHARACTER BY CHARACTER
+Look at each date in the image very carefully. Read each digit one by one:
+- Is the first digit a 0, 1, 2, etc.?
+- Is the second digit a 0, 1, 2, etc.?
+- Is there a slash or dash separator?
+- Continue reading each character precisely.
 
-EXTRACTION PROCESS:
+STEP 2: TRANSCRIBE DATES EXACTLY AS WRITTEN
+Copy the date EXACTLY as you see it - character by character. Examples:
+- If you see "01/09" → raw_date: "01/09"
+- If you see "1/9" → raw_date: "1/9"  
+- If you see "01/09/25" → raw_date: "01/09/25"
+- If you see "Jan 9" → raw_date: "Jan 9"
 
-STEP 1 - SCAN THE DOCUMENT:
-- Read the document carefully from TOP to BOTTOM
-- Identify each row/line item that contains transaction data
-- Note: dates are often in MM/DD or MM/DD/YY format
+DO NOT GUESS. DO NOT ASSUME. COPY EXACTLY WHAT IS WRITTEN.
 
-STEP 2 - FOR EACH ROW, EXTRACT IN ORDER:
-Read LEFT to RIGHT across the row and identify:
-  a) The DATE on that row (look for MM/DD pattern)
-  b) The DESCRIPTION on that row (item name, merchant, or transaction details)
-  c) The DOLLAR AMOUNT on that row (look for $ symbol or decimal numbers)
+STEP 3: CONVERT raw_date TO trans_date
+Convert the raw_date to YYYY-MM-DD format.
 
-STEP 3 - VERIFY YOUR EXTRACTION:
-Before outputting, double-check each row:
-  ✓ Is the date FROM THIS ROW (not copied from another row)?
-  ✓ Is the description FROM THIS ROW?
-  ✓ Is the amount FROM THIS ROW?
-  ✓ Do these three pieces logically go together?
+YEAR LOGIC (when year is not specified):
+- If the date HAS ALREADY PASSED this year → use ${currentYear}
+- If the date HAS NOT PASSED yet this year → use ${currentYear - 1}
 
-STEP 4 - DATE FORMATTING:
-- Today is ${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}
-- Convert dates to YYYY-MM-DD format
-- If year missing: use ${currentYear} if month/day hasn't passed, else ${currentYear - 1}
-- MM/DD/YY → YYYY-MM-DD (e.g., 01/15/25 → 2025-01-15)
-- Jan 15 → ${currentYear}-01-15
+Examples (today is ${currentMonth}/${currentDay}/${currentYear}):
+- "01/05" → "${currentYear}-01-05" (Jan 5 has passed)
+- "12/25" → "${currentYear - 1}-12-25" (Dec 25 has NOT passed yet)
+- "01/09/25" → "2025-01-09" (year specified, use as-is)
+- "01/09/2025" → "2025-01-09" (year specified, use as-is)
 
-STEP 5 - AMOUNT FORMATTING:
-- Remove $ symbol, keep only the number
-- $1,234.56 → 1234.56
-- Negative amounts (-$50.00) → use positive 50.00 with type "Income"
+STEP 4: EXTRACT DESCRIPTION AND AMOUNT FOR SAME ROW
+For each transaction row:
+- The DATE, DESCRIPTION, and AMOUNT must all come from THE SAME ROW
+- Do NOT mix data between different rows
 
-OUTPUT FORMAT (JSON array only, no other text):
+OUTPUT FORMAT (JSON array ONLY - no other text):
 
 [
   {
-    "raw_date": "01/15",
-    "trans_date": "2025-01-15",
-    "description": "STARBUCKS COFFEE",
+    "raw_date": "01/09",
+    "trans_date": "${currentYear}-01-09",
+    "description": "COFFEE SHOP",
     "amount": 5.75,
-    "type": "Expense",
-    "source": null
-  },
-  {
-    "raw_date": "01/14/25", 
-    "trans_date": "2025-01-14", 
-    "description": "AMAZON PURCHASE",
-    "amount": 29.99,
     "type": "Expense",
     "source": null
   }
 ]
 
-FIELD DEFINITIONS:
-- "raw_date": EXACTLY what you see on the document (e.g., "01/15", "Jan 15", "1/15/25") - copy it verbatim
-- "trans_date": The raw_date converted to YYYY-MM-DD format
-- "description": Item name, merchant name, or transaction details from that row
-- "amount": Dollar amount as a number (no $ symbol)
-- "type": "Expense" for purchases, "Income" for refunds/credits/deposits  
-- "source": Payment method if visible, otherwise null
+FIELD RULES:
+- raw_date: EXACT characters from document (verbatim copy)
+- trans_date: Converted to YYYY-MM-DD
+- description: Item/merchant name from that row
+- amount: Number only (no $ symbol)
+- type: "Expense" for purchases, "Income" for refunds/credits
+- source: Payment method if visible, else null
 
-FINAL RULES:
-- One JSON object per transaction row
-- RETURN ONLY THE JSON ARRAY - no explanations, no markdown
-- If you cannot read a date clearly, put "UNCLEAR" in raw_date and null in trans_date
+BEFORE YOU RESPOND, VERIFY:
+1. Did I copy each date's digits correctly? (Read them again!)
+2. Did I convert the raw_date to trans_date correctly?
+3. Is each row's data matched correctly (not mixed up)?
 
-VERIFICATION CHECKLIST (complete before responding):
-□ Each raw_date matches exactly what's written on that specific row
-□ Each trans_date is correctly converted from its corresponding raw_date
-□ No dates, descriptions, or amounts are swapped between rows
-□ All amounts are positive numbers (use type "Income" for credits)`;
+Return ONLY the JSON array.`;
 
     console.log("🤖 Sending to GPT-4o for analysis...\n");
 
@@ -220,6 +203,11 @@ VERIFICATION CHECKLIST (complete before responding):
       const currentMonth = parseInt(estParts.find(p => p.type === 'month').value, 10);
       const currentDay = parseInt(estParts.find(p => p.type === 'day').value, 10);
 
+      console.log("\n📊 RAW DATA FROM LLM:");
+      transactionsArray.forEach((t, i) => {
+        console.log(`  Row ${i + 1}: raw_date="${t.raw_date}" → trans_date="${t.trans_date}" | ${t.description} | $${t.amount}`);
+      });
+
       const validatedTransactions = transactionsArray.map((t, idx) => {
         let finalDate = t.trans_date;
         
@@ -259,12 +247,13 @@ VERIFICATION CHECKLIST (complete before responding):
           // If we parsed month and day, construct the date
           if (parsedMonth && parsedDay) {
             if (!parsedYear) {
-              // Determine year based on whether date has passed
-              if (parsedMonth < currentMonth || (parsedMonth === currentMonth && parsedDay <= currentDay)) {
-                parsedYear = currentYear;
-              } else {
-                parsedYear = currentYear; // Future date this year
-              }
+              // Determine year based on whether date has elapsed
+              // If date has elapsed (is in the past this year) → use current year
+              // If date has NOT elapsed (is in the future this year) → use previous year
+              const hasElapsed = (parsedMonth < currentMonth) || 
+                                 (parsedMonth === currentMonth && parsedDay <= currentDay);
+              parsedYear = hasElapsed ? currentYear : (currentYear - 1);
+              console.log(`  📅 Row ${idx + 1}: "${t.raw_date}" - month=${parsedMonth}, day=${parsedDay}, hasElapsed=${hasElapsed} → year=${parsedYear}`);
             }
             
             // Validate month and day are in valid ranges

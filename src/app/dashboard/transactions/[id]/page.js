@@ -209,24 +209,21 @@ export default function TransactionsPage() {
     const parsedDay = parseInt(dateMatch[3], 10);
     
     // If year seems wrong (too old or in the future beyond current year)
-    // Smart logic: check if month/day has elapsed in current year
+    // Apply the elapsed logic: 
+    // - If date HAS elapsed this year → use current year
+    // - If date has NOT elapsed yet → use previous year
     if (parsedYear < lastYear || parsedYear > currentYear) {
       // Compare month/day to determine which year to use (using EST)
       const todayMonth = est.month; // 1-indexed
       const todayDay = est.day;
       
-      // If the date this year is in the future, use last year
-      // Otherwise use current year
-      let targetYear;
-      const isInFuture = (parsedMonth > todayMonth) || (parsedMonth === todayMonth && parsedDay > todayDay);
+      // Check if date has elapsed (is in the past this year)
+      const hasElapsed = (parsedMonth < todayMonth) || 
+                         (parsedMonth === todayMonth && parsedDay <= todayDay);
       
-      if (isInFuture) {
-        targetYear = lastYear;
-        console.log(`  📅 Date "${dateStr}" → ${targetYear}-${String(parsedMonth).padStart(2, '0')}-${String(parsedDay).padStart(2, '0')} (month/day hasn't occurred yet this year, using last year)`);
-      } else {
-        targetYear = currentYear;
-        console.log(`  📅 Date "${dateStr}" → ${targetYear}-${String(parsedMonth).padStart(2, '0')}-${String(parsedDay).padStart(2, '0')} (month/day has passed, using current year)`);
-      }
+      const targetYear = hasElapsed ? currentYear : lastYear;
+      
+      console.log(`  📅 Date "${dateStr}" → ${targetYear}-${String(parsedMonth).padStart(2, '0')}-${String(parsedDay).padStart(2, '0')} (hasElapsed=${hasElapsed})`);
       
       return `${targetYear}-${String(parsedMonth).padStart(2, '0')}-${String(parsedDay).padStart(2, '0')}`;
     }
