@@ -312,42 +312,109 @@ export default function TransactionsPage() {
     }
   };
 
-  // Helper function to compress and convert image to base64
-  const compressAndConvertToBase64 = (file, maxWidth = 1200, quality = 0.8) => {
+  // Helper function to apply sharpening filter to canvas
+  const sharpenImage = (ctx, width, height, intensity = 1) => {
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const data = imageData.data;
+    const weights = [
+      0, -intensity, 0,
+      -intensity, 1 + 4 * intensity, -intensity,
+      0, -intensity, 0
+    ];
+
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = width;
+    tempCanvas.height = height;
+    const tempCtx = tempCanvas.getContext("2d");
+    tempCtx.putImageData(imageData, 0, 0);
+    const tempData = tempCtx.getImageData(0, 0, width, height).data;
+
+    for (let y = 1; y < height - 1; y++) {
+      for (let x = 1; x < width - 1; x++) {
+        for (let c = 0; c < 3; c++) {
+          let val = 0;
+          for (let ky = -1; ky <= 1; ky++) {
+            for (let kx = -1; kx <= 1; kx++) {
+              const idx = ((y + ky) * width + (x + kx)) * 4 + c;
+              val += tempData[idx] * weights[(ky + 1) * 3 + (kx + 1)];
+            }
+          }
+          const idx = (y * width + x) * 4 + c;
+          data[idx] = Math.min(255, Math.max(0, val));
+        }
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+  };
+
+  // Helper function to enhance contrast
+  const enhanceContrast = (ctx, width, height, factor = 1.2) => {
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const data = imageData.data;
+    const intercept = 128 * (1 - factor);
+    
+    for (let i = 0; i < data.length; i += 4) {
+      data[i] = Math.min(255, Math.max(0, data[i] * factor + intercept));     // R
+      data[i + 1] = Math.min(255, Math.max(0, data[i + 1] * factor + intercept)); // G
+      data[i + 2] = Math.min(255, Math.max(0, data[i + 2] * factor + intercept)); // B
+    }
+    ctx.putImageData(imageData, 0, 0);
+  };
+
+  // Helper function to enhance and convert image to base64
+  const compressAndConvertToBase64 = (file, maxWidth = 2400, quality = 0.92) => {
     return new Promise((resolve, reject) => {
       try {
-        // If file is small enough (under 500KB), just convert directly
-        if (file.size < 500 * 1024) {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = (error) => reject(error);
-          reader.readAsDataURL(file);
-          return;
-        }
-
-        // For larger files, compress using canvas
         const img = new Image();
         const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
         img.onload = () => {
           try {
-            // Calculate new dimensions
+            // Calculate new dimensions - use higher resolution for OCR
             let width = img.width;
             let height = img.height;
 
+            // Scale up small images for better OCR
+            const minWidth = 1600;
+            if (width < minWidth) {
+              const scale = minWidth / width;
+              width = minWidth;
+              height = Math.round(height * scale);
+            }
+
+            // Scale down very large images
             if (width > maxWidth) {
-              height = (height * maxWidth) / width;
+              height = Math.round((height * maxWidth) / width);
               width = maxWidth;
             }
 
             canvas.width = width;
             canvas.height = height;
 
-            // Draw and compress
+            // Use high-quality image rendering
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = "high";
+
+            // Draw the image
             ctx.drawImage(img, 0, 0, width, height);
-            const compressedBase64 = canvas.toDataURL("image/jpeg", quality);
-            resolve(compressedBase64);
+
+            // Apply image enhancements for better OCR
+            try {
+              // Enhance contrast slightly to make text more readable
+              enhanceContrast(ctx, width, height, 1.15);
+              
+              // Apply light sharpening to improve text clarity
+              sharpenImage(ctx, width, height, 0.3);
+            } catch (enhanceErr) {
+              console.warn("Image enhancement skipped:", enhanceErr);
+              // Continue without enhancement if it fails
+            }
+
+            // Convert to high-quality JPEG
+            const enhancedBase64 = canvas.toDataURL("image/jpeg", quality);
+            console.log(`📷 Image enhanced: ${width}x${height}, ${(enhancedBase64.length / 1024).toFixed(1)}KB`);
+            resolve(enhancedBase64);
           } catch (canvasErr) {
             reject(canvasErr);
           }
@@ -391,8 +458,8 @@ export default function TransactionsPage() {
           console.log("Processing PDF file...");
           base64Data = await convertPdfToImage(file, 2.5); // Higher scale for better OCR
         } else {
-          // Use higher resolution (2000px) and quality (0.9) for better OCR accuracy
-          base64Data = await compressAndConvertToBase64(file, 2000, 0.9);
+          // Enhanced image processing: upscaling, sharpening, contrast enhancement
+          base64Data = await compressAndConvertToBase64(file);
         }
       } catch (convErr) {
         throw new Error("Failed to process file: " + String(convErr.message || "conversion error"));
