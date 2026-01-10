@@ -169,35 +169,41 @@ export default function TransactionsPage() {
   // - If month/day has already passed this year → use current year
   // - If month/day is in the future this year → use last year
   const normalizeTransactionDate = (dateStr) => {
-    if (!dateStr) return new Date().toISOString().split('T')[0];
+    if (!dateStr) {
+      const today = new Date();
+      return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    }
     
     const today = new Date();
     const currentYear = today.getFullYear();
     const lastYear = currentYear - 1;
     
-    // Try to parse the date
-    let parsedDate = new Date(dateStr);
+    // Parse date string directly to avoid timezone issues
+    // Expected format: YYYY-MM-DD
+    const dateMatch = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})$/);
     
-    // If invalid date, return today
-    if (isNaN(parsedDate.getTime())) {
-      console.log(`  ⚠️ Invalid date "${dateStr}", using today's date`);
-      return today.toISOString().split('T')[0];
+    if (!dateMatch) {
+      console.log(`  ⚠️ Invalid date format "${dateStr}", using today's date`);
+      return `${currentYear}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     }
     
-    const parsedYear = parsedDate.getFullYear();
-    const parsedMonth = parsedDate.getMonth(); // 0-indexed
-    const parsedDay = parsedDate.getDate();
+    const parsedYear = parseInt(dateMatch[1], 10);
+    const parsedMonth = parseInt(dateMatch[2], 10) - 1; // 0-indexed for comparison
+    const parsedDay = parseInt(dateMatch[3], 10);
     
     // If year seems wrong (too old or in the future beyond current year)
     // Smart logic: check if month/day has elapsed in current year
     if (parsedYear < lastYear || parsedYear > currentYear) {
-      // Create date with current year to compare
-      const dateThisYear = new Date(currentYear, parsedMonth, parsedDay);
+      // Compare month/day to determine which year to use
+      const todayMonth = today.getMonth(); // 0-indexed
+      const todayDay = today.getDate();
       
       // If the date this year is in the future, use last year
       // Otherwise use current year
       let targetYear;
-      if (dateThisYear > today) {
+      const isInFuture = (parsedMonth > todayMonth) || (parsedMonth === todayMonth && parsedDay > todayDay);
+      
+      if (isInFuture) {
         targetYear = lastYear;
         console.log(`  📅 Date "${dateStr}" → ${targetYear}-${String(parsedMonth + 1).padStart(2, '0')}-${String(parsedDay).padStart(2, '0')} (month/day hasn't occurred yet this year, using last year)`);
       } else {
@@ -210,11 +216,11 @@ export default function TransactionsPage() {
       return `${targetYear}-${month}-${day}`;
     }
     
-    // Return in YYYY-MM-DD format (year is already valid)
-    const year = parsedDate.getFullYear();
+    // Return the date as-is (year is already valid)
+    // Use the parsed values directly to avoid timezone issues
     const month = String(parsedMonth + 1).padStart(2, '0');
     const day = String(parsedDay).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return `${parsedYear}-${month}-${day}`;
   };
 
   // Scan Receipt Modal handlers

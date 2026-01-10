@@ -254,12 +254,10 @@ VERIFICATION CHECKLIST (complete before responding):
               }
             }
             
-            const constructedDate = `${parsedYear}-${String(parsedMonth).padStart(2, '0')}-${String(parsedDay).padStart(2, '0')}`;
-            
-            // Validate the constructed date
-            const testDate = new Date(constructedDate);
-            if (!isNaN(testDate.getTime())) {
-              finalDate = constructedDate;
+            // Validate month and day are in valid ranges
+            if (parsedMonth >= 1 && parsedMonth <= 12 && parsedDay >= 1 && parsedDay <= 31) {
+              // Construct date string directly (no Date object to avoid timezone issues)
+              finalDate = `${parsedYear}-${String(parsedMonth).padStart(2, '0')}-${String(parsedDay).padStart(2, '0')}`;
             }
           }
         }
