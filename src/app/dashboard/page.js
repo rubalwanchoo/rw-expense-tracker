@@ -311,6 +311,12 @@ export default function DashboardPage() {
         onClose={closeDeleteModal}
         onSubmit={handleDelete}
         onPasswordChange={(e) => setDeletePassword(e.target.value)}
+        hasTransactions={
+          projectToDelete
+            ? (projectTotals[projectToDelete.id]?.income || 0) > 0 ||
+              (projectTotals[projectToDelete.id]?.expenses || 0) > 0
+            : false
+        }
       />
 
       <Footer />
