@@ -81,35 +81,55 @@ export async function POST(request) {
     const currentDay = today.getDate();
 
     // Create the prompt for expense extraction - returns array of transactions
-    const prompt = `Analyze this receipt/expense image and extract ALL transactions/line items.
+    const prompt = `You are an expert receipt and expense document analyzer. Carefully examine this image and extract transaction data.
 
-CRITICAL DATE PARSING RULES:
+STEP 1 - UNDERSTAND THE DOCUMENT:
+- First, identify what type of document this is (receipt, bank statement, credit card statement, invoice, etc.)
+- Identify the overall date of the document (usually at top or bottom)
+- Identify if this contains a SINGLE transaction or MULTIPLE line items
+
+STEP 2 - EXTRACT EACH TRANSACTION:
+For EACH transaction/line item, you MUST correctly match:
+- The DATE for that specific transaction
+- The AMOUNT for that specific transaction  
+- The DESCRIPTION for that specific transaction
+
+CRITICAL: Do NOT mix up data between different line items. Each row's date, description, and amount must come from the SAME line.
+
+STEP 3 - DATE PARSING RULES:
 - Today's date is ${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}
-- Look carefully at the date printed on the receipt - it may be at the TOP or BOTTOM of the receipt
-- Common date formats: MM/DD/YY, MM/DD/YYYY, MM-DD-YY, DD/MM/YY, Jan 15 2025, 15-Jan-25, etc.
-- If year is 2-digit (like "25" or "24"), convert to 4-digit (2025 or 2024)
-- If NO year is visible, assume ${currentYear} if the date hasn't passed yet this year, otherwise assume ${currentYear - 1}
-- Double-check the month and day - don't confuse them (US format is usually MM/DD)
-- OUTPUT must be YYYY-MM-DD format (e.g., 2025-01-09)
+- Look for dates at the TOP, BOTTOM, or next to each line item
+- Common formats: MM/DD/YY, MM/DD/YYYY, Jan 15 2025, 01-15-25, etc.
+- If year is 2-digit (like "25"), convert to 4-digit (2025)
+- If NO year visible, use ${currentYear} if date hasn't passed, else ${currentYear - 1}
+- US format is typically MM/DD (month first)
+- OUTPUT format MUST be: YYYY-MM-DD (e.g., 2025-01-09)
 
-Return ONLY a valid JSON ARRAY of transaction objects:
+STEP 4 - AMOUNT PARSING RULES:
+- Extract the numeric amount WITHOUT currency symbols ($, €, etc.)
+- For negative amounts or credits, still use positive number and set type appropriately
+- Be careful with decimal points and commas (1,234.56 = 1234.56)
+
+STEP 5 - OUTPUT FORMAT:
+Return ONLY a valid JSON array (no markdown, no explanation):
 
 [
   {
-    "trans_date": "YYYY-MM-DD format (e.g., 2025-01-09)",
-    "amount": numeric amount (no currency symbols, just the number),
-    "type": "Expense" or "Income",
-    "description": "description of this specific item/transaction",
-    "source": "payment method if visible (Credit Card, Cash, Debit, etc.)"
+    "trans_date": "YYYY-MM-DD",
+    "amount": 123.45,
+    "type": "Expense",
+    "description": "exact item description from receipt",
+    "source": null
   }
 ]
 
-Other Rules:
-- Extract EACH line item as a SEPARATE transaction in the array
-- If the image shows multiple expenses/items, create one object per item
-- If it's a single receipt with one total, return an array with one object
-- If you can't determine a field, use null
-- Return ONLY the JSON array, no additional text or markdown`;
+RULES:
+- "type" is "Expense" for purchases/payments, "Income" for refunds/credits
+- "source" is payment method if visible (Credit Card, Debit, Cash, Check), else null
+- "description" should be the actual item name or merchant name, not generic text
+- If document has multiple items, create one object per line item
+- If single receipt with just a total, create one object with merchant name as description
+- Return ONLY the JSON array, nothing else`;
 
     console.log("🤖 Sending to GPT-4o-mini for analysis...\n");
 

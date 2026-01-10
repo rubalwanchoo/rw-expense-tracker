@@ -374,9 +374,10 @@ export default function TransactionsPage() {
       try {
         if (isPdf) {
           console.log("Processing PDF file...");
-          base64Data = await convertPdfToImage(file);
+          base64Data = await convertPdfToImage(file, 2.5); // Higher scale for better OCR
         } else {
-          base64Data = await compressAndConvertToBase64(file);
+          // Use higher resolution (2000px) and quality (0.9) for better OCR accuracy
+          base64Data = await compressAndConvertToBase64(file, 2000, 0.9);
         }
       } catch (convErr) {
         throw new Error("Failed to process file: " + String(convErr.message || "conversion error"));
