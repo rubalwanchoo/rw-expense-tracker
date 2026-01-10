@@ -187,12 +187,12 @@ export default function ScanReceiptModal({
             </label>
 
             {/* Hidden file inputs */}
-            {/* Camera input for mobile - uses back camera */}
+            {/* Camera input for mobile - opens camera directly */}
             <input
               ref={cameraInputRef}
               type="file"
               accept="image/*"
-              capture="environment"
+              capture
               onChange={handleFileSelect}
               className="hidden"
             />
