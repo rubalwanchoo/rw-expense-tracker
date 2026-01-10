@@ -69,25 +69,25 @@ export default function ProjectsTable({
                 }`}
               >
                 {/* Project Info - Stacked, Left Aligned */}
-                <div className="flex-1 space-y-0.5 text-left">
-                  <div className="flex flex-wrap items-center gap-4">
-                    {/* Project Name */}
-                    <p className="text-sm font-semibold text-white">
-                      Project - {project.name}
-                    </p>
-                    {/* Income/Expenses Labels - with extra spacing */}
-                    <div className="flex gap-2">
-                      <span className="rounded bg-emerald-500/20 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
-                        Income: ${(projectTotals[project.id]?.income || 0).toFixed(2)}
-                      </span>
-                      <span className="rounded bg-red-500/20 px-2 py-0.5 text-[10px] font-medium text-red-400">
-                        Expenses: ${(projectTotals[project.id]?.expenses || 0).toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
+                <div className="flex-1 space-y-1 text-left">
+                  {/* Project Name */}
+                  <p className="text-sm font-semibold text-white">
+                    Project - {project.name}
+                  </p>
+                  {/* Description */}
                   <p className="text-xs text-slate-400 line-clamp-1">
                     {project.description || "No description"}
                   </p>
+                  {/* Income/Expenses Labels */}
+                  <div className="flex gap-2">
+                    <span className="rounded bg-emerald-500/20 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
+                      Income: ${(projectTotals[project.id]?.income || 0).toFixed(2)}
+                    </span>
+                    <span className="rounded bg-red-500/20 px-2 py-0.5 text-[10px] font-medium text-red-400">
+                      Expenses: ${(projectTotals[project.id]?.expenses || 0).toFixed(2)}
+                    </span>
+                  </div>
+                  {/* Created/Updated info */}
                   <div className="flex gap-3 text-[10px] text-slate-500">
                     <span>Created: {project.dtm_created ? new Date(project.dtm_created).toLocaleDateString() : "-"}</span>
                     <span>Updated: {project.dtm_modified ? new Date(project.dtm_modified).toLocaleDateString() : "-"}</span>
