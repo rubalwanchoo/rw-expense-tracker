@@ -6,9 +6,9 @@ import {
   updateTransaction,
   deleteTransaction,
 } from "@/lib/transactions";
-import CreateTransactionModal from "@/components/modals/CreateTransactionModal";
-import EditTransactionModal from "@/components/modals/EditTransactionModal";
-import DeleteTransactionModal from "@/components/modals/DeleteTransactionModal";
+import CreateTransactionModal from "./CreateTransactionModal";
+import EditTransactionModal from "./EditTransactionModal";
+import DeleteTransactionModal from "./DeleteTransactionModal";
 
 export default function TransactionModals({
   projectId,

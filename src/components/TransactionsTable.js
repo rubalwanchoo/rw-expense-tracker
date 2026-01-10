@@ -71,7 +71,7 @@ export default function TransactionsTable({
                   type="button"
                   onClick={handleSelectAll}
                   disabled={disabled}
-                  className={`flex h-2.5 w-2.5 flex-shrink-0 items-center justify-center rounded-sm border transition-all duration-200 ${
+                  className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-all duration-200 ${
                     disabled 
                       ? "cursor-not-allowed opacity-50" 
                       : "cursor-pointer hover:border-emerald-400"
@@ -84,12 +84,12 @@ export default function TransactionsTable({
                   }`}
                 >
                   {isAllSelected ? (
-                    <svg className="h-1.5 w-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
+                    <svg className="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
                     </svg>
                   ) : isSomeSelected ? (
-                    <svg className="h-1.5 w-1.5" fill="currentColor" viewBox="0 0 24 24">
-                      <rect x="2" y="9" width="20" height="6" rx="1" />
+                    <svg className="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 24 24">
+                      <rect x="4" y="10" width="16" height="4" rx="1" />
                     </svg>
                   ) : null}
                 </button>
@@ -113,7 +113,7 @@ export default function TransactionsTable({
                     type="button"
                     onClick={() => handleCheckboxChange(transaction.id)}
                     disabled={disabled}
-                    className={`flex h-2.5 w-2.5 flex-shrink-0 items-center justify-center rounded-sm border transition-all duration-200 ${
+                    className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-all duration-200 ${
                       disabled 
                         ? "cursor-not-allowed opacity-50" 
                         : "cursor-pointer hover:border-emerald-400"
@@ -124,8 +124,8 @@ export default function TransactionsTable({
                     }`}
                   >
                     {selectedIds.includes(transaction.id) && (
-                      <svg className="h-1.5 w-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
+                      <svg className="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
                       </svg>
                     )}
                   </button>

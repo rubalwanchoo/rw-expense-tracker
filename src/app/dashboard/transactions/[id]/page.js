@@ -11,8 +11,10 @@ import FilterBox from "@/components/FilterBox";
 import AddTransactionButton from "@/components/AddTransactionButton";
 import ScanReceiptButton from "@/components/ScanReceiptButton";
 import TransactionsTable from "@/components/TransactionsTable";
-import DateInput from "@/components/DateInput";
-import TransactionModals from "./TransactionModals";
+import TransactionModals from "@/components/modals/TransactionModals";
+import DateRangeModal from "@/components/modals/DateRangeModal";
+import BulkDeleteTransactionsModal from "@/components/modals/BulkDeleteTransactionsModal";
+import ScanReceiptModal from "@/components/modals/ScanReceiptModal";
 
 export default function TransactionsPage() {
   const router = useRouter();
@@ -80,6 +82,9 @@ export default function TransactionsPage() {
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
   const [bulkDeletePassword, setBulkDeletePassword] = useState("");
+  
+  // Scan Receipt Modal state
+  const [isScanReceiptModalOpen, setIsScanReceiptModalOpen] = useState(false);
   
   // Combined disabled state
   const isTableDisabled = isProcessingReceipt || isBulkDeleting;
@@ -212,14 +217,63 @@ export default function TransactionsPage() {
     return `${year}-${month}-${day}`;
   };
 
-  // Called when scan starts (modal closed, API call in progress)
-  const handleScanStart = () => {
-    setIsProcessingReceipt(true);
-  };
+  // Scan Receipt Modal handlers
+  const openScanReceiptModal = () => setIsScanReceiptModalOpen(true);
+  const closeScanReceiptModal = () => setIsScanReceiptModalOpen(false);
 
-  // Called when scan fails
-  const handleScanError = () => {
-    setIsProcessingReceipt(false);
+  // Handle scan receipt submission from modal
+  const handleScanSubmit = async (file, bankSource) => {
+    // Close modal and show loading
+    setIsScanReceiptModalOpen(false);
+    setIsProcessingReceipt(true);
+
+    try {
+      console.log("\n%c========== RECEIPT SCAN (Browser) ==========", "color: #10b981; font-weight: bold;");
+      console.log("📷 Uploading image:", file.name, `(${(file.size / 1024).toFixed(2)} KB)`);
+      console.log("🏦 Bank Source:", bankSource);
+
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const response = await fetch("/api/parse-expense", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+      
+      console.log("\n%c📄 API Response:", "color: #3b82f6; font-weight: bold;");
+      console.log(result);
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to parse receipt");
+      }
+
+      if (result.success && result.data) {
+        let transactions = Array.isArray(result.data) ? result.data : [result.data];
+        
+        // Apply the user-provided bank source to all transactions
+        transactions = transactions.map(t => ({
+          ...t,
+          source: bankSource,
+        }));
+        
+        console.log(`\n%c✅ PARSED ${transactions.length} TRANSACTION(S) with source "${bankSource}":`, "color: #10b981; font-weight: bold;");
+        transactions.forEach((t, i) => {
+          console.log(`%cTransaction ${i + 1}:`, "color: #3b82f6;");
+          console.table(t);
+        });
+        console.log("%c========== SCAN COMPLETE ==========\n", "color: #10b981; font-weight: bold;");
+        
+        await handleExpenseParsed(transactions);
+      } else {
+        setIsProcessingReceipt(false);
+      }
+    } catch (error) {
+      console.error("%c❌ Error scanning receipt:", "color: #ef4444; font-weight: bold;", error);
+      alert(error.message || "Failed to scan receipt. Please try again.");
+      setIsProcessingReceipt(false);
+    }
   };
 
   // Handle scanned receipt data - auto-create multiple transactions
@@ -555,64 +609,6 @@ export default function TransactionsPage() {
                     </svg>
                   </button>
                 )}
-
-                {/* Date Range Modal */}
-                {isDateRangeOpen && (
-                  <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-                    <div className="w-full max-w-sm rounded-2xl border border-slate-700/60 bg-slate-800/95 p-5 shadow-2xl">
-                      <div className="mb-4 flex items-center justify-between">
-                        <span className="text-lg font-semibold text-white">Select Date Range</span>
-                        <button
-                          type="button"
-                          onClick={() => setIsDateRangeOpen(false)}
-                          className="rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-700 hover:text-white"
-                        >
-                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </div>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="mb-2 block text-sm font-medium text-slate-300">From</label>
-                          <DateInput
-                            id="pendingDateStart"
-                            name="pendingDateStart"
-                            value={pendingDateStart}
-                            onChange={(e) => setPendingDateStart(e.target.value)}
-                            className="w-full"
-                          />
-                        </div>
-                        <div>
-                          <label className="mb-2 block text-sm font-medium text-slate-300">To</label>
-                          <DateInput
-                            id="pendingDateEnd"
-                            name="pendingDateEnd"
-                            value={pendingDateEnd}
-                            onChange={(e) => setPendingDateEnd(e.target.value)}
-                            className="w-full"
-                          />
-                        </div>
-                        <div className="flex gap-3 pt-3">
-                          <button
-                            type="button"
-                            onClick={clearDateRange}
-                            className="flex-1 rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-sm font-medium text-slate-400 transition-all hover:bg-red-500/10 hover:text-red-400"
-                          >
-                            Clear
-                          </button>
-                          <button
-                            type="button"
-                            onClick={applyDateRange}
-                            className="flex-1 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-3 text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-emerald-500/25"
-                          >
-                            Apply
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -639,12 +635,7 @@ export default function TransactionsPage() {
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <AddTransactionButton onClick={openCreateModal} disabled={isTableDisabled} />
-              <ScanReceiptButton 
-                onExpenseParsed={handleExpenseParsed} 
-                onScanStart={handleScanStart}
-                onScanError={handleScanError}
-                disabled={isTableDisabled} 
-              />
+              <ScanReceiptButton onClick={openScanReceiptModal} disabled={isTableDisabled} />
               {/* Bulk Delete Button - shown when items are selected */}
               {selectedTransactionIds.length > 0 && (
                 <button
@@ -757,105 +748,34 @@ export default function TransactionsPage() {
         initialFormData={scannedFormData}
       />
 
+      {/* Date Range Modal */}
+      <DateRangeModal
+        isOpen={isDateRangeOpen}
+        pendingDateStart={pendingDateStart}
+        pendingDateEnd={pendingDateEnd}
+        onPendingDateStartChange={setPendingDateStart}
+        onPendingDateEndChange={setPendingDateEnd}
+        onApply={applyDateRange}
+        onClear={clearDateRange}
+        onClose={() => setIsDateRangeOpen(false)}
+      />
+
       {/* Bulk Delete Confirmation Modal */}
-      {isBulkDeleteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={closeBulkDeleteModal}
-          ></div>
-          <div className="relative z-10 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-700/50 bg-slate-800 p-5 shadow-2xl sm:p-6">
-            <div className="mb-4 flex items-center justify-between sm:mb-6">
-              <h2 className="text-lg font-semibold text-white sm:text-xl">Delete Transactions</h2>
-              <button
-                onClick={closeBulkDeleteModal}
-                className="rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-700 hover:text-white"
-              >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
+      <BulkDeleteTransactionsModal
+        isOpen={isBulkDeleteModalOpen}
+        selectedCount={selectedTransactionIds.length}
+        password={bulkDeletePassword}
+        onPasswordChange={setBulkDeletePassword}
+        onSubmit={handleBulkDeleteConfirm}
+        onClose={closeBulkDeleteModal}
+      />
 
-            <form onSubmit={handleBulkDeleteConfirm}>
-              <div className="mb-6">
-                <div className="mb-4 flex justify-center">
-                  <div className="rounded-full bg-red-500/20 p-4">
-                    <svg
-                      className="h-8 w-8 text-red-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </div>
-                </div>
-                <p className="text-center text-slate-300">
-                  Are you sure you want to delete{" "}
-                  <span className="font-semibold text-white">
-                    {selectedTransactionIds.length} transaction{selectedTransactionIds.length !== 1 ? "s" : ""}
-                  </span>
-                  ?
-                </p>
-                <p className="mt-2 text-center text-sm text-slate-400">
-                  This action cannot be undone.
-                </p>
-              </div>
-
-              <div className="mb-6">
-                <label
-                  htmlFor="bulk_delete_password"
-                  className="mb-2 block text-sm font-medium text-slate-300"
-                >
-                  Delete Password <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="password"
-                  id="bulk_delete_password"
-                  name="bulk_delete_password"
-                  value={bulkDeletePassword}
-                  onChange={(e) => setBulkDeletePassword(e.target.value)}
-                  required
-                  placeholder="Enter delete password"
-                  className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-white placeholder-slate-400 transition-colors focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-                />
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={closeBulkDeleteModal}
-                  className="flex-1 rounded-lg border border-slate-600 px-4 py-3 font-medium text-slate-300 transition-colors hover:bg-slate-700"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 rounded-lg bg-gradient-to-r from-red-500 to-red-600 px-4 py-3 font-medium text-white transition-all hover:shadow-lg hover:shadow-red-500/25"
-                >
-                  Delete {selectedTransactionIds.length} Item{selectedTransactionIds.length !== 1 ? "s" : ""}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Scan Receipt Modal */}
+      <ScanReceiptModal
+        isOpen={isScanReceiptModalOpen}
+        onClose={closeScanReceiptModal}
+        onScanSubmit={handleScanSubmit}
+      />
 
       <Footer />
     </div>
