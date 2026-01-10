@@ -128,6 +128,7 @@ OUTPUT FORMAT (JSON array only, no other text):
 
 [
   {
+    "raw_date": "01/15",
     "trans_date": "2025-01-15",
     "description": "STARBUCKS COFFEE",
     "amount": 5.75,
@@ -135,6 +136,7 @@ OUTPUT FORMAT (JSON array only, no other text):
     "source": null
   },
   {
+    "raw_date": "01/14/25", 
     "trans_date": "2025-01-14", 
     "description": "AMAZON PURCHASE",
     "amount": 29.99,
@@ -143,18 +145,28 @@ OUTPUT FORMAT (JSON array only, no other text):
   }
 ]
 
-FINAL RULES:
-- "type": "Expense" for purchases, "Income" for refunds/credits/deposits
-- "source": payment method if visible, otherwise null
-- One JSON object per row in the document
-- If only one transaction visible, return array with one object
-- RETURN ONLY THE JSON ARRAY - no explanations, no markdown
+FIELD DEFINITIONS:
+- "raw_date": EXACTLY what you see on the document (e.g., "01/15", "Jan 15", "1/15/25") - copy it verbatim
+- "trans_date": The raw_date converted to YYYY-MM-DD format
+- "description": Item name, merchant name, or transaction details from that row
+- "amount": Dollar amount as a number (no $ symbol)
+- "type": "Expense" for purchases, "Income" for refunds/credits/deposits  
+- "source": Payment method if visible, otherwise null
 
-DOUBLE-CHECK: Before responding, verify that you haven't accidentally swapped any dates, descriptions, or amounts between rows.`;
+FINAL RULES:
+- One JSON object per transaction row
+- RETURN ONLY THE JSON ARRAY - no explanations, no markdown
+- If you cannot read a date clearly, put "UNCLEAR" in raw_date and null in trans_date
+
+VERIFICATION CHECKLIST (complete before responding):
+□ Each raw_date matches exactly what's written on that specific row
+□ Each trans_date is correctly converted from its corresponding raw_date
+□ No dates, descriptions, or amounts are swapped between rows
+□ All amounts are positive numbers (use type "Income" for credits)`;
 
     console.log("🤖 Sending to GPT-4o for analysis...\n");
 
-    // Send image to GPT-4 Vision
+    // Send image to GPT-4 Vision with HIGH detail for better OCR
     const response = await model.invoke([
       new HumanMessage({
         content: [
@@ -163,6 +175,7 @@ DOUBLE-CHECK: Before responding, verify that you haven't accidentally swapped an
             type: "image_url",
             image_url: {
               url: `data:${mimeType};base64,${base64Image}`,
+              detail: "high", // Use high detail mode for better text recognition
             },
           },
         ],
@@ -188,18 +201,96 @@ DOUBLE-CHECK: Before responding, verify that you haven't accidentally swapped an
       // Ensure parsedData is always an array
       const transactionsArray = Array.isArray(parsedData) ? parsedData : [parsedData];
       
-      console.log(`\n✅ PARSED ${transactionsArray.length} TRANSACTION(S):`);
+      // Post-process: validate and fix dates using raw_date if available
+      const today = new Date();
+      const currentYear = today.getFullYear();
+      const currentMonth = today.getMonth() + 1;
+      const currentDay = today.getDate();
+
+      const validatedTransactions = transactionsArray.map((t, idx) => {
+        let finalDate = t.trans_date;
+        
+        // If we have raw_date, try to parse it ourselves as a backup
+        if (t.raw_date && t.raw_date !== "UNCLEAR") {
+          const rawDate = String(t.raw_date).trim();
+          
+          // Try to parse common formats
+          let parsedMonth, parsedDay, parsedYear;
+          
+          // MM/DD/YY or MM/DD/YYYY or MM-DD-YY
+          const slashMatch = rawDate.match(/^(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?$/);
+          if (slashMatch) {
+            parsedMonth = parseInt(slashMatch[1], 10);
+            parsedDay = parseInt(slashMatch[2], 10);
+            if (slashMatch[3]) {
+              parsedYear = parseInt(slashMatch[3], 10);
+              if (parsedYear < 100) parsedYear += 2000;
+            }
+          }
+          
+          // Jan 15, January 15, etc.
+          const monthNames = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+          const textMatch = rawDate.toLowerCase().match(/^([a-z]+)\s*(\d{1,2})(?:,?\s*(\d{2,4}))?$/);
+          if (textMatch) {
+            const monthIdx = monthNames.findIndex(m => textMatch[1].startsWith(m));
+            if (monthIdx !== -1) {
+              parsedMonth = monthIdx + 1;
+              parsedDay = parseInt(textMatch[2], 10);
+              if (textMatch[3]) {
+                parsedYear = parseInt(textMatch[3], 10);
+                if (parsedYear < 100) parsedYear += 2000;
+              }
+            }
+          }
+          
+          // If we parsed month and day, construct the date
+          if (parsedMonth && parsedDay) {
+            if (!parsedYear) {
+              // Determine year based on whether date has passed
+              if (parsedMonth < currentMonth || (parsedMonth === currentMonth && parsedDay <= currentDay)) {
+                parsedYear = currentYear;
+              } else {
+                parsedYear = currentYear; // Future date this year
+              }
+            }
+            
+            const constructedDate = `${parsedYear}-${String(parsedMonth).padStart(2, '0')}-${String(parsedDay).padStart(2, '0')}`;
+            
+            // Validate the constructed date
+            const testDate = new Date(constructedDate);
+            if (!isNaN(testDate.getTime())) {
+              finalDate = constructedDate;
+            }
+          }
+        }
+        
+        // Log any date corrections
+        if (finalDate !== t.trans_date) {
+          console.log(`📅 Date corrected for row ${idx + 1}: "${t.raw_date}" → ${finalDate} (was: ${t.trans_date})`);
+        }
+        
+        // Return cleaned transaction (remove raw_date from output)
+        return {
+          trans_date: finalDate,
+          description: t.description,
+          amount: t.amount,
+          type: t.type,
+          source: t.source,
+        };
+      });
+      
+      console.log(`\n✅ PARSED ${validatedTransactions.length} TRANSACTION(S):`);
       console.log("─".repeat(50));
-      transactionsArray.forEach((t, i) => {
+      validatedTransactions.forEach((t, i) => {
         console.log(`Transaction ${i + 1}:`, JSON.stringify(t, null, 2));
       });
       console.log("─".repeat(50));
       console.log("========== RECEIPT SCAN END ==========\n");
       
-      // Return the array
+      // Return the validated array
       return Response.json({
         success: true,
-        data: transactionsArray,
+        data: validatedTransactions,
       });
       
     } catch (parseError) {
