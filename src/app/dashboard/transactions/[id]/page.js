@@ -224,17 +224,19 @@ export default function TransactionsPage() {
   // Helper function to convert PDF to image using pdf.js
   const convertPdfToImage = async (file, scale = 2.0) => {
     try {
-      // Dynamically import pdf.js
-      const pdfjsLib = await import("pdfjs-dist");
-      
-      // Set the worker source
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+      // Use the legacy build which includes the worker inline
+      const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
 
       // Read file as ArrayBuffer
       const arrayBuffer = await file.arrayBuffer();
       
-      // Load the PDF
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      // Load the PDF with worker disabled (runs on main thread)
+      const pdf = await pdfjsLib.getDocument({ 
+        data: arrayBuffer,
+        useWorkerFetch: false,
+        isEvalSupported: false,
+        useSystemFonts: true,
+      }).promise;
       
       // Get total number of pages
       const numPages = pdf.numPages;
