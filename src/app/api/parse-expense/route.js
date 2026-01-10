@@ -74,13 +74,29 @@ export async function POST(request) {
       openAIApiKey: process.env.OPENAI_API_KEY,
     });
 
+    // Get current date for context
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth() + 1;
+    const currentDay = today.getDate();
+
     // Create the prompt for expense extraction - returns array of transactions
     const prompt = `Analyze this receipt/expense image and extract ALL transactions/line items.
-Return ONLY a valid JSON ARRAY of transaction objects. Each transaction should have these fields (use null for missing values):
+
+CRITICAL DATE PARSING RULES:
+- Today's date is ${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}
+- Look carefully at the date printed on the receipt - it may be at the TOP or BOTTOM of the receipt
+- Common date formats: MM/DD/YY, MM/DD/YYYY, MM-DD-YY, DD/MM/YY, Jan 15 2025, 15-Jan-25, etc.
+- If year is 2-digit (like "25" or "24"), convert to 4-digit (2025 or 2024)
+- If NO year is visible, assume ${currentYear} if the date hasn't passed yet this year, otherwise assume ${currentYear - 1}
+- Double-check the month and day - don't confuse them (US format is usually MM/DD)
+- OUTPUT must be YYYY-MM-DD format (e.g., 2025-01-09)
+
+Return ONLY a valid JSON ARRAY of transaction objects:
 
 [
   {
-    "trans_date": "YYYY-MM-DD format date of transaction",
+    "trans_date": "YYYY-MM-DD format (e.g., 2025-01-09)",
     "amount": numeric amount (no currency symbols, just the number),
     "type": "Expense" or "Income",
     "description": "description of this specific item/transaction",
@@ -88,13 +104,12 @@ Return ONLY a valid JSON ARRAY of transaction objects. Each transaction should h
   }
 ]
 
-Important:
+Other Rules:
 - Extract EACH line item as a SEPARATE transaction in the array
 - If the image shows multiple expenses/items, create one object per item
 - If it's a single receipt with one total, return an array with one object
-- Use ISO date format (YYYY-MM-DD)
 - If you can't determine a field, use null
-- Return ONLY the JSON array, no additional text`;
+- Return ONLY the JSON array, no additional text or markdown`;
 
     console.log("🤖 Sending to GPT-4o-mini for analysis...\n");
 
