@@ -221,13 +221,53 @@ export default function TransactionsPage() {
   const openScanReceiptModal = () => setIsScanReceiptModalOpen(true);
   const closeScanReceiptModal = () => setIsScanReceiptModalOpen(false);
 
-  // Helper function to convert File to base64
-  const fileToBase64 = (file) => {
+  // Helper function to compress and convert image to base64
+  const compressAndConvertToBase64 = (file, maxWidth = 1200, quality = 0.8) => {
     return new Promise((resolve, reject) => {
       try {
+        // If file is small enough (under 500KB), just convert directly
+        if (file.size < 500 * 1024) {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = (error) => reject(error);
+          reader.readAsDataURL(file);
+          return;
+        }
+
+        // For larger files, compress using canvas
+        const img = new Image();
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        img.onload = () => {
+          try {
+            // Calculate new dimensions
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxWidth) {
+              height = (height * maxWidth) / width;
+              width = maxWidth;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            // Draw and compress
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressedBase64 = canvas.toDataURL("image/jpeg", quality);
+            resolve(compressedBase64);
+          } catch (canvasErr) {
+            reject(canvasErr);
+          }
+        };
+
+        img.onerror = () => reject(new Error("Failed to load image"));
+
+        // Read file as data URL to load into image
         const reader = new FileReader();
-        reader.onload = () => {
-          resolve(reader.result);
+        reader.onload = (e) => {
+          img.src = e.target.result;
         };
         reader.onerror = (error) => reject(error);
         reader.readAsDataURL(file);
@@ -249,10 +289,10 @@ export default function TransactionsPage() {
         throw new Error("No file provided");
       }
 
-      // Step 1: Convert to base64
+      // Step 1: Compress and convert to base64
       let base64Data;
       try {
-        base64Data = await fileToBase64(file);
+        base64Data = await compressAndConvertToBase64(file);
       } catch (convErr) {
         throw new Error("Failed to process image: " + String(convErr.message || "conversion error"));
       }
@@ -293,6 +333,9 @@ export default function TransactionsPage() {
       }
 
       if (!response.ok) {
+        if (response.status === 413) {
+          throw new Error("Image too large. Please use a smaller image.");
+        }
         throw new Error(result.error || "Failed to parse receipt");
       }
 

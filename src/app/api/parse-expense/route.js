@@ -1,6 +1,18 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { HumanMessage } from "@langchain/core/messages";
 
+// Configure the route to allow larger body sizes (up to 10MB)
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
+};
+
+// For App Router, also set the maximum duration and body size
+export const maxDuration = 60; // seconds
+
 export async function POST(request) {
   try {
     let base64Image;
