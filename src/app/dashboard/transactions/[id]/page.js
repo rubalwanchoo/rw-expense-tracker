@@ -784,23 +784,6 @@ export default function TransactionsPage() {
             </div>
           </div>
 
-          {/* Processing Overlay - Fixed to viewport */}
-          {(isProcessingReceipt || isBulkDeleting) && (
-            <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm">
-              <div className="rounded-2xl border border-slate-700/60 bg-slate-800/95 p-8 shadow-2xl">
-                <div className="flex flex-col items-center">
-                  <div className={`h-12 w-12 animate-spin rounded-full border-4 border-t-transparent ${isBulkDeleting ? "border-red-400" : "border-emerald-400"}`}></div>
-                  <p className={`mt-4 text-lg font-medium ${isBulkDeleting ? "text-red-400" : "text-emerald-400"}`}>
-                    {isBulkDeleting ? "Deleting transactions..." : "Processing receipt..."}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-400">
-                    {isBulkDeleting ? `Removing ${selectedTransactionIds.length} item(s)` : "Creating transactions"}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Transactions Table */}
           <TransactionsTable
             transactions={filteredTransactions}
@@ -859,6 +842,23 @@ export default function TransactionsPage() {
         onClose={closeScanReceiptModal}
         onScanSubmit={handleScanSubmit}
       />
+
+      {/* Processing Overlay - At root level for proper viewport centering */}
+      {(isProcessingReceipt || isBulkDeleting) && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm">
+          <div className="rounded-2xl border border-slate-700/60 bg-slate-800/95 p-8 shadow-2xl">
+            <div className="flex flex-col items-center">
+              <div className={`h-12 w-12 animate-spin rounded-full border-4 border-t-transparent ${isBulkDeleting ? "border-red-400" : "border-emerald-400"}`}></div>
+              <p className={`mt-4 text-lg font-medium ${isBulkDeleting ? "text-red-400" : "text-emerald-400"}`}>
+                {isBulkDeleting ? "Deleting transactions..." : "Processing receipt..."}
+              </p>
+              <p className="mt-1 text-sm text-slate-400">
+                {isBulkDeleting ? `Removing ${selectedTransactionIds.length} item(s)` : "Analyzing receipt..."}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>
