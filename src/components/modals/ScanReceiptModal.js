@@ -217,12 +217,11 @@ export default function ScanReceiptModal({
                   <p className="mt-1 text-xs text-slate-400">PNG, JPG, GIF up to 10MB</p>
                 </div>
                 {/* File input inside label - native iOS action sheet will appear */}
-                {/* Note: accept attribute removed for iOS compatibility */}
+                {/* Note: accept attribute removed for iOS Chrome compatibility */}
                 <input
                   ref={fileInputRef}
                   id="receiptImageInput"
                   type="file"
-                  accept="image/png, image/jpeg, image/jpg, image/gif, image/webp, image/heic, image/heif"
                   onChange={handleFileSelect}
                   className="sr-only"
                 />
