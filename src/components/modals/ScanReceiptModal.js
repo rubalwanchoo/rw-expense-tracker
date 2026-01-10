@@ -11,6 +11,7 @@ export default function ScanReceiptModal({
   const [bankSource, setBankSource] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [fileType, setFileType] = useState(null); // 'image' or 'pdf'
   const [isMobile, setIsMobile] = useState(false);
 
   // Detect mobile device
@@ -32,23 +33,33 @@ export default function ScanReceiptModal({
   // Create preview URL when file is selected - with error handling for iOS
   useEffect(() => {
     if (selectedFile) {
-      try {
-        const url = URL.createObjectURL(selectedFile);
-        setPreviewUrl(url);
-        return () => {
-          try {
-            URL.revokeObjectURL(url);
-          } catch (e) {
-            console.warn("Error revoking object URL:", e);
-          }
-        };
-      } catch (error) {
-        console.warn("Could not create preview URL:", error);
-        // Set a placeholder or skip preview on error
-        setPreviewUrl(null);
+      // Check if it's a PDF
+      const isPdf = selectedFile.type === "application/pdf" || 
+                    selectedFile.name?.toLowerCase().endsWith(".pdf");
+      
+      setFileType(isPdf ? "pdf" : "image");
+
+      if (!isPdf) {
+        try {
+          const url = URL.createObjectURL(selectedFile);
+          setPreviewUrl(url);
+          return () => {
+            try {
+              URL.revokeObjectURL(url);
+            } catch (e) {
+              console.warn("Error revoking object URL:", e);
+            }
+          };
+        } catch (error) {
+          console.warn("Could not create preview URL:", error);
+          setPreviewUrl(null);
+        }
+      } else {
+        setPreviewUrl(null); // No preview for PDFs
       }
     } else {
       setPreviewUrl(null);
+      setFileType(null);
     }
   }, [selectedFile]);
 
@@ -56,6 +67,7 @@ export default function ScanReceiptModal({
     setBankSource("");
     setSelectedFile(null);
     setPreviewUrl(null);
+    setFileType(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -67,26 +79,31 @@ export default function ScanReceiptModal({
       const file = e.target.files?.[0];
       if (!file) return;
 
-      // On iOS, file.type might be empty for camera captures
-      // Allow files with no type (iOS camera) or image types
-      const isImage = !file.type || file.type.startsWith("image/") || 
-                      file.name.match(/\.(jpg|jpeg|png|gif|webp|heic|heif)$/i);
+      // Check if it's an image or PDF
+      const isPdf = file.type === "application/pdf" || 
+                    file.name?.toLowerCase().endsWith(".pdf");
       
-      if (!isImage) {
-        alert("Please select an image file");
+      // On iOS, file.type might be empty for camera captures
+      const isImage = !file.type || file.type.startsWith("image/") || 
+                      file.name?.match(/\.(jpg|jpeg|png|gif|webp|heic|heif)$/i);
+      
+      if (!isPdf && !isImage) {
+        alert("Please select an image or PDF file");
         return;
       }
 
-      // Validate file size (max 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        alert("Image size must be less than 10MB");
+      // Validate file size (max 20MB for PDFs, 10MB for images)
+      const maxSize = isPdf ? 20 * 1024 * 1024 : 10 * 1024 * 1024;
+      if (file.size > maxSize) {
+        alert(`File size must be less than ${isPdf ? "20MB" : "10MB"}`);
         return;
       }
 
       console.log("File selected:", {
         name: file.name,
         type: file.type,
-        size: file.size
+        size: file.size,
+        isPdf
       });
 
       setSelectedFile(file);
@@ -96,9 +113,10 @@ export default function ScanReceiptModal({
     }
   };
 
-  const handleClearImage = () => {
+  const handleClearFile = () => {
     setSelectedFile(null);
     setPreviewUrl(null);
+    setFileType(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -108,7 +126,7 @@ export default function ScanReceiptModal({
     e.preventDefault();
     
     if (!selectedFile) {
-      alert("Please select a receipt image");
+      alert("Please select a receipt image or PDF");
       return;
     }
 
@@ -128,12 +146,13 @@ export default function ScanReceiptModal({
       setBankSource("");
       setSelectedFile(null);
       setPreviewUrl(null);
+      setFileType(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
     } catch (error) {
       console.error("Error submitting:", error);
-      alert("Error processing image. Please try again.");
+      alert("Error processing file. Please try again.");
     }
   };
 
@@ -196,35 +215,46 @@ export default function ScanReceiptModal({
             </p>
           </div>
 
-          {/* Image Input Section */}
+          {/* File Input Section */}
           <div>
             <span className="mb-2 block text-sm font-medium text-slate-300">
-              Receipt Image <span className="text-red-400">*</span>
+              Receipt Image or PDF <span className="text-red-400">*</span>
             </span>
 
-            {/* Image Preview or Selection */}
+            {/* File Preview or Selection */}
             {selectedFile ? (
               <div className="relative">
                 <div className="overflow-hidden rounded-lg border border-slate-600 bg-slate-700/50">
-                  {previewUrl ? (
+                  {fileType === "pdf" ? (
+                    // PDF Preview
+                    <div className="flex h-32 flex-col items-center justify-center gap-2 p-4">
+                      <svg className="h-12 w-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 13h6m-6 4h4" />
+                      </svg>
+                      <span className="text-sm font-medium text-red-400">PDF Document</span>
+                    </div>
+                  ) : previewUrl ? (
+                    // Image Preview
                     <img
                       src={previewUrl}
                       alt="Receipt preview"
                       className="max-h-48 w-full object-contain"
                     />
                   ) : (
+                    // Fallback
                     <div className="flex h-32 items-center justify-center">
-                      <span className="text-sm text-slate-400">Image selected (preview unavailable)</span>
+                      <span className="text-sm text-slate-400">File selected (preview unavailable)</span>
                     </div>
                   )}
                 </div>
                 <div className="mt-2 flex items-center justify-between">
                   <p className="text-xs text-emerald-400">
-                    {selectedFile.name || "Photo"} ({(selectedFile.size / 1024).toFixed(1)} KB)
+                    {selectedFile.name || "File"} ({(selectedFile.size / 1024).toFixed(1)} KB)
                   </p>
                   <button
                     type="button"
-                    onClick={handleClearImage}
+                    onClick={handleClearFile}
                     className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-red-400 transition-colors hover:bg-red-500/20"
                   >
                     <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -237,35 +267,43 @@ export default function ScanReceiptModal({
             ) : (
               /* Use label instead of button for iOS compatibility */
               <label
-                htmlFor="receiptImageInput"
+                htmlFor="receiptFileInput"
                 className="relative flex w-full cursor-pointer flex-col items-center gap-3 rounded-lg border-2 border-dashed border-emerald-500/50 bg-emerald-500/10 p-6 text-emerald-400 transition-all hover:border-emerald-400 hover:bg-emerald-500/20"
               >
-                <svg className="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
+                <div className="flex gap-4">
+                  {/* Camera/Image Icon */}
+                  <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                  {/* PDF Icon */}
+                  <svg className="h-8 w-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-6 4h4" />
+                  </svg>
+                </div>
                 <div className="text-center">
                   <span className="text-sm font-medium">
-                    {isMobile ? "Tap to Take Photo or Choose from Gallery" : "Click to upload receipt image"}
+                    {isMobile ? "Tap to Take Photo, Choose Image, or Select PDF" : "Click to upload image or PDF"}
                   </span>
-                  <p className="mt-1 text-xs text-slate-400">PNG, JPG, GIF up to 10MB</p>
+                  <p className="mt-1 text-xs text-slate-400">PNG, JPG, GIF, PDF up to 20MB</p>
                 </div>
-                {/* File input inside label - native iOS action sheet will appear */}
-                {/* Using opacity:0 instead of sr-only for better iOS compatibility */}
+                {/* File input inside label */}
                 <input
                   ref={fileInputRef}
-                  id="receiptImageInput"
+                  id="receiptFileInput"
                   type="file"
+                  accept="image/*,.pdf,application/pdf"
                   onChange={handleFileSelect}
                   style={{
                     position: 'absolute',

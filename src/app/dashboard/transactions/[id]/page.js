@@ -221,6 +221,77 @@ export default function TransactionsPage() {
   const openScanReceiptModal = () => setIsScanReceiptModalOpen(true);
   const closeScanReceiptModal = () => setIsScanReceiptModalOpen(false);
 
+  // Helper function to convert PDF to image using pdf.js
+  const convertPdfToImage = async (file, scale = 2.0) => {
+    try {
+      // Dynamically import pdf.js
+      const pdfjsLib = await import("pdfjs-dist");
+      
+      // Set the worker source
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+
+      // Read file as ArrayBuffer
+      const arrayBuffer = await file.arrayBuffer();
+      
+      // Load the PDF
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      
+      // Get total number of pages
+      const numPages = pdf.numPages;
+      console.log(`PDF has ${numPages} page(s)`);
+
+      // For receipts, we'll process all pages and combine them vertically
+      const canvases = [];
+      let totalHeight = 0;
+      let maxWidth = 0;
+
+      for (let pageNum = 1; pageNum <= Math.min(numPages, 5); pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const viewport = page.getViewport({ scale });
+        
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        await page.render({
+          canvasContext: ctx,
+          viewport: viewport,
+        }).promise;
+
+        canvases.push(canvas);
+        totalHeight += canvas.height;
+        maxWidth = Math.max(maxWidth, canvas.width);
+      }
+
+      // Combine all pages into one tall image
+      const combinedCanvas = document.createElement("canvas");
+      combinedCanvas.width = maxWidth;
+      combinedCanvas.height = totalHeight;
+      const combinedCtx = combinedCanvas.getContext("2d");
+
+      // Fill with white background
+      combinedCtx.fillStyle = "#ffffff";
+      combinedCtx.fillRect(0, 0, maxWidth, totalHeight);
+
+      // Draw each page
+      let yOffset = 0;
+      for (const canvas of canvases) {
+        combinedCtx.drawImage(canvas, 0, yOffset);
+        yOffset += canvas.height;
+      }
+
+      // Convert to base64 JPEG
+      const base64 = combinedCanvas.toDataURL("image/jpeg", 0.85);
+      console.log(`PDF converted to image: ${(base64.length / 1024).toFixed(1)} KB`);
+      
+      return base64;
+    } catch (error) {
+      console.error("PDF conversion error:", error);
+      throw new Error("Failed to process PDF: " + (error.message || "Unknown error"));
+    }
+  };
+
   // Helper function to compress and convert image to base64
   const compressAndConvertToBase64 = (file, maxWidth = 1200, quality = 0.8) => {
     return new Promise((resolve, reject) => {
@@ -289,12 +360,21 @@ export default function TransactionsPage() {
         throw new Error("No file provided");
       }
 
-      // Step 1: Compress and convert to base64
+      // Detect if file is a PDF
+      const isPdf = file.type === "application/pdf" || 
+                    file.name?.toLowerCase().endsWith(".pdf");
+
+      // Step 1: Convert to base64 (PDF or image)
       let base64Data;
       try {
-        base64Data = await compressAndConvertToBase64(file);
+        if (isPdf) {
+          console.log("Processing PDF file...");
+          base64Data = await convertPdfToImage(file);
+        } else {
+          base64Data = await compressAndConvertToBase64(file);
+        }
       } catch (convErr) {
-        throw new Error("Failed to process image: " + String(convErr.message || "conversion error"));
+        throw new Error("Failed to process file: " + String(convErr.message || "conversion error"));
       }
 
       // Step 2: Prepare request body - sanitize filename for iOS
@@ -334,7 +414,7 @@ export default function TransactionsPage() {
 
       if (!response.ok) {
         if (response.status === 413) {
-          throw new Error("Image too large. Please use a smaller image.");
+          throw new Error("File too large. Please use a smaller image or PDF.");
         }
         throw new Error(result.error || "Failed to parse receipt");
       }

@@ -18,6 +18,7 @@
     "@supabase/supabase-js": "^2.89.0",
     "langchain": "^1.2.7",
     "next": "16.0.10",
+    "pdfjs-dist": "^5.4.530",
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "typescript": "^5.9.3"
