@@ -81,55 +81,76 @@ export async function POST(request) {
     const currentDay = today.getDate();
 
     // Create the prompt for expense extraction - returns array of transactions
-    const prompt = `You are an expert receipt and expense document analyzer. Carefully examine this image and extract transaction data.
+    const prompt = `You are a precise data extraction expert. Your task is to extract transaction data from this document image.
 
-STEP 1 - UNDERSTAND THE DOCUMENT:
-- First, identify what type of document this is (receipt, bank statement, credit card statement, invoice, etc.)
-- Identify the overall date of the document (usually at top or bottom)
-- Identify if this contains a SINGLE transaction or MULTIPLE line items
+═══════════════════════════════════════════════════════════════
+CRITICAL: THE DOCUMENT HAS 3 MAIN COLUMNS PER ROW:
+  1. DATE (MM/DD format) - when the transaction occurred
+  2. DESCRIPTION - what was purchased or the merchant name  
+  3. DOLLAR AMOUNT - how much was spent (e.g., $12.34)
 
-STEP 2 - EXTRACT EACH TRANSACTION:
-For EACH transaction/line item, you MUST correctly match:
-- The DATE for that specific transaction
-- The AMOUNT for that specific transaction  
-- The DESCRIPTION for that specific transaction
+YOU MUST NOT MIX UP ROWS. Each row's DATE, DESCRIPTION, and AMOUNT belong together.
+═══════════════════════════════════════════════════════════════
 
-CRITICAL: Do NOT mix up data between different line items. Each row's date, description, and amount must come from the SAME line.
+EXTRACTION PROCESS:
 
-STEP 3 - DATE PARSING RULES:
-- Today's date is ${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}
-- Look for dates at the TOP, BOTTOM, or next to each line item
-- Common formats: MM/DD/YY, MM/DD/YYYY, Jan 15 2025, 01-15-25, etc.
-- If year is 2-digit (like "25"), convert to 4-digit (2025)
-- If NO year visible, use ${currentYear} if date hasn't passed, else ${currentYear - 1}
-- US format is typically MM/DD (month first)
-- OUTPUT format MUST be: YYYY-MM-DD (e.g., 2025-01-09)
+STEP 1 - SCAN THE DOCUMENT:
+- Read the document carefully from TOP to BOTTOM
+- Identify each row/line item that contains transaction data
+- Note: dates are often in MM/DD or MM/DD/YY format
 
-STEP 4 - AMOUNT PARSING RULES:
-- Extract the numeric amount WITHOUT currency symbols ($, €, etc.)
-- For negative amounts or credits, still use positive number and set type appropriately
-- Be careful with decimal points and commas (1,234.56 = 1234.56)
+STEP 2 - FOR EACH ROW, EXTRACT IN ORDER:
+Read LEFT to RIGHT across the row and identify:
+  a) The DATE on that row (look for MM/DD pattern)
+  b) The DESCRIPTION on that row (item name, merchant, or transaction details)
+  c) The DOLLAR AMOUNT on that row (look for $ symbol or decimal numbers)
 
-STEP 5 - OUTPUT FORMAT:
-Return ONLY a valid JSON array (no markdown, no explanation):
+STEP 3 - VERIFY YOUR EXTRACTION:
+Before outputting, double-check each row:
+  ✓ Is the date FROM THIS ROW (not copied from another row)?
+  ✓ Is the description FROM THIS ROW?
+  ✓ Is the amount FROM THIS ROW?
+  ✓ Do these three pieces logically go together?
+
+STEP 4 - DATE FORMATTING:
+- Today is ${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}
+- Convert dates to YYYY-MM-DD format
+- If year missing: use ${currentYear} if month/day hasn't passed, else ${currentYear - 1}
+- MM/DD/YY → YYYY-MM-DD (e.g., 01/15/25 → 2025-01-15)
+- Jan 15 → ${currentYear}-01-15
+
+STEP 5 - AMOUNT FORMATTING:
+- Remove $ symbol, keep only the number
+- $1,234.56 → 1234.56
+- Negative amounts (-$50.00) → use positive 50.00 with type "Income"
+
+OUTPUT FORMAT (JSON array only, no other text):
 
 [
   {
-    "trans_date": "YYYY-MM-DD",
-    "amount": 123.45,
+    "trans_date": "2025-01-15",
+    "description": "STARBUCKS COFFEE",
+    "amount": 5.75,
     "type": "Expense",
-    "description": "exact item description from receipt",
+    "source": null
+  },
+  {
+    "trans_date": "2025-01-14", 
+    "description": "AMAZON PURCHASE",
+    "amount": 29.99,
+    "type": "Expense",
     "source": null
   }
 ]
 
-RULES:
-- "type" is "Expense" for purchases/payments, "Income" for refunds/credits
-- "source" is payment method if visible (Credit Card, Debit, Cash, Check), else null
-- "description" should be the actual item name or merchant name, not generic text
-- If document has multiple items, create one object per line item
-- If single receipt with just a total, create one object with merchant name as description
-- Return ONLY the JSON array, nothing else`;
+FINAL RULES:
+- "type": "Expense" for purchases, "Income" for refunds/credits/deposits
+- "source": payment method if visible, otherwise null
+- One JSON object per row in the document
+- If only one transaction visible, return array with one object
+- RETURN ONLY THE JSON ARRAY - no explanations, no markdown
+
+DOUBLE-CHECK: Before responding, verify that you haven't accidentally swapped any dates, descriptions, or amounts between rows.`;
 
     console.log("🤖 Sending to GPT-4o for analysis...\n");
 
