@@ -112,14 +112,17 @@ export default function ScanReceiptModal({
       return;
     }
 
-    if (!bankSource.trim()) {
+    // Safely handle bankSource string
+    const source = String(bankSource || "").replace(/^\s+|\s+$/g, "");
+    
+    if (!source) {
       alert("Please enter a bank account source");
       return;
     }
 
     try {
       // Pass values to parent and close modal
-      onScanSubmit(selectedFile, bankSource.trim());
+      onScanSubmit(selectedFile, source);
       
       // Reset form
       setBankSource("");

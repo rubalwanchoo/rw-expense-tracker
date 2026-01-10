@@ -224,13 +224,16 @@ export default function TransactionsPage() {
   // Helper function to convert File to base64
   const fileToBase64 = (file) => {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        // Result is data:image/...;base64,XXXX
-        resolve(reader.result);
-      };
-      reader.onerror = (error) => reject(error);
-      reader.readAsDataURL(file);
+      try {
+        const reader = new FileReader();
+        reader.onload = () => {
+          resolve(reader.result);
+        };
+        reader.onerror = (error) => reject(error);
+        reader.readAsDataURL(file);
+      } catch (err) {
+        reject(err);
+      }
     });
   };
 
@@ -246,34 +249,48 @@ export default function TransactionsPage() {
         throw new Error("No file provided");
       }
 
-      console.log("\n%c========== RECEIPT SCAN (Browser) ==========", "color: #10b981; font-weight: bold;");
-      console.log("📷 Processing image:", file.name || "photo", `(${((file.size || 0) / 1024).toFixed(2)} KB)`);
-      console.log("🏦 Bank Source:", bankSource);
-      console.log("File type:", file.type || "unknown");
+      // Step 1: Convert to base64
+      let base64Data;
+      try {
+        base64Data = await fileToBase64(file);
+      } catch (convErr) {
+        throw new Error("Failed to process image: " + String(convErr.message || "conversion error"));
+      }
 
-      // Convert file to base64 on client side (more compatible with iOS)
-      console.log("Converting to base64...");
-      const base64Data = await fileToBase64(file);
-      console.log("Base64 conversion complete, length:", base64Data.length);
-
-      // Send as JSON instead of FormData (avoids iOS File handling issues)
-      const response = await fetch("/api/parse-expense", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      // Step 2: Prepare request body - sanitize filename for iOS
+      let requestBody;
+      try {
+        // Ensure filename is safe (ASCII only)
+        const safeFilename = String(file.name || "photo.jpg").replace(/[^\x00-\x7F]/g, "");
+        requestBody = JSON.stringify({
           image: base64Data,
-          filename: file.name || "photo.jpg",
-        }),
-      });
+          filename: safeFilename || "photo.jpg",
+        });
+      } catch (jsonErr) {
+        throw new Error("Failed to prepare request: " + String(jsonErr.message || "JSON error"));
+      }
 
-      console.log("API response status:", response.status);
+      // Step 3: Send to API
+      let response;
+      try {
+        response = await fetch("/api/parse-expense", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: requestBody,
+        });
+      } catch (fetchErr) {
+        throw new Error("Network error: " + String(fetchErr.message || "fetch failed"));
+      }
 
-      const result = await response.json();
-      
-      console.log("\n%c📄 API Response:", "color: #3b82f6; font-weight: bold;");
-      console.log(result);
+      // Step 4: Parse response
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseErr) {
+        throw new Error("Invalid response from server");
+      }
 
       if (!response.ok) {
         throw new Error(result.error || "Failed to parse receipt");
@@ -288,21 +305,13 @@ export default function TransactionsPage() {
           source: bankSource,
         }));
         
-        console.log(`\n%c✅ PARSED ${transactions.length} TRANSACTION(S) with source "${bankSource}":`, "color: #10b981; font-weight: bold;");
-        transactions.forEach((t, i) => {
-          console.log(`%cTransaction ${i + 1}:`, "color: #3b82f6;");
-          console.table(t);
-        });
-        console.log("%c========== SCAN COMPLETE ==========\n", "color: #10b981; font-weight: bold;");
-        
         await handleExpenseParsed(transactions);
       } else {
         setIsProcessingReceipt(false);
         showNotification("No data found in receipt", "error");
       }
     } catch (error) {
-      console.error("%c❌ Error scanning receipt:", "color: #ef4444; font-weight: bold;", error);
-      showNotification(error.message || "Failed to scan receipt. Please try again.", "error");
+      showNotification(String(error.message || "Failed to scan receipt. Please try again."), "error");
       setIsProcessingReceipt(false);
     }
   };
