@@ -7,7 +7,7 @@ export default function Notification({ notification, onClose }) {
     if (notification.type === "success") {
       return (
         <svg
-          className="h-5 w-5 text-emerald-400"
+          className="h-5 w-5 text-emerald-600"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -23,7 +23,7 @@ export default function Notification({ notification, onClose }) {
     } else if (notification.type === "delete") {
       return (
         <svg
-          className="h-5 w-5 text-red-400"
+          className="h-5 w-5 text-red-600"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -39,7 +39,7 @@ export default function Notification({ notification, onClose }) {
     } else {
       return (
         <svg
-          className="h-5 w-5 text-red-400"
+          className="h-5 w-5 text-red-600"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -58,16 +58,16 @@ export default function Notification({ notification, onClose }) {
   return (
     <div className="fixed inset-x-0 top-6 z-[100] flex justify-center animate-[fadeIn_0.2s_ease-out]">
       <div
-        className={`flex items-center gap-3 rounded-xl border px-4 py-3 shadow-2xl ${
+        className={`flex items-center gap-3 rounded-xl border px-4 py-3 shadow-lg bg-white ${
           notification.type === "success"
-            ? "border-emerald-500/50 bg-emerald-500/20"
-            : "border-red-500/50 bg-red-500/20"
+            ? "border-emerald-200"
+            : "border-red-200"
         }`}
       >
         {getIcon()}
         <span
           className={`font-medium ${
-            notification.type === "success" ? "text-emerald-300" : "text-red-300"
+            notification.type === "success" ? "text-emerald-700" : "text-red-700"
           }`}
         >
           {notification.message}
@@ -76,8 +76,8 @@ export default function Notification({ notification, onClose }) {
           onClick={onClose}
           className={`ml-2 rounded-lg p-1 transition-colors ${
             notification.type === "success"
-              ? "text-emerald-400 hover:bg-emerald-500/30 hover:text-emerald-200"
-              : "text-red-400 hover:bg-red-500/30 hover:text-red-200"
+              ? "text-emerald-600 hover:bg-emerald-50"
+              : "text-red-600 hover:bg-red-50"
           }`}
         >
           <svg
@@ -98,4 +98,3 @@ export default function Notification({ notification, onClose }) {
     </div>
   );
 }
-

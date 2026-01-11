@@ -36,16 +36,16 @@ export default function TransactionsTable({
 
   return (
     <div className="w-full">
-      <div className="overflow-hidden rounded-lg border-2 border-slate-600 bg-slate-800/70 shadow-lg">
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
         {loading ? (
           <div className="flex flex-col items-center gap-2 px-4 py-8">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent"></div>
-            <p className="text-sm text-slate-400">Loading transactions...</p>
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent"></div>
+            <p className="text-sm text-gray-500">Loading transactions...</p>
           </div>
         ) : transactions.length === 0 ? (
           <div className="flex flex-col items-center gap-2 px-4 py-8">
             <svg
-              className="h-10 w-10 text-slate-600"
+              className="h-10 w-10 text-gray-300"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -57,8 +57,8 @@ export default function TransactionsTable({
                 d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"
               />
             </svg>
-            <p className="text-sm text-slate-400">No transactions yet</p>
-            <p className="text-xs text-slate-500">
+            <p className="text-sm text-gray-500">No transactions yet</p>
+            <p className="text-xs text-gray-400">
               Click &quot;Add Transaction&quot; to record your first expense
             </p>
           </div>
@@ -66,7 +66,7 @@ export default function TransactionsTable({
           <div>
             {/* Select All Header */}
             {onSelectionChange && (
-              <div className="flex items-center gap-3 border-b-2 border-slate-600 bg-slate-700/30 px-3 py-2 sm:px-4">
+              <div className="flex items-center gap-3 border-b border-gray-100 bg-gray-50 px-3 py-2 sm:px-4">
                 <button
                   type="button"
                   onClick={handleSelectAll}
@@ -74,13 +74,13 @@ export default function TransactionsTable({
                   className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-all duration-200 ${
                     disabled 
                       ? "cursor-not-allowed opacity-50" 
-                      : "cursor-pointer hover:border-emerald-400"
+                      : "cursor-pointer hover:border-emerald-500"
                   } ${
                     isAllSelected
-                      ? "border-emerald-500 bg-emerald-500/20 text-emerald-400"
+                      ? "border-emerald-500 bg-emerald-500 text-white"
                       : isSomeSelected
-                      ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-400"
-                      : "border-slate-500 bg-slate-700/50 text-transparent"
+                      ? "border-emerald-500 bg-emerald-100 text-emerald-600"
+                      : "border-gray-300 bg-white text-transparent"
                   }`}
                 >
                   {isAllSelected ? (
@@ -93,7 +93,7 @@ export default function TransactionsTable({
                     </svg>
                   ) : null}
                 </button>
-                <span className="text-xs font-medium text-slate-400">
+                <span className="text-xs font-medium text-gray-500">
                   {selectedIds.length > 0 
                     ? `${selectedIds.length} selected` 
                     : "Select all"}
@@ -103,9 +103,9 @@ export default function TransactionsTable({
             {transactions.map((transaction, index) => (
               <div
                 key={transaction.id}
-                className={`flex items-center gap-3 px-3 py-3 transition-all duration-200 hover:bg-slate-700/50 sm:px-4 ${
-                  index !== transactions.length - 1 ? "border-b-2 border-slate-600" : ""
-                } ${selectedIds.includes(transaction.id) ? "bg-emerald-500/10" : ""}`}
+                className={`flex items-center gap-3 px-3 py-3 transition-all duration-200 hover:bg-gray-50 sm:px-4 ${
+                  index !== transactions.length - 1 ? "border-b border-gray-100" : ""
+                } ${selectedIds.includes(transaction.id) ? "bg-emerald-50" : ""}`}
               >
                 {/* Checkbox */}
                 {onSelectionChange && (
@@ -116,11 +116,11 @@ export default function TransactionsTable({
                     className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-all duration-200 ${
                       disabled 
                         ? "cursor-not-allowed opacity-50" 
-                        : "cursor-pointer hover:border-emerald-400"
+                        : "cursor-pointer hover:border-emerald-500"
                     } ${
                       selectedIds.includes(transaction.id)
-                        ? "border-emerald-500 bg-emerald-500/20 text-emerald-400"
-                        : "border-slate-500 bg-slate-700/50 text-transparent"
+                        ? "border-emerald-500 bg-emerald-500 text-white"
+                        : "border-gray-300 bg-white text-transparent"
                     }`}
                   >
                     {selectedIds.includes(transaction.id) && (
@@ -136,12 +136,12 @@ export default function TransactionsTable({
                   {/* Type Badge + Amount */}
                   <div className="flex items-center gap-2">
                     <span
-                      className={`text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded ${
+                      className={`text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded border ${
                         transaction.type === "Income"
-                          ? "bg-emerald-500/20 text-emerald-400"
+                          ? "bg-emerald-50 text-emerald-600 border-emerald-100"
                           : transaction.type === "Expense"
-                          ? "bg-red-500/20 text-red-400"
-                          : "bg-slate-500/20 text-slate-400"
+                          ? "bg-red-50 text-red-600 border-red-100"
+                          : "bg-gray-50 text-gray-600 border-gray-100"
                       }`}
                     >
                       {transaction.type || "N/A"}
@@ -149,10 +149,10 @@ export default function TransactionsTable({
                     <span
                       className={`text-base font-bold ${
                         transaction.type === "Income"
-                          ? "text-emerald-400"
+                          ? "text-emerald-600"
                           : transaction.type === "Expense"
-                          ? "text-red-400"
-                          : "text-white"
+                          ? "text-red-600"
+                          : "text-gray-800"
                       }`}
                     >
                       {transaction.amount != null
@@ -161,15 +161,15 @@ export default function TransactionsTable({
                     </span>
                   </div>
                   {/* Description */}
-                  <p className="text-xs text-slate-300 line-clamp-1">
+                  <p className="text-xs text-gray-600 line-clamp-1">
                     {transaction.description || "No description"}
                   </p>
                   {/* Source */}
-                  <p className="text-[10px] text-slate-500">
+                  <p className="text-[10px] text-gray-400">
                     Source: {transaction.source || "-"}
                   </p>
                   {/* Date */}
-                  <p className="text-[10px] text-slate-500">
+                  <p className="text-[10px] text-gray-400">
                     Date: {transaction.trans_date || "-"}
                   </p>
                 </div>
@@ -177,7 +177,7 @@ export default function TransactionsTable({
                 {/* Actions */}
                 <div className="flex items-center gap-1">
                   <button
-                    className="group rounded-md p-1.5 text-blue-500 transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-300 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="group rounded-md p-1.5 text-blue-500 transition-all duration-200 hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
                     title="Edit"
                     onClick={() => onEdit(transaction)}
                     disabled={disabled}
@@ -197,7 +197,7 @@ export default function TransactionsTable({
                     </svg>
                   </button>
                   <button
-                    className="group rounded-md p-1.5 text-red-500 transition-all duration-200 hover:bg-red-500/20 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="group rounded-md p-1.5 text-red-500 transition-all duration-200 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
                     title="Delete"
                     onClick={() => onDelete(transaction)}
                     disabled={disabled}

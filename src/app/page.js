@@ -65,16 +65,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 font-sans">
+    <div className="min-h-screen bg-gray-100 font-sans">
       <Header />
       <main className="mx-auto flex min-h-[70vh] max-w-xl items-center px-4 sm:px-6">
-        <div className="w-full rounded-2xl border border-slate-700/60 bg-slate-800/70 p-6 shadow-2xl backdrop-blur sm:p-8">
-          <h2 className="mb-6 text-xl font-semibold text-white sm:text-2xl">Sign in</h2>
+        <div className="w-full rounded-2xl border border-gray-200 bg-white p-6 shadow-xl sm:p-8">
+          <h2 className="mb-6 text-xl font-semibold text-gray-800 sm:text-2xl">Sign in</h2>
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div>
               <label
                 htmlFor="login_username"
-                className="mb-2 block text-sm font-medium text-slate-300"
+                className="mb-2 block text-sm font-medium text-gray-600"
               >
                 Username
               </label>
@@ -85,14 +85,14 @@ export default function LoginPage() {
                 value={form.username}
                 onChange={handleChange}
                 required
-                className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-white placeholder-slate-400 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-gray-800 placeholder-gray-400 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 placeholder="Enter username"
               />
-            </div>
+        </div>
             <div>
               <label
                 htmlFor="login_password"
-                className="mb-2 block text-sm font-medium text-slate-300"
+                className="mb-2 block text-sm font-medium text-gray-600"
               >
                 Password
               </label>
@@ -103,7 +103,7 @@ export default function LoginPage() {
                 value={form.password}
                 onChange={handleChange}
                 required
-                className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-white placeholder-slate-400 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-gray-800 placeholder-gray-400 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 placeholder="Enter password"
               />
             </div>
@@ -114,22 +114,22 @@ export default function LoginPage() {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 cursor-pointer rounded border-slate-600 bg-slate-700/50 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0"
+                className="h-4 w-4 cursor-pointer rounded border-gray-300 bg-gray-50 text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0"
               />
               <label
                 htmlFor="remember_me"
-                className="cursor-pointer text-sm text-slate-300"
+                className="cursor-pointer text-sm text-gray-600"
               >
                 Remember me
               </label>
             </div>
             {error && (
-              <p className="text-sm font-medium text-red-400">{error}</p>
+              <p className="text-sm font-medium text-red-500">{error}</p>
             )}
             <button
               type="submit"
-              className="w-full rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-3 font-semibold text-white transition-all hover:shadow-lg hover:shadow-emerald-500/25"
-            >
+              className="w-full rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-3 font-semibold text-white shadow-lg shadow-emerald-500/20 transition-all hover:shadow-xl hover:shadow-emerald-500/30"
+          >
               Login
             </button>
           </form>

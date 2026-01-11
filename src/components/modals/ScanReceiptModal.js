@@ -161,18 +161,18 @@ export default function ScanReceiptModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm"
         onClick={handleCloseModal}
       ></div>
-      <div className="relative z-10 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-700/60 bg-slate-800/95 p-5 shadow-2xl sm:p-6">
+      <div className="relative z-10 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-gray-200 bg-white p-5 shadow-2xl sm:p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-white sm:text-xl">
+          <h3 className="text-lg font-semibold text-gray-800 sm:text-xl">
             Scan Receipt
           </h3>
           <button
             type="button"
             onClick={handleCloseModal}
-            className="rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-700 hover:text-white"
+            className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
           >
             <svg
               className="h-5 w-5"
@@ -194,9 +194,9 @@ export default function ScanReceiptModal({
           <div>
             <label
               htmlFor="bankSource"
-              className="mb-2 block text-sm font-medium text-slate-300"
+              className="mb-2 block text-sm font-medium text-gray-600"
             >
-              Bank Account Source <span className="text-red-400">*</span>
+              Bank Account Source <span className="text-red-500">*</span>
             </label>
             <input
               id="bankSource"
@@ -204,35 +204,35 @@ export default function ScanReceiptModal({
               value={bankSource}
               onChange={(e) => setBankSource(e.target.value)}
               placeholder="e.g., Chase Checking, Amex Credit Card"
-              className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-white placeholder-slate-400 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-gray-800 placeholder-gray-400 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
               autoComplete="off"
               autoCorrect="off"
               autoCapitalize="off"
               spellCheck="false"
             />
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-gray-400">
               This will be applied to all transactions from this receipt
             </p>
           </div>
 
           {/* File Input Section */}
           <div>
-            <span className="mb-2 block text-sm font-medium text-slate-300">
-              Receipt Image or PDF <span className="text-red-400">*</span>
+            <span className="mb-2 block text-sm font-medium text-gray-600">
+              Receipt Image or PDF <span className="text-red-500">*</span>
             </span>
 
             {/* File Preview or Selection */}
             {selectedFile ? (
               <div className="relative">
-                <div className="overflow-hidden rounded-lg border border-slate-600 bg-slate-700/50">
+                <div className="overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
                   {fileType === "pdf" ? (
                     // PDF Preview
                     <div className="flex h-32 flex-col items-center justify-center gap-2 p-4">
-                      <svg className="h-12 w-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="h-12 w-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 13h6m-6 4h4" />
                       </svg>
-                      <span className="text-sm font-medium text-red-400">PDF Document</span>
+                      <span className="text-sm font-medium text-red-500">PDF Document</span>
                     </div>
                   ) : previewUrl ? (
                     // Image Preview
@@ -244,18 +244,18 @@ export default function ScanReceiptModal({
                   ) : (
                     // Fallback
                     <div className="flex h-32 items-center justify-center">
-                      <span className="text-sm text-slate-400">File selected (preview unavailable)</span>
+                      <span className="text-sm text-gray-400">File selected (preview unavailable)</span>
                     </div>
                   )}
                 </div>
                 <div className="mt-2 flex items-center justify-between">
-                  <p className="text-xs text-emerald-400">
+                  <p className="text-xs text-emerald-600">
                     {selectedFile.name || "File"} ({(selectedFile.size / 1024).toFixed(1)} KB)
                   </p>
                   <button
                     type="button"
                     onClick={handleClearFile}
-                    className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-red-400 transition-colors hover:bg-red-500/20"
+                    className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-red-500 transition-colors hover:bg-red-50"
                   >
                     <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -268,7 +268,7 @@ export default function ScanReceiptModal({
               /* Use label instead of button for iOS compatibility */
               <label
                 htmlFor="receiptFileInput"
-                className="relative flex w-full cursor-pointer flex-col items-center gap-3 rounded-lg border-2 border-dashed border-emerald-500/50 bg-emerald-500/10 p-6 text-emerald-400 transition-all hover:border-emerald-400 hover:bg-emerald-500/20"
+                className="relative flex w-full cursor-pointer flex-col items-center gap-3 rounded-lg border-2 border-dashed border-emerald-300 bg-emerald-50 p-6 text-emerald-600 transition-all hover:border-emerald-400 hover:bg-emerald-100"
               >
                 <div className="flex gap-4">
                   {/* Camera/Image Icon */}
@@ -287,7 +287,7 @@ export default function ScanReceiptModal({
                     />
                   </svg>
                   {/* PDF Icon */}
-                  <svg className="h-8 w-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-8 w-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-6 4h4" />
                   </svg>
@@ -296,7 +296,7 @@ export default function ScanReceiptModal({
                   <span className="text-sm font-medium">
                     {isMobile ? "Tap to Take Photo, Choose Image, or Select PDF" : "Click to upload image or PDF"}
                   </span>
-                  <p className="mt-1 text-xs text-slate-400">PNG, JPG, GIF, PDF up to 20MB</p>
+                  <p className="mt-1 text-xs text-gray-400">PNG, JPG, GIF, PDF up to 20MB</p>
                 </div>
                 {/* File input inside label */}
                 <input
@@ -326,14 +326,14 @@ export default function ScanReceiptModal({
             <button
               type="button"
               onClick={handleCloseModal}
-              className="flex-1 rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 font-semibold text-slate-300 transition-colors hover:bg-slate-700"
+              className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-3 font-semibold text-gray-600 transition-colors hover:bg-gray-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!selectedFile || !bankSource.trim()}
-              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-3 font-semibold text-white transition-all hover:shadow-lg hover:shadow-emerald-500/25 disabled:opacity-50"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-3 font-semibold text-white shadow-lg shadow-emerald-500/20 transition-all hover:shadow-xl hover:shadow-emerald-500/30 disabled:opacity-50"
             >
               <span>Scan & Import</span>
             </button>

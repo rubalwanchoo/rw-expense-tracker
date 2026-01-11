@@ -3,7 +3,7 @@
 export default function CreateProjectButton({ onClick }) {
   return (
     <button
-      className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition-all duration-200 hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/30 active:scale-100 sm:px-8 sm:py-4 sm:text-lg"
+      className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition-all duration-200 hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/30 active:scale-100 sm:px-8 sm:py-4 sm:text-lg"
       onClick={onClick}
     >
       <svg
@@ -24,4 +24,3 @@ export default function CreateProjectButton({ onClick }) {
     </button>
   );
 }
-

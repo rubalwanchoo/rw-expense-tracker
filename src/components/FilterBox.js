@@ -8,10 +8,10 @@ export default function FilterBox({ value, onChange, placeholder = "Filter proje
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-slate-700 bg-slate-800/80 px-8 py-2 text-xs text-white placeholder-slate-500 shadow-inner shadow-slate-900/20 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 sm:w-64 sm:px-10 sm:text-sm"
+        className="w-full rounded-lg border border-gray-200 bg-white px-8 py-2 text-xs text-gray-800 placeholder-gray-400 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 sm:w-64 sm:px-10 sm:text-sm"
       />
       <svg
-        className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-500"
+        className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-gray-400"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -26,4 +26,3 @@ export default function FilterBox({ value, onChange, placeholder = "Filter proje
     </div>
   );
 }
-

@@ -312,81 +312,32 @@ export default function TransactionsPage() {
     }
   };
 
-  // Helper function to apply sharpening filter to canvas
-  const sharpenImage = (ctx, width, height, intensity = 1) => {
-    const imageData = ctx.getImageData(0, 0, width, height);
-    const data = imageData.data;
-    const weights = [
-      0, -intensity, 0,
-      -intensity, 1 + 4 * intensity, -intensity,
-      0, -intensity, 0
-    ];
-
-    const tempCanvas = document.createElement("canvas");
-    tempCanvas.width = width;
-    tempCanvas.height = height;
-    const tempCtx = tempCanvas.getContext("2d");
-    tempCtx.putImageData(imageData, 0, 0);
-    const tempData = tempCtx.getImageData(0, 0, width, height).data;
-
-    for (let y = 1; y < height - 1; y++) {
-      for (let x = 1; x < width - 1; x++) {
-        for (let c = 0; c < 3; c++) {
-          let val = 0;
-          for (let ky = -1; ky <= 1; ky++) {
-            for (let kx = -1; kx <= 1; kx++) {
-              const idx = ((y + ky) * width + (x + kx)) * 4 + c;
-              val += tempData[idx] * weights[(ky + 1) * 3 + (kx + 1)];
-            }
-          }
-          const idx = (y * width + x) * 4 + c;
-          data[idx] = Math.min(255, Math.max(0, val));
-        }
-      }
-    }
-    ctx.putImageData(imageData, 0, 0);
-  };
-
-  // Helper function to enhance contrast
-  const enhanceContrast = (ctx, width, height, factor = 1.2) => {
-    const imageData = ctx.getImageData(0, 0, width, height);
-    const data = imageData.data;
-    const intercept = 128 * (1 - factor);
-    
-    for (let i = 0; i < data.length; i += 4) {
-      data[i] = Math.min(255, Math.max(0, data[i] * factor + intercept));     // R
-      data[i + 1] = Math.min(255, Math.max(0, data[i + 1] * factor + intercept)); // G
-      data[i + 2] = Math.min(255, Math.max(0, data[i + 2] * factor + intercept)); // B
-    }
-    ctx.putImageData(imageData, 0, 0);
-  };
-
-  // Helper function to enhance and convert image to base64
-  const compressAndConvertToBase64 = (file, maxWidth = 2400, quality = 0.92) => {
+  // Helper function to compress and convert image to base64
+  // Optimized for speed: smaller resolution for faster API processing
+  const compressAndConvertToBase64 = (file, maxWidth = 1200, quality = 0.85) => {
     return new Promise((resolve, reject) => {
       try {
         const img = new Image();
         const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        const ctx = canvas.getContext("2d");
 
         img.onload = () => {
           try {
-            // Calculate new dimensions - use higher resolution for OCR
+            // Calculate new dimensions
             let width = img.width;
             let height = img.height;
 
-            // Scale up small images for better OCR
-            const minWidth = 1600;
-            if (width < minWidth) {
-              const scale = minWidth / width;
-              width = minWidth;
-              height = Math.round(height * scale);
-            }
-
-            // Scale down very large images
+            // Scale down large images for faster processing
             if (width > maxWidth) {
               height = Math.round((height * maxWidth) / width);
               width = maxWidth;
+            }
+
+            // Cap height as well
+            const maxHeight = 1600;
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
             }
 
             canvas.width = width;
@@ -399,22 +350,10 @@ export default function TransactionsPage() {
             // Draw the image
             ctx.drawImage(img, 0, 0, width, height);
 
-            // Apply image enhancements for better OCR
-            try {
-              // Enhance contrast slightly to make text more readable
-              enhanceContrast(ctx, width, height, 1.15);
-              
-              // Apply light sharpening to improve text clarity
-              sharpenImage(ctx, width, height, 0.3);
-            } catch (enhanceErr) {
-              console.warn("Image enhancement skipped:", enhanceErr);
-              // Continue without enhancement if it fails
-            }
-
-            // Convert to high-quality JPEG
-            const enhancedBase64 = canvas.toDataURL("image/jpeg", quality);
-            console.log(`📷 Image enhanced: ${width}x${height}, ${(enhancedBase64.length / 1024).toFixed(1)}KB`);
-            resolve(enhancedBase64);
+            // Convert to JPEG
+            const base64 = canvas.toDataURL("image/jpeg", quality);
+            console.log(`📷 Image compressed: ${width}x${height}, ${(base64.length / 1024).toFixed(1)}KB`);
+            resolve(base64);
           } catch (canvasErr) {
             reject(canvasErr);
           }
@@ -764,12 +703,12 @@ export default function TransactionsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 font-sans">
+      <div className="min-h-screen bg-gray-100 font-sans">
         <Header showLogout onLogout={handleLogout} />
         <main className="mx-auto max-w-4xl px-6 py-16">
           <div className="flex flex-col items-center justify-center gap-4 py-20">
-            <div className="h-10 w-10 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent"></div>
-            <p className="text-slate-400">Loading project...</p>
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent"></div>
+            <p className="text-gray-500">Loading project...</p>
           </div>
         </main>
       </div>
@@ -777,7 +716,7 @@ export default function TransactionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 font-sans">
+    <div className="min-h-screen bg-gray-100 font-sans">
       <Notification
         notification={notification}
         onClose={() => setNotification(null)}
@@ -789,7 +728,7 @@ export default function TransactionsPage() {
         {/* Back Button */}
         <button
           onClick={handleBack}
-          className="group mb-4 flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium text-emerald-400 transition-all duration-300 hover:bg-emerald-500/10 hover:text-emerald-300 sm:mb-6 sm:px-4 sm:py-2 sm:text-sm"
+          className="group mb-4 flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium text-emerald-600 transition-all duration-300 hover:bg-emerald-50 hover:text-emerald-700 sm:mb-6 sm:px-4 sm:py-2 sm:text-sm"
         >
           <svg
             className="h-5 w-5 transition-transform duration-300 group-hover:-translate-x-1"
@@ -808,26 +747,26 @@ export default function TransactionsPage() {
         </button>
 
         {/* Project Header */}
-        <div className="mb-6 rounded-2xl border border-slate-700/60 bg-slate-800/70 p-4 backdrop-blur sm:mb-8 sm:p-6">
+        <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-4 shadow-lg sm:mb-8 sm:p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex-1">
-              <h2 className="mb-2 text-xl font-bold text-white sm:text-2xl">
+              <h2 className="mb-2 text-xl font-bold text-gray-800 sm:text-2xl">
                 {project?.name || "Project"}
               </h2>
               {project?.description && (
-                <p className="text-sm text-slate-400 sm:text-base">{project.description}</p>
+                <p className="text-sm text-gray-500 sm:text-base">{project.description}</p>
               )}
             </div>
             <div className="flex flex-wrap items-center gap-4 sm:gap-6">
               <div className="text-left sm:text-right">
-                <p className="text-[10px] uppercase tracking-wide text-slate-500 mb-1 sm:text-xs">Total Income</p>
-                <p className="text-lg font-bold text-emerald-400 sm:text-xl">
+                <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-1 sm:text-xs">Total Income</p>
+                <p className="text-lg font-bold text-emerald-600 sm:text-xl">
                   ${totalIncome.toFixed(2)}
                 </p>
               </div>
               <div className="text-left sm:text-right">
-                <p className="text-[10px] uppercase tracking-wide text-slate-500 mb-1 sm:text-xs">Total Expenses</p>
-                <p className="text-lg font-bold text-red-400 sm:text-xl">
+                <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-1 sm:text-xs">Total Expenses</p>
+                <p className="text-lg font-bold text-red-600 sm:text-xl">
                   ${totalExpenses.toFixed(2)}
                 </p>
               </div>
@@ -836,7 +775,7 @@ export default function TransactionsPage() {
                 <button
                   type="button"
                   onClick={openDateRangeModal}
-                  className="flex items-center gap-2 rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-xs font-medium text-slate-300 transition-all duration-200 hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-400"
+                  className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 shadow-sm transition-all duration-200 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-600"
                 >
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -852,7 +791,7 @@ export default function TransactionsPage() {
                   <button
                     type="button"
                     onClick={clearDateRange}
-                    className="rounded-lg p-2 text-slate-400 transition-all duration-200 hover:bg-red-500/20 hover:text-red-400"
+                    className="rounded-lg p-2 text-gray-400 transition-all duration-200 hover:bg-red-50 hover:text-red-500"
                     title="Clear date range"
                   >
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -863,7 +802,7 @@ export default function TransactionsPage() {
               </div>
             </div>
           </div>
-          <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500 sm:mt-4 sm:gap-4 sm:text-sm">
+          <div className="mt-3 flex flex-wrap gap-2 text-xs text-gray-400 sm:mt-4 sm:gap-4 sm:text-sm">
             <span>
               Created: {project?.dtm_created ? new Date(project.dtm_created).toLocaleDateString() : "-"}
             </span>
@@ -874,10 +813,10 @@ export default function TransactionsPage() {
         </div>
 
         {/* Transactions Section */}
-        <div className="overflow-hidden rounded-2xl border border-slate-700/60 bg-slate-800/70 p-4 backdrop-blur sm:p-6">
+        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 shadow-lg sm:p-6">
           <div className="mb-4 flex flex-col gap-3 sm:mb-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <h3 className="text-lg font-semibold text-white sm:text-xl">Transactions</h3>
+              <h3 className="text-lg font-semibold text-gray-800 sm:text-xl">Transactions</h3>
               <FilterBox
                 value={filterText}
                 onChange={handleFilterChange}
@@ -892,7 +831,7 @@ export default function TransactionsPage() {
                 <button
                   onClick={openBulkDeleteModal}
                   disabled={isTableDisabled}
-                  className="flex items-center gap-2 rounded-lg border border-red-500/50 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-400 transition-all hover:bg-red-500/20 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-600 transition-all hover:bg-red-100 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <svg
                     className="h-4 w-4"
@@ -916,10 +855,10 @@ export default function TransactionsPage() {
           {/* Sort Option + Counts */}
           <div className="mb-3 flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-400">Sort by Date:</span>
+              <span className="text-xs text-gray-500">Sort by Date:</span>
               <button
                 onClick={() => setSortDirection(sortDirection === "desc" ? "asc" : "desc")}
-                className="flex items-center gap-1.5 rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-1.5 text-xs font-medium text-slate-300 transition-all duration-200 hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-400"
+                className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm transition-all duration-200 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-600"
               >
                 {sortDirection === "desc" ? (
                   <>
@@ -941,11 +880,11 @@ export default function TransactionsPage() {
             
             {/* Transaction Counts */}
             <div className="flex items-center gap-3 text-xs">
-              <span className="flex items-center gap-1.5 rounded-md bg-red-500/10 px-2 py-1 text-red-400">
+              <span className="flex items-center gap-1.5 rounded-md bg-red-50 border border-red-100 px-2 py-1 text-red-600">
                 <span className="font-medium">Expenses:</span>
                 <span className="font-bold">{filteredTransactions.filter(t => t.type === "Expense").length}</span>
               </span>
-              <span className="flex items-center gap-1.5 rounded-md bg-emerald-500/10 px-2 py-1 text-emerald-400">
+              <span className="flex items-center gap-1.5 rounded-md bg-emerald-50 border border-emerald-100 px-2 py-1 text-emerald-600">
                 <span className="font-medium">Income:</span>
                 <span className="font-bold">{filteredTransactions.filter(t => t.type === "Income").length}</span>
               </span>
@@ -1013,19 +952,19 @@ export default function TransactionsPage() {
 
       {/* Processing Overlay - At root level for proper viewport centering */}
       {(isProcessingReceipt || isBulkDeleting) && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm">
-          <div className="rounded-2xl border border-slate-700/60 bg-slate-800/95 p-8 shadow-2xl">
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-gray-900/60 backdrop-blur-sm">
+          <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-2xl">
             <div className="flex flex-col items-center">
-              <div className={`h-12 w-12 animate-spin rounded-full border-4 border-t-transparent ${isBulkDeleting ? "border-red-400" : "border-emerald-400"}`}></div>
-              <p className={`mt-4 text-lg font-medium ${isBulkDeleting ? "text-red-400" : "text-emerald-400"}`}>
+              <div className={`h-12 w-12 animate-spin rounded-full border-4 border-t-transparent ${isBulkDeleting ? "border-red-500" : "border-emerald-500"}`}></div>
+              <p className={`mt-4 text-lg font-medium ${isBulkDeleting ? "text-red-600" : "text-emerald-600"}`}>
                 {isBulkDeleting ? "Deleting transactions..." : "Processing receipt..."}
               </p>
-              <p className="mt-1 text-sm text-slate-400">
+              <p className="mt-1 text-sm text-gray-500">
                 {isBulkDeleting ? `Removing ${selectedTransactionIds.length} item(s)` : "Analyzing receipt..."}
               </p>
               {!isBulkDeleting && (
-                <p className="mt-4 text-xs text-slate-500">
-                  This may take around 3 mins
+                <p className="mt-4 text-xs text-gray-400">
+                  This may take 15-30 seconds
                 </p>
               )}
             </div>

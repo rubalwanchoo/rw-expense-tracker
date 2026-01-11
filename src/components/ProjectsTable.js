@@ -21,7 +21,7 @@ export default function ProjectsTable({
   return (
     <div className="mx-auto mt-8 w-full max-w-2xl sm:mt-10">
       <div className="mb-3 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className="text-left text-base font-semibold text-white sm:text-lg">Your Projects</h3>
+        <h3 className="text-left text-base font-semibold text-gray-800 sm:text-lg">Your Projects</h3>
         <div className="w-full sm:w-auto">
           {onFilterChange && (
             <FilterBox
@@ -32,16 +32,16 @@ export default function ProjectsTable({
           )}
         </div>
       </div>
-      <div className="overflow-hidden rounded-lg border-2 border-slate-600 bg-slate-800/70 shadow-lg">
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
         {loading ? (
           <div className="flex flex-col items-center gap-2 px-4 py-8">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent"></div>
-            <p className="text-sm text-slate-400">Loading projects...</p>
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent"></div>
+            <p className="text-sm text-gray-500">Loading projects...</p>
           </div>
         ) : projects.length === 0 ? (
           <div className="flex flex-col items-center gap-2 px-4 py-8">
             <svg
-              className="h-10 w-10 text-slate-600"
+              className="h-10 w-10 text-gray-300"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -53,8 +53,8 @@ export default function ProjectsTable({
                 d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
               />
             </svg>
-            <p className="text-sm text-slate-400">No projects created yet</p>
-            <p className="text-xs text-slate-500">
+            <p className="text-sm text-gray-500">No projects created yet</p>
+            <p className="text-xs text-gray-400">
               Click the button above to create your first project
             </p>
           </div>
@@ -64,31 +64,31 @@ export default function ProjectsTable({
               <div
                 key={project.id}
                 onClick={() => handleRowClick(project)}
-                className={`flex cursor-pointer items-center justify-between gap-3 px-3 py-3 transition-all duration-200 hover:bg-slate-700/50 sm:px-4 ${
-                  index !== projects.length - 1 ? "border-b-2 border-slate-600" : ""
+                className={`flex cursor-pointer items-center justify-between gap-3 px-3 py-3 transition-all duration-200 hover:bg-gray-50 sm:px-4 ${
+                  index !== projects.length - 1 ? "border-b border-gray-100" : ""
                 }`}
               >
                 {/* Project Info - Stacked, Left Aligned */}
                 <div className="flex-1 space-y-1 text-left">
                   {/* Project Name */}
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-gray-800">
                     Project - {project.name}
                   </p>
                   {/* Description */}
-                  <p className="text-xs text-slate-400 line-clamp-1">
+                  <p className="text-xs text-gray-500 line-clamp-1">
                     {project.description || "No description"}
                   </p>
                   {/* Income/Expenses Labels */}
                   <div className="flex gap-2">
-                    <span className="rounded bg-emerald-500/20 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
+                    <span className="rounded bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-600 border border-emerald-100">
                       Income: ${(projectTotals[project.id]?.income || 0).toFixed(2)}
                     </span>
-                    <span className="rounded bg-red-500/20 px-2 py-0.5 text-[10px] font-medium text-red-400">
+                    <span className="rounded bg-red-50 px-2 py-0.5 text-[10px] font-medium text-red-600 border border-red-100">
                       Expenses: ${(projectTotals[project.id]?.expenses || 0).toFixed(2)}
                     </span>
                   </div>
                   {/* Created/Updated info */}
-                  <div className="flex gap-3 text-[10px] text-slate-500">
+                  <div className="flex gap-3 text-[10px] text-gray-400">
                     <span>Created: {project.dtm_created ? new Date(project.dtm_created).toLocaleDateString() : "-"}</span>
                     <span>Updated: {project.dtm_modified ? new Date(project.dtm_modified).toLocaleDateString() : "-"}</span>
                   </div>
@@ -97,7 +97,7 @@ export default function ProjectsTable({
                 {/* Actions */}
                 <div className="flex items-center gap-1">
                   <button
-                    className="group rounded-md p-1.5 text-blue-500 transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-300"
+                    className="group rounded-md p-1.5 text-blue-500 transition-all duration-200 hover:bg-blue-50 hover:text-blue-600"
                     title="Edit"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -119,7 +119,7 @@ export default function ProjectsTable({
                     </svg>
                   </button>
                   <button
-                    className="group rounded-md p-1.5 text-red-500 transition-all duration-200 hover:bg-red-500/20 hover:text-red-300"
+                    className="group rounded-md p-1.5 text-red-500 transition-all duration-200 hover:bg-red-50 hover:text-red-600"
                     title="Delete"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -149,4 +149,3 @@ export default function ProjectsTable({
     </div>
   );
 }
-

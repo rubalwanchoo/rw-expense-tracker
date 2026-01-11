@@ -262,7 +262,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 font-sans">
+    <div className="min-h-screen bg-gray-100 font-sans">
       <Notification
         notification={notification}
         onClose={() => setNotification(null)}
@@ -272,10 +272,10 @@ export default function DashboardPage() {
       <main className="relative mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-16">
         <div className="flex flex-col items-center justify-center text-center">
           <div className="mb-6 sm:mb-8">
-            <h2 className="mb-2 text-2xl font-semibold text-white sm:mb-3 sm:text-3xl">
+            <h2 className="mb-2 text-2xl font-semibold text-gray-800 sm:mb-3 sm:text-3xl">
               Track Your Expenses
             </h2>
-            <p className="text-base text-slate-400 sm:text-lg">
+            <p className="text-base text-gray-500 sm:text-lg">
               Keep your finances organized and under control
             </p>
           </div>
@@ -333,4 +333,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-

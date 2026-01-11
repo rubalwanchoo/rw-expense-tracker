@@ -1,8 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f3f4f6;
+  --foreground: #1f2937;
+  --card-bg: #ffffff;
+  --card-border: #e5e7eb;
+  --muted: #6b7280;
+  --muted-light: #9ca3af;
+  --accent: #059669;
+  --accent-light: #10b981;
 }
 
 @theme inline {
@@ -10,13 +16,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
@@ -51,9 +50,9 @@ body {
   }
 }
 
-/* Modern Date Input Styling */
+/* Modern Date Input Styling - Light Theme */
 .date-input-modern {
-  color-scheme: dark;
+  color-scheme: light;
   appearance: none;
   -webkit-appearance: none;
 }
@@ -77,14 +76,14 @@ body {
 }
 
 .date-input-modern::-webkit-datetime-edit-text {
-  color: #64748b;
+  color: #6b7280;
   padding: 0 4px;
 }
 
 .date-input-modern::-webkit-datetime-edit-month-field,
 .date-input-modern::-webkit-datetime-edit-day-field,
 .date-input-modern::-webkit-datetime-edit-year-field {
-  color: white;
+  color: #1f2937;
   padding: 2px 4px;
   border-radius: 4px;
   transition: background-color 0.2s ease;
@@ -101,7 +100,7 @@ body {
 .date-input-modern::-webkit-datetime-edit-month-field:hover,
 .date-input-modern::-webkit-datetime-edit-day-field:hover,
 .date-input-modern::-webkit-datetime-edit-year-field:hover {
-  background-color: rgba(16, 185, 129, 0.2);
+  background-color: rgba(16, 185, 129, 0.15);
 }
 
 /* Small variant */
@@ -124,5 +123,5 @@ body {
 
 /* Placeholder styling when empty */
 .date-input-modern:invalid::-webkit-datetime-edit {
-  color: #64748b;
+  color: #9ca3af;
 }
