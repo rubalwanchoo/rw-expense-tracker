@@ -7,7 +7,7 @@ import {
   updateProject,
   deleteProject,
 } from "@/lib/projects";
-import { fetchProjectTotals } from "@/lib/transactions";
+import { fetchProjectTotals, fetchTransactions } from "@/lib/transactions";
 import Notification from "@/components/Notification";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -16,6 +16,7 @@ import ProjectsTable from "@/components/ProjectsTable";
 import CreateProjectModal from "@/components/modals/CreateProjectModal";
 import EditProjectModal from "@/components/modals/EditProjectModal";
 import DeleteProjectModal from "@/components/modals/DeleteProjectModal";
+import AnalyticsModal from "@/components/modals/AnalyticsModal";
 
 import { useRouter } from "next/navigation";
 
@@ -47,6 +48,11 @@ export default function DashboardPage() {
     description: "",
     modified_by: "",
   });
+  
+  // Analytics modal state
+  const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
+  const [analyticsTransactions, setAnalyticsTransactions] = useState([]);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
 
   // Notification handler
   const showNotification = (message, type = "success") => {
@@ -144,6 +150,31 @@ export default function DashboardPage() {
     setIsDeleteModalOpen(false);
     setProjectToDelete(null);
     setDeletePassword("");
+  };
+
+  // Analytics modal handler
+  const openAnalyticsModal = async (project) => {
+    try {
+      setLoadingAnalytics(true);
+      setIsAnalyticsModalOpen(true);
+      
+      // Fetch transactions for the selected project
+      const { data, error } = await fetchTransactions(project.id);
+      if (error) throw error;
+      
+      setAnalyticsTransactions(data || []);
+    } catch (error) {
+      console.error("Error fetching transactions for analytics:", error.message);
+      showNotification("Failed to load analytics data.", "error");
+      setIsAnalyticsModalOpen(false);
+    } finally {
+      setLoadingAnalytics(false);
+    }
+  };
+
+  const closeAnalyticsModal = () => {
+    setIsAnalyticsModalOpen(false);
+    setAnalyticsTransactions([]);
   };
 
   // CRUD operations
@@ -290,6 +321,7 @@ export default function DashboardPage() {
             onFilterChange={handleFilterChange}
             onEdit={openEditModal}
             onDelete={openDeleteModal}
+            onAnalyze={openAnalyticsModal}
           />
         </div>
       </main>
@@ -328,6 +360,27 @@ export default function DashboardPage() {
             : false
         }
       />
+
+      {/* Analytics Modal */}
+      <AnalyticsModal
+        isOpen={isAnalyticsModalOpen}
+        onClose={closeAnalyticsModal}
+        transactions={analyticsTransactions}
+      />
+
+      {/* Loading overlay for analytics */}
+      {loadingAnalytics && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-gray-900/60 backdrop-blur-sm">
+          <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-2xl">
+            <div className="flex flex-col items-center">
+              <div className="h-12 w-12 animate-spin rounded-full border-4 border-purple-500 border-t-transparent"></div>
+              <p className="mt-4 text-lg font-medium text-purple-600">
+                Loading analytics...
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

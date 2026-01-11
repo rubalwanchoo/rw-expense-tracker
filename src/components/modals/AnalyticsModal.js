@@ -55,82 +55,70 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
     setFilterEndDate("");
   };
 
-  // Helper function to get the start of the week (Sunday) for a date
-  const getWeekStart = (date) => {
-    const d = new Date(date);
-    const day = d.getDay(); // 0 = Sunday
-    d.setDate(d.getDate() - day);
-    d.setHours(0, 0, 0, 0);
-    return d;
-  };
-
-  // Helper function to format week label
-  const formatWeekLabel = (date) => {
-    const month = MONTHS[date.getMonth()];
-    const day = date.getDate();
-    return `${month} ${day}`;
-  };
-
-  // 1. Weekly Spending Trend Data - Shows all weeks in range
-  const weeklyData = useMemo(() => {
+  // 1. Monthly Spending Trend Data - Shows all months in range
+  const monthlyData = useMemo(() => {
     if (filteredTransactions.length === 0) return [];
 
-    // First, collect data from transactions grouped by week
-    const weekMap = {};
-    let minDate = null;
-    let maxDate = null;
+    // Collect data from transactions grouped by month
+    const monthMap = {};
+    let minMonth = null;
+    let maxMonth = null;
 
     filteredTransactions.forEach((t) => {
       if (!t.trans_date) return;
       const date = new Date(t.trans_date);
-      const weekStart = getWeekStart(date);
-      const key = weekStart.toISOString().split('T')[0]; // YYYY-MM-DD of week start
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const key = `${year}-${String(month + 1).padStart(2, '0')}`; // YYYY-MM
       
-      // Track min/max dates
-      if (!minDate || weekStart < minDate) minDate = new Date(weekStart);
-      if (!maxDate || weekStart > maxDate) maxDate = new Date(weekStart);
+      // Track min/max months
+      const monthDate = new Date(year, month, 1);
+      if (!minMonth || monthDate < minMonth) minMonth = new Date(monthDate);
+      if (!maxMonth || monthDate > maxMonth) maxMonth = new Date(monthDate);
       
-      if (!weekMap[key]) {
-        weekMap[key] = { week: key, expenses: 0, weekStart: new Date(weekStart) };
+      if (!monthMap[key]) {
+        monthMap[key] = { month: key, expenses: 0 };
       }
 
       const amount = parseFloat(t.amount) || 0;
       if (t.type === "Expense") {
-        weekMap[key].expenses += amount;
+        monthMap[key].expenses += amount;
       }
     });
 
     // If filter dates are set, use them as boundaries
     if (filterStartDate) {
-      const startD = getWeekStart(new Date(filterStartDate));
-      if (!minDate || startD < minDate) minDate = startD;
+      const startD = new Date(filterStartDate);
+      const startMonth = new Date(startD.getFullYear(), startD.getMonth(), 1);
+      if (!minMonth || startMonth < minMonth) minMonth = startMonth;
     }
     if (filterEndDate) {
-      const endD = getWeekStart(new Date(filterEndDate));
-      if (!maxDate || endD > maxDate) maxDate = endD;
+      const endD = new Date(filterEndDate);
+      const endMonth = new Date(endD.getFullYear(), endD.getMonth(), 1);
+      if (!maxMonth || endMonth > maxMonth) maxMonth = endMonth;
     }
 
-    if (!minDate || !maxDate) return [];
+    if (!minMonth || !maxMonth) return [];
 
-    // Generate all weeks between min and max
-    const allWeeks = [];
-    const current = new Date(minDate);
+    // Generate all months between min and max
+    const allMonths = [];
+    const current = new Date(minMonth);
 
-    while (current <= maxDate) {
-      const key = current.toISOString().split('T')[0];
-      const existing = weekMap[key];
+    while (current <= maxMonth) {
+      const key = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}`;
+      const existing = monthMap[key];
       
-      allWeeks.push({
-        week: key,
+      allMonths.push({
+        month: key,
         expenses: existing?.expenses || 0,
-        label: formatWeekLabel(current),
+        label: `${MONTHS[current.getMonth()]} ${current.getFullYear()}`,
       });
       
-      // Move to next week
-      current.setDate(current.getDate() + 7);
+      // Move to next month
+      current.setMonth(current.getMonth() + 1);
     }
 
-    return allWeeks;
+    return allMonths;
   }, [filteredTransactions, filterStartDate, filterEndDate]);
 
   // 2. Day of Week Analysis Data
@@ -318,27 +306,6 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
       .slice(0, 10);
   }, [filteredTransactions]);
 
-  // Word frequency from descriptions
-  const wordCloudData = useMemo(() => {
-    const wordMap = {};
-    const stopWords = new Set(["the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by", "from", "as", "is", "was", "are", "been", "be", "have", "has", "had", "do", "does", "did", "will", "would", "could", "should", "may", "might", "must", "shall", "can", "need", "dare", "ought", "used", "it", "its", "this", "that", "these", "those", "i", "you", "he", "she", "we", "they", "me", "him", "her", "us", "them", "my", "your", "his", "our", "their", "mine", "yours", "hers", "ours", "theirs"]);
-
-    filteredTransactions.forEach((t) => {
-      if (t.type !== "Expense" || !t.description) return;
-      const words = t.description.toLowerCase().replace(/[^a-z\s]/g, "").split(/\s+/);
-      words.forEach((word) => {
-        if (word.length > 2 && !stopWords.has(word)) {
-          wordMap[word] = (wordMap[word] || 0) + 1;
-        }
-      });
-    });
-
-    return Object.entries(wordMap)
-      .map(([word, count]) => ({ word, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 20);
-  }, [filteredTransactions]);
-
   // Rolling 7-day average spending
   const rollingAverageData = useMemo(() => {
     const expensesByDate = {};
@@ -473,110 +440,110 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-gray-900/60 p-4 backdrop-blur-sm">
-      <div className="my-8 w-full max-w-5xl rounded-2xl border border-gray-200 bg-white shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-gray-900/60 p-2 sm:p-4 backdrop-blur-sm">
+      <div className="my-2 sm:my-8 w-full max-w-5xl rounded-xl sm:rounded-2xl border border-gray-200 bg-white shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
-              <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="flex items-center justify-between border-b border-gray-200 px-3 sm:px-6 py-3 sm:py-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-blue-100">
+              <svg className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-800">Spending Analysis</h2>
-              <p className="text-sm text-gray-500">
-                {filteredTransactions.length} transaction{filteredTransactions.length !== 1 ? "s" : ""} analyzed
+              <h2 className="text-base sm:text-xl font-bold text-gray-800">Spending Analysis</h2>
+              <p className="text-xs sm:text-sm text-gray-500">
+                {filteredTransactions.length} transaction{filteredTransactions.length !== 1 ? "s" : ""}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-1.5 sm:p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
           >
-            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
         {/* Date Range Filter */}
-        <div className="border-b border-gray-100 bg-gray-50 px-6 py-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-sm font-medium text-gray-600">Filter by Date:</span>
-            <div className="flex items-center gap-2">
+        <div className="border-b border-gray-100 bg-gray-50 px-3 sm:px-6 py-2 sm:py-3">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-3">
+            <span className="text-xs sm:text-sm font-medium text-gray-600">Filter by Date:</span>
+            <div className="flex flex-wrap items-center gap-2">
               <input
                 type="date"
                 value={filterStartDate}
                 onChange={(e) => setFilterStartDate(e.target.value)}
-                className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="flex-1 sm:flex-none rounded-lg border border-gray-300 bg-white px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
-              <span className="text-gray-400">to</span>
+              <span className="text-gray-400 text-xs sm:text-sm">to</span>
               <input
                 type="date"
                 value={filterEndDate}
                 onChange={(e) => setFilterEndDate(e.target.value)}
-                className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="flex-1 sm:flex-none rounded-lg border border-gray-300 bg-white px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
+              {(filterStartDate || filterEndDate) && (
+                <button
+                  onClick={clearDateFilter}
+                  className="rounded-lg px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+                >
+                  Clear
+                </button>
+              )}
             </div>
-            {(filterStartDate || filterEndDate) && (
-              <button
-                onClick={clearDateFilter}
-                className="rounded-lg px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
-              >
-                Clear Filter
-              </button>
-            )}
           </div>
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 gap-4 border-b border-gray-100 px-6 py-4 sm:grid-cols-4">
-          <div className="rounded-xl bg-emerald-50 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-emerald-600">Total Income</p>
-            <p className="mt-1 text-2xl font-bold text-emerald-700">${summary.totalIncome.toFixed(2)}</p>
+        <div className="grid grid-cols-2 gap-2 sm:gap-4 border-b border-gray-100 px-3 sm:px-6 py-3 sm:py-4 sm:grid-cols-4">
+          <div className="rounded-lg sm:rounded-xl bg-emerald-50 p-2 sm:p-4">
+            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-emerald-600">Total Income</p>
+            <p className="mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold text-emerald-700">${summary.totalIncome.toFixed(2)}</p>
           </div>
-          <div className="rounded-xl bg-red-50 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-red-600">Total Expenses</p>
-            <p className="mt-1 text-2xl font-bold text-red-700">${summary.totalExpenses.toFixed(2)}</p>
+          <div className="rounded-lg sm:rounded-xl bg-red-50 p-2 sm:p-4">
+            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-red-600">Total Expenses</p>
+            <p className="mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold text-red-700">${summary.totalExpenses.toFixed(2)}</p>
           </div>
-          <div className={`rounded-xl p-4 ${summary.netSavings >= 0 ? "bg-blue-50" : "bg-orange-50"}`}>
-            <p className={`text-xs font-medium uppercase tracking-wide ${summary.netSavings >= 0 ? "text-blue-600" : "text-orange-600"}`}>
+          <div className={`rounded-lg sm:rounded-xl p-2 sm:p-4 ${summary.netSavings >= 0 ? "bg-blue-50" : "bg-orange-50"}`}>
+            <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wide ${summary.netSavings >= 0 ? "text-blue-600" : "text-orange-600"}`}>
               Net {summary.netSavings >= 0 ? "Savings" : "Deficit"}
             </p>
-            <p className={`mt-1 text-2xl font-bold ${summary.netSavings >= 0 ? "text-blue-700" : "text-orange-700"}`}>
+            <p className={`mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold ${summary.netSavings >= 0 ? "text-blue-700" : "text-orange-700"}`}>
               ${Math.abs(summary.netSavings).toFixed(2)}
             </p>
           </div>
-          <div className="rounded-xl bg-purple-50 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-purple-600">Savings Rate</p>
-            <p className="mt-1 text-2xl font-bold text-purple-700">{summary.savingsRate}%</p>
+          <div className="rounded-lg sm:rounded-xl bg-purple-50 p-2 sm:p-4">
+            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-purple-600">Savings Rate</p>
+            <p className="mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold text-purple-700">{summary.savingsRate}%</p>
           </div>
         </div>
 
         {/* Charts Sections */}
-        <div className="max-h-[60vh] overflow-y-auto px-6 py-6 space-y-8">
+        <div className="max-h-[65vh] sm:max-h-[60vh] overflow-y-auto px-3 sm:px-6 py-4 sm:py-6 space-y-6 sm:space-y-8">
           
           {/* Section 1: Trends & Predictions */}
           <div>
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
-                <svg className="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
+              <div className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-blue-100">
+                <svg className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
               </div>
-              <h3 className="text-lg font-bold text-gray-800">Trends & Predictions</h3>
+              <h3 className="text-base sm:text-lg font-bold text-gray-800">Trends & Predictions</h3>
             </div>
-            <div className="grid gap-4 lg:grid-cols-2">
-              {/* Chart: Weekly Spending Trend */}
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <h4 className="mb-4 text-base font-semibold text-gray-700">Weekly Spending Trend</h4>
-                {weeklyData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={250}>
-                    <AreaChart data={weeklyData}>
+            <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
+              {/* Chart: Monthly Spending Trend */}
+              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
+                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Monthly Spending Trend</h4>
+                {monthlyData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={200}>
+                    <AreaChart data={monthlyData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="#9ca3af" interval={0} angle={-45} textAnchor="end" height={60} />
-                      <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" tickFormatter={(v) => `$${v}`} />
+                      <XAxis dataKey="label" tick={{ fontSize: 9 }} stroke="#9ca3af" interval={0} angle={-45} textAnchor="end" height={50} />
+                      <YAxis tick={{ fontSize: 9 }} stroke="#9ca3af" tickFormatter={(v) => `$${v}`} width={45} />
                       <Tooltip content={<CustomTooltip />} />
                       <Area
                         type="monotone"
@@ -589,21 +556,21 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
                     </AreaChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="flex h-[250px] items-center justify-center text-gray-400">
+                  <div className="flex h-[200px] items-center justify-center text-gray-400 text-sm">
                     No data available
                   </div>
                 )}
               </div>
 
               {/* Chart: Day of Week Analysis */}
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <h4 className="mb-4 text-base font-semibold text-gray-700">Spending by Day of Week</h4>
+              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
+                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Spending by Day of Week</h4>
                 {dayOfWeekData.some((d) => d.amount > 0) ? (
-                  <ResponsiveContainer width="100%" height={250}>
+                  <ResponsiveContainer width="100%" height={200}>
                     <BarChart data={dayOfWeekData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke="#9ca3af" />
-                      <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" tickFormatter={(v) => `$${v}`} />
+                      <XAxis dataKey="day" tick={{ fontSize: 9 }} stroke="#9ca3af" />
+                      <YAxis tick={{ fontSize: 9 }} stroke="#9ca3af" tickFormatter={(v) => `$${v}`} width={45} />
                       <Tooltip
                         formatter={(value, name) => [`$${value.toFixed(2)}`, name === "amount" ? "Total" : "Average"]}
                         labelStyle={{ color: "#374151" }}
@@ -613,21 +580,21 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="flex h-[250px] items-center justify-center text-gray-400">
+                  <div className="flex h-[200px] items-center justify-center text-gray-400 text-sm">
                     No expense data available
                   </div>
                 )}
               </div>
 
               {/* Chart: Rolling 7-Day Average */}
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <h4 className="mb-4 text-base font-semibold text-gray-700">7-Day Rolling Average</h4>
+              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
+                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">7-Day Rolling Average</h4>
                 {rollingAverageData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={250}>
+                  <ResponsiveContainer width="100%" height={200}>
                     <LineChart data={rollingAverageData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="#9ca3af" interval="preserveStartEnd" />
-                      <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" tickFormatter={(v) => `$${v.toFixed(0)}`} />
+                      <XAxis dataKey="label" tick={{ fontSize: 9 }} stroke="#9ca3af" interval="preserveStartEnd" />
+                      <YAxis tick={{ fontSize: 9 }} stroke="#9ca3af" tickFormatter={(v) => `$${v.toFixed(0)}`} width={45} />
                       <Tooltip
                         formatter={(value) => [`$${value.toFixed(2)}`, "7-Day Avg"]}
                         labelStyle={{ color: "#374151" }}
@@ -637,21 +604,21 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
                     </LineChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="flex h-[250px] items-center justify-center text-gray-400">
+                  <div className="flex h-[200px] items-center justify-center text-gray-400 text-sm">
                     Need at least 7 days of data
                   </div>
                 )}
               </div>
 
               {/* Chart: Cumulative Spending */}
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <h4 className="mb-4 text-base font-semibold text-gray-700">Cumulative Spending</h4>
+              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
+                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Cumulative Spending</h4>
                 {cumulativeData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={250}>
+                  <ResponsiveContainer width="100%" height={200}>
                     <AreaChart data={cumulativeData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="#9ca3af" interval="preserveStartEnd" />
-                      <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" tickFormatter={(v) => `$${v.toFixed(0)}`} />
+                      <XAxis dataKey="label" tick={{ fontSize: 9 }} stroke="#9ca3af" interval="preserveStartEnd" />
+                      <YAxis tick={{ fontSize: 9 }} stroke="#9ca3af" tickFormatter={(v) => `$${v.toFixed(0)}`} width={45} />
                       <Tooltip
                         formatter={(value) => [`$${value.toFixed(2)}`, "Running Total"]}
                         labelStyle={{ color: "#374151" }}
@@ -661,7 +628,7 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
                     </AreaChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="flex h-[250px] items-center justify-center text-gray-400">
+                  <div className="flex h-[200px] items-center justify-center text-gray-400 text-sm">
                     No expense data available
                   </div>
                 )}
@@ -671,28 +638,28 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
 
           {/* Section 2: Category/Description Analysis */}
           <div>
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100">
-                <svg className="h-4 w-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
+              <div className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-purple-100">
+                <svg className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-bold text-gray-800">Category/Description Analysis</h3>
+              <h3 className="text-base sm:text-lg font-bold text-gray-800">Category/Description Analysis</h3>
             </div>
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
               {/* Chart: Spending by Merchant */}
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <h4 className="mb-4 text-base font-semibold text-gray-700">Spending by Merchant</h4>
+              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
+                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Spending by Merchant</h4>
                 {merchantData.length > 0 ? (
-                  <div className="flex items-center">
-                    <ResponsiveContainer width="60%" height={250}>
+                  <div className="flex flex-col sm:flex-row items-center">
+                    <ResponsiveContainer width="100%" height={180} className="sm:!w-[60%]">
                       <PieChart>
                         <Pie
                           data={merchantData}
                           cx="50%"
                           cy="50%"
-                          innerRadius={50}
-                          outerRadius={90}
+                          innerRadius={35}
+                          outerRadius={70}
                           paddingAngle={2}
                           dataKey="value"
                         >
@@ -706,40 +673,40 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
                         />
                       </PieChart>
                     </ResponsiveContainer>
-                    <div className="w-[40%] space-y-2">
-                      {merchantData.slice(0, 6).map((entry, index) => (
+                    <div className="w-full sm:w-[40%] mt-2 sm:mt-0 space-y-1 sm:space-y-2">
+                      {merchantData.slice(0, 5).map((entry, index) => (
                         <div key={entry.name} className="flex items-center gap-2">
                           <div
-                            className="h-3 w-3 flex-shrink-0 rounded-full"
+                            className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0 rounded-full"
                             style={{ backgroundColor: COLORS.sources[index % COLORS.sources.length] }}
                           />
-                          <span className="truncate text-xs text-gray-600" title={entry.name}>{entry.name}</span>
-                          <span className="ml-auto flex-shrink-0 text-xs font-medium text-gray-800">
+                          <span className="truncate text-[10px] sm:text-xs text-gray-600" title={entry.name}>{entry.name}</span>
+                          <span className="ml-auto flex-shrink-0 text-[10px] sm:text-xs font-medium text-gray-800">
                             ${entry.value.toFixed(0)}
                           </span>
                         </div>
                       ))}
-                      {merchantData.length > 6 && (
-                        <p className="text-xs text-gray-400">+{merchantData.length - 6} more</p>
+                      {merchantData.length > 5 && (
+                        <p className="text-[10px] sm:text-xs text-gray-400">+{merchantData.length - 5} more</p>
                       )}
                     </div>
                   </div>
                 ) : (
-                  <div className="flex h-[250px] items-center justify-center text-gray-400">
+                  <div className="flex h-[180px] items-center justify-center text-gray-400 text-sm">
                     No expense data available
                   </div>
                 )}
               </div>
 
               {/* Top 10 Expenses (Horizontal Bar) */}
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <h4 className="mb-4 text-base font-semibold text-gray-700">Top 10 Expenses</h4>
+              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
+                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Top 10 Expenses</h4>
                 {top10Expenses.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={250}>
+                  <ResponsiveContainer width="100%" height={200}>
                     <BarChart data={top10Expenses} layout="vertical">
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis type="number" tick={{ fontSize: 10 }} stroke="#9ca3af" tickFormatter={(v) => `$${v}`} />
-                      <YAxis type="category" dataKey="description" tick={{ fontSize: 9 }} stroke="#9ca3af" width={100} />
+                      <XAxis type="number" tick={{ fontSize: 9 }} stroke="#9ca3af" tickFormatter={(v) => `$${v}`} />
+                      <YAxis type="category" dataKey="description" tick={{ fontSize: 8 }} stroke="#9ca3af" width={80} />
                       <Tooltip
                         formatter={(value) => [`$${value.toFixed(2)}`, "Amount"]}
                         labelStyle={{ color: "#374151" }}
@@ -749,91 +716,59 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="flex h-[250px] items-center justify-center text-gray-400">
+                  <div className="flex h-[200px] items-center justify-center text-gray-400 text-sm">
                     No expense data available
                   </div>
                 )}
               </div>
 
-              {/* Word Cloud from Descriptions */}
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <h4 className="mb-4 text-base font-semibold text-gray-700">Frequent Keywords</h4>
-                {wordCloudData.length > 0 ? (
-                  <div className="flex flex-wrap gap-2 justify-center items-center min-h-[200px]">
-                    {wordCloudData.map((item, index) => {
-                      const maxCount = wordCloudData[0]?.count || 1;
-                      const size = 0.7 + (item.count / maxCount) * 0.8;
-                      const opacity = 0.5 + (item.count / maxCount) * 0.5;
-                      return (
-                        <span
-                          key={item.word}
-                          className="inline-block px-2 py-1 rounded-lg transition-transform hover:scale-110"
-                          style={{
-                            fontSize: `${size}rem`,
-                            color: COLORS.sources[index % COLORS.sources.length],
-                            opacity,
-                            fontWeight: item.count > maxCount * 0.5 ? 600 : 400,
-                          }}
-                          title={`${item.word}: ${item.count} times`}
-                        >
-                          {item.word}
-                        </span>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="flex h-[200px] items-center justify-center text-gray-400">
-                    No keywords found
-                  </div>
-                )}
-              </div>
             </div>
           </div>
 
           {/* Section 3: Budgeting & Goals */}
           <div>
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100">
-                <svg className="h-4 w-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
+              <div className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-emerald-100">
+                <svg className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-bold text-gray-800">Budgeting & Goals</h3>
+              <h3 className="text-base sm:text-lg font-bold text-gray-800">Budgeting & Goals</h3>
             </div>
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
               {/* Chart: Daily Spending Heatmap */}
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <h4 className="mb-4 text-base font-semibold text-gray-700">Daily Spending Intensity</h4>
+              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
+                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Daily Spending Intensity</h4>
                 {heatmapData.days.length > 0 ? (
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     {/* Heatmap Legend */}
-                    <div className="flex items-center justify-between text-xs text-gray-500">
+                    <div className="flex items-center justify-between text-[10px] sm:text-xs text-gray-500">
                       <span>Less</span>
-                      <div className="flex gap-1">
+                      <div className="flex gap-0.5 sm:gap-1">
                         {[0.1, 0.3, 0.5, 0.7, 0.9].map((intensity) => (
                           <div
                             key={intensity}
-                            className="h-4 w-4 rounded"
+                            className="h-3 w-3 sm:h-4 sm:w-4 rounded"
                             style={{
                               backgroundColor: `rgba(239, 68, 68, ${intensity})`,
                             }}
                           />
                         ))}
                       </div>
-                      <span>More (Max: ${heatmapData.maxAmount.toFixed(0)})</span>
+                      <span className="text-right">Max: ${heatmapData.maxAmount.toFixed(0)}</span>
                     </div>
                     
                     {/* Heatmap Grid - Show last 28 days in 4 rows of 7 */}
-                    <div className="grid grid-cols-7 gap-1">
+                    <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
                       {DAYS_OF_WEEK.map((day) => (
-                        <div key={day} className="text-center text-[10px] font-medium text-gray-400">
-                          {day}
+                        <div key={day} className="text-center text-[8px] sm:text-[10px] font-medium text-gray-400">
+                          {day.slice(0, 1)}
                         </div>
                       ))}
                       {heatmapData.days.slice(-28).map((day, i) => (
                         <div
                           key={day.date}
-                          className="group relative h-8 rounded transition-transform hover:scale-110"
+                          className="group relative h-6 sm:h-8 rounded transition-transform hover:scale-110"
                           style={{
                             backgroundColor: day.amount > 0 
                               ? `rgba(239, 68, 68, ${Math.max(0.15, day.intensity)})`
@@ -849,13 +784,13 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
                     </div>
 
                     {/* Top spending days */}
-                    <div className="mt-4 space-y-1">
-                      <p className="text-xs font-medium text-gray-500">Top Spending Days:</p>
+                    <div className="mt-2 sm:mt-4 space-y-1">
+                      <p className="text-[10px] sm:text-xs font-medium text-gray-500">Top Spending Days:</p>
                       {[...heatmapData.days]
                         .sort((a, b) => b.amount - a.amount)
                         .slice(0, 3)
                         .map((day) => (
-                          <div key={day.date} className="flex justify-between text-xs">
+                          <div key={day.date} className="flex justify-between text-[10px] sm:text-xs">
                             <span className="text-gray-600">{day.label}</span>
                             <span className="font-medium text-red-600">${day.amount.toFixed(2)}</span>
                           </div>
@@ -870,18 +805,18 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
               </div>
 
               {/* Budget vs Actual */}
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <h4 className="mb-4 text-base font-semibold text-gray-700">Monthly Budget vs Actual</h4>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between text-sm">
+              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
+                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Monthly Budget vs Actual</h4>
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex items-center justify-between text-xs sm:text-sm">
                     <span className="text-gray-600">Budget: ${budgetData.budget.toFixed(0)}</span>
                     <span className={`font-semibold ${budgetData.isOverBudget ? "text-red-600" : "text-emerald-600"}`}>
-                      {budgetData.isOverBudget ? "Over Budget!" : `${budgetData.remaining.toFixed(0)} remaining`}
+                      {budgetData.isOverBudget ? "Over!" : `$${budgetData.remaining.toFixed(0)} left`}
                     </span>
                   </div>
                   
                   {/* Progress Bar */}
-                  <div className="relative h-6 w-full overflow-hidden rounded-full bg-gray-200">
+                  <div className="relative h-5 sm:h-6 w-full overflow-hidden rounded-full bg-gray-200">
                     <div
                       className={`absolute left-0 top-0 h-full rounded-full transition-all duration-500 ${
                         budgetData.percentUsed > 90 ? "bg-red-500" : 
@@ -889,25 +824,25 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
                       }`}
                       style={{ width: `${Math.min(budgetData.percentUsed, 100)}%` }}
                     />
-                    <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-gray-800">
+                    <div className="absolute inset-0 flex items-center justify-center text-[10px] sm:text-xs font-semibold text-gray-800">
                       ${budgetData.spent.toFixed(0)} ({budgetData.percentUsed.toFixed(0)}%)
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="rounded-lg bg-gray-50 p-2">
-                      <p className="text-xs text-gray-500">Budget</p>
-                      <p className="text-sm font-bold text-gray-800">${budgetData.budget.toFixed(0)}</p>
+                  <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-center">
+                    <div className="rounded-lg bg-gray-50 p-1.5 sm:p-2">
+                      <p className="text-[10px] sm:text-xs text-gray-500">Budget</p>
+                      <p className="text-xs sm:text-sm font-bold text-gray-800">${budgetData.budget.toFixed(0)}</p>
                     </div>
-                    <div className="rounded-lg bg-red-50 p-2">
-                      <p className="text-xs text-red-500">Spent</p>
-                      <p className="text-sm font-bold text-red-600">${budgetData.spent.toFixed(0)}</p>
+                    <div className="rounded-lg bg-red-50 p-1.5 sm:p-2">
+                      <p className="text-[10px] sm:text-xs text-red-500">Spent</p>
+                      <p className="text-xs sm:text-sm font-bold text-red-600">${budgetData.spent.toFixed(0)}</p>
                     </div>
-                    <div className={`rounded-lg p-2 ${budgetData.isOverBudget ? "bg-red-50" : "bg-emerald-50"}`}>
-                      <p className={`text-xs ${budgetData.isOverBudget ? "text-red-500" : "text-emerald-500"}`}>
+                    <div className={`rounded-lg p-1.5 sm:p-2 ${budgetData.isOverBudget ? "bg-red-50" : "bg-emerald-50"}`}>
+                      <p className={`text-[10px] sm:text-xs ${budgetData.isOverBudget ? "text-red-500" : "text-emerald-500"}`}>
                         {budgetData.isOverBudget ? "Over" : "Left"}
                       </p>
-                      <p className={`text-sm font-bold ${budgetData.isOverBudget ? "text-red-600" : "text-emerald-600"}`}>
+                      <p className={`text-xs sm:text-sm font-bold ${budgetData.isOverBudget ? "text-red-600" : "text-emerald-600"}`}>
                         ${Math.abs(budgetData.remaining).toFixed(0)}
                       </p>
                     </div>
@@ -916,14 +851,14 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
               </div>
 
               {/* Expense Distribution (Histogram) */}
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <h4 className="mb-4 text-base font-semibold text-gray-700">Expense Distribution</h4>
+              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
+                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Expense Distribution</h4>
                 {expenseDistribution.some((b) => b.count > 0) ? (
-                  <ResponsiveContainer width="100%" height={250}>
+                  <ResponsiveContainer width="100%" height={200}>
                     <BarChart data={expenseDistribution}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis dataKey="range" tick={{ fontSize: 10 }} stroke="#9ca3af" />
-                      <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" allowDecimals={false} />
+                      <XAxis dataKey="range" tick={{ fontSize: 8 }} stroke="#9ca3af" interval={0} angle={-30} textAnchor="end" height={40} />
+                      <YAxis tick={{ fontSize: 9 }} stroke="#9ca3af" allowDecimals={false} width={30} />
                       <Tooltip
                         formatter={(value) => [`${value} transactions`, "Count"]}
                         labelStyle={{ color: "#374151" }}
@@ -933,51 +868,48 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="flex h-[250px] items-center justify-center text-gray-400">
+                  <div className="flex h-[200px] items-center justify-center text-gray-400 text-sm">
                     No expense data available
                   </div>
                 )}
               </div>
 
               {/* Spending Insights */}
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <h4 className="mb-4 text-base font-semibold text-gray-700">Spending Insights</h4>
-                <div className="space-y-4">
+              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
+                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Spending Insights</h4>
+                <div className="grid grid-cols-2 gap-2 sm:block sm:space-y-3">
                   {/* Average Daily Spending */}
-                  <div className="rounded-lg bg-gray-50 p-3">
-                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Avg. Daily Spending</p>
-                    <p className="mt-1 text-xl font-bold text-gray-800">
+                  <div className="rounded-lg bg-gray-50 p-2 sm:p-3">
+                    <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-gray-500">Avg. Daily</p>
+                    <p className="mt-0.5 sm:mt-1 text-base sm:text-xl font-bold text-gray-800">
                       ${heatmapData.days.length > 0 
                         ? (summary.totalExpenses / heatmapData.days.length).toFixed(2) 
                         : "0.00"}
                     </p>
                   </div>
                   
-                  {/* Average Weekly Spending */}
-                  <div className="rounded-lg bg-gray-50 p-3">
-                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Avg. Weekly Spending</p>
-                    <p className="mt-1 text-xl font-bold text-gray-800">
-                      ${weeklyData.length > 0 
-                        ? (weeklyData.reduce((sum, w) => sum + w.expenses, 0) / weeklyData.length).toFixed(2) 
+                  {/* Average Monthly Spending */}
+                  <div className="rounded-lg bg-gray-50 p-2 sm:p-3">
+                    <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-gray-500">Avg. Monthly</p>
+                    <p className="mt-0.5 sm:mt-1 text-base sm:text-xl font-bold text-gray-800">
+                      ${monthlyData.length > 0 
+                        ? (monthlyData.reduce((sum, m) => sum + m.expenses, 0) / monthlyData.length).toFixed(2) 
                         : "0.00"}
                     </p>
                   </div>
                   
                   {/* Highest Spending Day of Week */}
-                  <div className="rounded-lg bg-gray-50 p-3">
-                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Highest Spending Day</p>
-                    <p className="mt-1 text-xl font-bold text-gray-800">
+                  <div className="rounded-lg bg-gray-50 p-2 sm:p-3">
+                    <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-gray-500">Top Day</p>
+                    <p className="mt-0.5 sm:mt-1 text-base sm:text-xl font-bold text-gray-800">
                       {dayOfWeekData.reduce((max, d) => d.amount > max.amount ? d : max, dayOfWeekData[0])?.day || "-"}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      ${dayOfWeekData.reduce((max, d) => d.amount > max.amount ? d : max, dayOfWeekData[0])?.amount.toFixed(2) || "0.00"} total
                     </p>
                   </div>
                   
                   {/* Transaction Count */}
-                  <div className="rounded-lg bg-gray-50 p-3">
-                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Total Transactions</p>
-                    <p className="mt-1 text-xl font-bold text-gray-800">
+                  <div className="rounded-lg bg-gray-50 p-2 sm:p-3">
+                    <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-gray-500">Transactions</p>
+                    <p className="mt-0.5 sm:mt-1 text-base sm:text-xl font-bold text-gray-800">
                       {filteredTransactions.filter(t => t.type === "Expense").length}
                     </p>
                   </div>
@@ -988,10 +920,10 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end border-t border-gray-200 px-6 py-4">
+        <div className="flex justify-center sm:justify-end border-t border-gray-200 px-3 sm:px-6 py-3 sm:py-4">
           <button
             onClick={onClose}
-            className="rounded-lg bg-gray-100 px-6 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
+            className="w-full sm:w-auto rounded-lg bg-gray-100 px-6 py-2.5 sm:py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 active:bg-gray-300"
           >
             Close
           </button>
