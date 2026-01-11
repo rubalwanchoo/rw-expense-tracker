@@ -22,23 +22,21 @@ export default function Header({ showLogout = false, onLogout }) {
             rw-expense-tracker
           </span>
         </h1>
-        <div className="flex items-center gap-2 sm:gap-4">
-          {showLogout && (
-            <div className="flex flex-col items-end gap-1">
-              {username && (
-                <span className="text-xs text-gray-500 sm:text-sm">
-                  Hi, <span className="font-medium text-emerald-600">{username}</span>
-                </span>
-              )}
-              <button
-                onClick={onLogout}
-                className="rounded-md px-2 py-1 text-xs font-semibold text-emerald-600 transition-all duration-300 hover:scale-105 hover:bg-emerald-50 hover:text-emerald-700 active:scale-100 sm:px-3 sm:py-1.5 sm:text-sm"
-              >
-                Logout
-              </button>
-            </div>
-          )}
-        </div>
+        {showLogout && (
+          <div className="ml-auto flex flex-col items-end gap-1 text-right">
+            {username && (
+              <span className="text-xs text-gray-500 sm:text-sm">
+                Hi, <span className="font-medium text-emerald-600">{username}</span>
+              </span>
+            )}
+            <button
+              onClick={onLogout}
+              className="rounded-md px-2 py-1 text-xs font-semibold text-emerald-600 transition-all duration-300 hover:scale-105 hover:bg-emerald-50 hover:text-emerald-700 active:scale-100 sm:px-3 sm:py-1.5 sm:text-sm"
+            >
+              Logout
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );
