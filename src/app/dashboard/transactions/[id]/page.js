@@ -15,6 +15,8 @@ import TransactionModals from "@/components/modals/TransactionModals";
 import DateRangeModal from "@/components/modals/DateRangeModal";
 import BulkDeleteTransactionsModal from "@/components/modals/BulkDeleteTransactionsModal";
 import ScanReceiptModal from "@/components/modals/ScanReceiptModal";
+import AnalyticsModal from "@/components/modals/AnalyticsModal";
+import AnalyzeButton from "@/components/AnalyzeButton";
 import { formatDateEST, getESTDateParts } from "@/lib/dateUtils";
 
 export default function TransactionsPage() {
@@ -86,6 +88,9 @@ export default function TransactionsPage() {
   
   // Scan Receipt Modal state
   const [isScanReceiptModalOpen, setIsScanReceiptModalOpen] = useState(false);
+  
+  // Analytics Modal state
+  const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
   
   // Combined disabled state
   const isTableDisabled = isProcessingReceipt || isBulkDeleting;
@@ -812,6 +817,7 @@ export default function TransactionsPage() {
             <div className="flex flex-wrap items-center gap-2">
               <AddTransactionButton onClick={openCreateModal} disabled={isTableDisabled} />
               <ScanReceiptButton onClick={openScanReceiptModal} disabled={isTableDisabled} />
+              <AnalyzeButton onClick={() => setIsAnalyticsModalOpen(true)} disabled={isTableDisabled} />
               {/* Bulk Delete Button - shown when items are selected */}
               {selectedTransactionIds.length > 0 && (
                 <button
@@ -934,6 +940,13 @@ export default function TransactionsPage() {
         isOpen={isScanReceiptModalOpen}
         onClose={closeScanReceiptModal}
         onScanSubmit={handleScanSubmit}
+      />
+
+      {/* Analytics Modal */}
+      <AnalyticsModal
+        isOpen={isAnalyticsModalOpen}
+        onClose={() => setIsAnalyticsModalOpen(false)}
+        transactions={transactions}
       />
 
       {/* Processing Overlay - At root level for proper viewport centering */}
