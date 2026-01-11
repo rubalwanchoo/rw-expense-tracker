@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import FilterBox from "./FilterBox";
+import { formatDateEST } from "@/lib/dateUtils";
 
 export default function ProjectsTable({
   projects,
@@ -87,10 +88,10 @@ export default function ProjectsTable({
                       Expenses: ${(projectTotals[project.id]?.expenses || 0).toFixed(2)}
                     </span>
                   </div>
-                  {/* Created/Updated info */}
+                  {/* Created/Updated info (EST) */}
                   <div className="flex gap-3 text-[10px] text-gray-400">
-                    <span>Created: {project.dtm_created ? new Date(project.dtm_created).toLocaleDateString() : "-"}</span>
-                    <span>Updated: {project.dtm_modified ? new Date(project.dtm_modified).toLocaleDateString() : "-"}</span>
+                    <span>Created: {formatDateEST(project.dtm_created)}</span>
+                    <span>Updated: {formatDateEST(project.dtm_modified)}</span>
                   </div>
                 </div>
 

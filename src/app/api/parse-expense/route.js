@@ -91,19 +91,23 @@ export async function POST(request) {
     const currentDay = parseInt(estParts.find(p => p.type === 'day').value, 10);
 
     // Streamlined prompt for faster processing
-    const prompt = `Extract transactions from this receipt image. Today is ${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(currentDay).padStart(2, '0')} (EST).
+    // All dates are interpreted as Eastern Standard Time (EST/America/New_York)
+    const prompt = `Extract transactions from this receipt image.
+
+TIMEZONE: All dates on this receipt are in EST (Eastern Time, America/New_York).
+TODAY'S DATE (EST): ${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}
 
 For each transaction, return:
-- raw_date: exact date text from image
-- trans_date: date in YYYY-MM-DD format
+- raw_date: exact date text from image (as shown)
+- trans_date: date in YYYY-MM-DD format (EST timezone, no conversion needed)
 - description: item/merchant name
-- amount: number only
+- amount: number only (positive value)
 - type: "Expense" or "Income"
 - source: null
 
-YEAR RULES (when year not shown):
-- Date already passed this year → use ${currentYear}
-- Date not yet passed → use ${currentYear - 1}
+YEAR RULES (when year not shown on receipt):
+- If the date (month/day) has already occurred this year → use ${currentYear}
+- If the date (month/day) has NOT yet occurred this year → use ${currentYear - 1}
 
 Return ONLY a JSON array:
 [{"raw_date":"01/09","trans_date":"${currentYear}-01-09","description":"STORE","amount":10.50,"type":"Expense","source":null}]`;

@@ -15,6 +15,7 @@ import TransactionModals from "@/components/modals/TransactionModals";
 import DateRangeModal from "@/components/modals/DateRangeModal";
 import BulkDeleteTransactionsModal from "@/components/modals/BulkDeleteTransactionsModal";
 import ScanReceiptModal from "@/components/modals/ScanReceiptModal";
+import { formatDateEST, getESTDateParts } from "@/lib/dateUtils";
 
 export default function TransactionsPage() {
   const router = useRouter();
@@ -164,29 +165,14 @@ export default function TransactionsPage() {
     setScannedFormData(null); // Reset scanned data when closing
   };
 
-  // Helper function to get current date in EST timezone
-  const getESTDate = () => {
-    const estFormatter = new Intl.DateTimeFormat('en-US', {
-      timeZone: 'America/New_York',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
-    const parts = estFormatter.formatToParts(new Date());
-    return {
-      year: parseInt(parts.find(p => p.type === 'year').value, 10),
-      month: parseInt(parts.find(p => p.type === 'month').value, 10),
-      day: parseInt(parts.find(p => p.type === 'day').value, 10),
-    };
-  };
-
   // Helper function to normalize date from receipt scan
-  // All dates are treated as EST timezone
-  // If year is missing or seems wrong:
-  // - If month/day has already passed this year → use current year
-  // - If month/day is in the future this year → use last year
+  // All dates from LLM/receipts are treated as EST timezone (America/New_York)
+  // This function ensures proper year inference:
+  // - If month/day has already passed this year (EST) → use current year
+  // - If month/day is in the future this year (EST) → use last year
   const normalizeTransactionDate = (dateStr) => {
-    const est = getESTDate();
+    // Use shared utility to get current date parts in EST
+    const est = getESTDateParts();
     
     if (!dateStr) {
       return `${est.year}-${String(est.month).padStart(2, '0')}-${String(est.day).padStart(2, '0')}`;
@@ -804,10 +790,10 @@ export default function TransactionsPage() {
           </div>
           <div className="mt-3 flex flex-wrap gap-2 text-xs text-gray-400 sm:mt-4 sm:gap-4 sm:text-sm">
             <span>
-              Created: {project?.dtm_created ? new Date(project.dtm_created).toLocaleDateString() : "-"}
+              Created: {formatDateEST(project?.dtm_created)} (EST)
             </span>
             <span>
-              Updated: {project?.dtm_modified ? new Date(project.dtm_modified).toLocaleDateString() : "-"}
+              Updated: {formatDateEST(project?.dtm_modified)} (EST)
             </span>
           </div>
         </div>

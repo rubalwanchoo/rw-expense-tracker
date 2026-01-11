@@ -1,7 +1,9 @@
 "use client";
 
+import { getESTYear } from "@/lib/dateUtils";
+
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
+  const currentYear = getESTYear();
 
   return (
     <footer className="border-t border-gray-200 bg-white">
