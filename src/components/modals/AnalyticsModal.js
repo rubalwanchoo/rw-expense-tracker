@@ -145,98 +145,23 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
     return dayTotals;
   }, [filteredTransactions]);
 
-  // Helper function to normalize merchant names for grouping
-  const normalizeMerchantName = (name) => {
-    if (!name) return "Unknown";
-    
-    const upperName = name.toUpperCase();
-    
-    // Special case: Group all Amazon-related merchants together
-    // Matches: AMAZON, AMZN, AMAZON.COM, AMAZON PRIME, AMZN MKTP, etc.
-    if (upperName.includes("AMAZON") || upperName.includes("AMZN")) {
-      return "Amazon";
-    }
-    
-    let normalized = name
-      .toUpperCase()
-      .trim()
-      // Remove URL paths first (anything after /)
-      .replace(/\/.*$/g, "")
-      // Remove www. prefix
-      .replace(/^WWW\./gi, "")
-      // Remove http/https prefix
-      .replace(/^HTTPS?:\/\//gi, "")
-      // Remove domain extensions (anywhere in string, not just at end)
-      .replace(/\.(COM|NET|ORG|IO|CO|US|GOV|CA|UK|DE|FR|ES|IT|AU|NZ|IN|JP|CN|BR|MX)\b/gi, "")
-      // Remove common suffixes/prefixes
-      .replace(/\s*(INC|LLC|CORP|CO|LTD|INCORPORATED|CORPORATION)\.?\s*$/gi, "")
-      // Remove country/region suffixes
-      .replace(/\s+(USA|US|UK|CA|CANADA|ONLINE|DIGITAL|ECOM|WEB)$/gi, "")
-      // Remove "INSIDE" patterns (e.g., "SEPHORA INSIDE JCP")
-      .replace(/\s+INSIDE\s+.*/gi, "")
-      // Remove store numbers like #1234, *1234, Store 1234
-      .replace(/[#*]\s*\d+/g, "")
-      .replace(/\s+STORE\s*#?\d*/gi, "")
-      .replace(/\s+STR\s*#?\d*/gi, "")
-      .replace(/\s+LOC\s*#?\d*/gi, "")
-      .replace(/\s+STO\s*#?\d*/gi, "")
-      // Remove location/city info after dash, comma, or standalone
-      .replace(/\s*[-,]\s*[A-Z]{2}\s*\d*$/gi, "") // e.g., "- NY 10001"
-      .replace(/\s*[-,]\s*[A-Z\s]+,?\s*[A-Z]{2}$/gi, "") // e.g., "- New York, NY"
-      .replace(/\s+[A-Z]{2}\s*\d{5}$/gi, "") // e.g., "NY 10001" at end
-      // Remove transaction IDs/dates patterns
-      .replace(/\s+\d{4,}/g, "") // Remove number sequences 4+ digits
-      .replace(/\s+\d{2}\/\d{2}/g, "") // Remove date patterns like 01/15
-      .replace(/\s+\d{2}-\d{2}/g, "") // Remove date patterns like 01-15
-      // Remove payment method indicators
-      .replace(/\s+(VISA|MASTERCARD|AMEX|DEBIT|CREDIT|CARD|PAYMENT|PAY|PURCHASE|POS|ACH)\s*$/gi, "")
-      // Remove trailing special characters and numbers
-      .replace(/[\s\-_*#\.]+$/g, "")
-      .replace(/\s+\d+$/g, "")
-      // Remove extra whitespace
-      .replace(/\s+/g, " ")
-      .trim();
-    
-    // If the name is too long, try to extract just the first meaningful word(s)
-    // Many merchants have patterns like "SEPHORA USA INC NEW YORK"
-    const words = normalized.split(" ");
-    if (words.length > 2) {
-      // Keep only first 2 words for very long names
-      normalized = words.slice(0, 2).join(" ");
-    }
-    
-    // Title case the result
-    normalized = normalized
-      .toLowerCase()
-      .split(" ")
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-    
-    // Final cleanup - limit length for display
-    if (normalized.length > 20) {
-      normalized = normalized.substring(0, 17) + "...";
-    }
-    
-    return normalized || "Unknown";
-  };
-
-  // 3. Spending by Merchant Data (grouped by normalized description)
-  const merchantData = useMemo(() => {
-    const merchantMap = {};
+  // 3. Spending by Category Data
+  const categoryData = useMemo(() => {
+    const categoryMap = {};
 
     filteredTransactions.forEach((t) => {
       if (t.type !== "Expense") return;
-      // Normalize merchant name for grouping
-      const merchant = normalizeMerchantName(t.description);
+      // Group by category field
+      const category = t.category || "Other";
       
-      if (!merchantMap[merchant]) {
-        merchantMap[merchant] = { name: merchant, value: 0, count: 0 };
+      if (!categoryMap[category]) {
+        categoryMap[category] = { name: category, value: 0, count: 0 };
       }
-      merchantMap[merchant].value += parseFloat(t.amount) || 0;
-      merchantMap[merchant].count += 1;
+      categoryMap[category].value += parseFloat(t.amount) || 0;
+      categoryMap[category].count += 1;
     });
 
-    return Object.values(merchantMap).sort((a, b) => b.value - a.value);
+    return Object.values(categoryMap).sort((a, b) => b.value - a.value);
   }, [filteredTransactions]);
 
   // 4. Daily Spending Heatmap Data (last 30 days by default, or filtered range)
@@ -647,15 +572,15 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
               <h3 className="text-base sm:text-lg font-bold text-gray-800">Category/Description Analysis</h3>
             </div>
             <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
-              {/* Chart: Spending by Merchant */}
+              {/* Chart: Spending by Category */}
               <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
-                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Spending by Merchant</h4>
-                {merchantData.length > 0 ? (
+                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Spending by Category</h4>
+                {categoryData.length > 0 ? (
                   <div className="flex flex-col sm:flex-row items-center">
                     <ResponsiveContainer width="100%" height={180} className="sm:!w-[60%]">
                       <PieChart>
                         <Pie
-                          data={merchantData}
+                          data={categoryData}
                           cx="50%"
                           cy="50%"
                           innerRadius={35}
@@ -663,7 +588,7 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
                           paddingAngle={2}
                           dataKey="value"
                         >
-                          {merchantData.map((entry, index) => (
+                          {categoryData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS.sources[index % COLORS.sources.length]} />
                           ))}
                         </Pie>
@@ -674,7 +599,7 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="w-full sm:w-[40%] mt-2 sm:mt-0 space-y-1 sm:space-y-2">
-                      {merchantData.slice(0, 5).map((entry, index) => (
+                      {categoryData.slice(0, 9).map((entry, index) => (
                         <div key={entry.name} className="flex items-center gap-2">
                           <div
                             className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0 rounded-full"
@@ -686,9 +611,6 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
                           </span>
                         </div>
                       ))}
-                      {merchantData.length > 5 && (
-                        <p className="text-[10px] sm:text-xs text-gray-400">+{merchantData.length - 5} more</p>
-                      )}
                     </div>
                   </div>
                 ) : (
@@ -698,23 +620,31 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
                 )}
               </div>
 
-              {/* Top 10 Expenses (Horizontal Bar) */}
+              {/* Top 10 Expenses (List) */}
               <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
                 <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Top 10 Expenses</h4>
                 {top10Expenses.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={top10Expenses} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis type="number" tick={{ fontSize: 9 }} stroke="#9ca3af" tickFormatter={(v) => `$${v}`} />
-                      <YAxis type="category" dataKey="description" tick={{ fontSize: 8 }} stroke="#9ca3af" width={80} />
-                      <Tooltip
-                        formatter={(value) => [`$${value.toFixed(2)}`, "Amount"]}
-                        labelStyle={{ color: "#374151" }}
-                        contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb" }}
-                      />
-                      <Bar dataKey="amount" name="Amount" fill="#ef4444" radius={[0, 4, 4, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <div className="space-y-1.5 sm:space-y-2 max-h-[200px] overflow-y-auto">
+                    {top10Expenses.map((expense, index) => (
+                      <div 
+                        key={index} 
+                        className="flex items-center gap-2 sm:gap-3 rounded-lg bg-gray-50 px-2 sm:px-3 py-1.5 sm:py-2"
+                      >
+                        <span className="flex h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 items-center justify-center rounded-full bg-red-100 text-[10px] sm:text-xs font-bold text-red-600">
+                          {index + 1}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="truncate text-xs sm:text-sm text-gray-700" title={expense.description}>
+                            {expense.description}
+                          </p>
+                          <p className="text-[10px] sm:text-xs text-gray-400">{expense.date}</p>
+                        </div>
+                        <span className="flex-shrink-0 text-sm sm:text-base font-bold text-red-600">
+                          ${expense.amount.toFixed(2)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 ) : (
                   <div className="flex h-[200px] items-center justify-center text-gray-400 text-sm">
                     No expense data available

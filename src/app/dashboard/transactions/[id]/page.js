@@ -480,6 +480,7 @@ export default function TransactionsPage() {
             type: parsedData.type || "Expense",
             description: parsedData.description || "Scanned receipt",
             source: parsedData.source || "NA", // Default to NA if null
+            category: parsedData.category || "Other", // LLM-classified category
           };
 
           console.log(`  → Creating: ${transactionData.description} ($${transactionData.amount})`);

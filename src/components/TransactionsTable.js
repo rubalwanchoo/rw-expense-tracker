@@ -1,5 +1,18 @@
 "use client";
 
+// Category color mapping
+const CATEGORY_COLORS = {
+  Groceries: "bg-green-100 text-green-700 border-green-200",
+  Dining: "bg-orange-100 text-orange-700 border-orange-200",
+  Gas: "bg-yellow-100 text-yellow-700 border-yellow-200",
+  Shopping: "bg-pink-100 text-pink-700 border-pink-200",
+  Entertainment: "bg-purple-100 text-purple-700 border-purple-200",
+  Travel: "bg-blue-100 text-blue-700 border-blue-200",
+  Utilities: "bg-cyan-100 text-cyan-700 border-cyan-200",
+  Healthcare: "bg-rose-100 text-rose-700 border-rose-200",
+  Other: "bg-gray-100 text-gray-600 border-gray-200",
+};
+
 export default function TransactionsTable({
   transactions,
   loading,
@@ -172,6 +185,16 @@ export default function TransactionsTable({
                   <p className="text-[10px] text-gray-400">
                     Date: {transaction.trans_date || "-"}
                   </p>
+                  {/* Category Badge */}
+                  {transaction.category && (
+                    <span
+                      className={`mt-1 inline-block text-[9px] font-medium px-2 py-0.5 rounded-full border ${
+                        CATEGORY_COLORS[transaction.category] || CATEGORY_COLORS.Other
+                      }`}
+                    >
+                      {transaction.category}
+                    </span>
+                  )}
                 </div>
 
                 {/* Actions */}

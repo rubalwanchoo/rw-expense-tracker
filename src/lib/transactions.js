@@ -87,6 +87,7 @@ export const createTransaction = async (transactionData, username = "system") =>
           type: transactionData.type,
           description: transactionData.description,
           source: transactionData.source,
+          category: transactionData.category || "Other", // Never null
           dtm_created: now,
           dtm_modified: now,
           created_by: user,
@@ -126,6 +127,7 @@ export const updateTransaction = async (transactionId, updateData, username = "s
         type: updateData.type,
         description: updateData.description,
         source: updateData.source,
+        category: updateData.category || "Other", // Never null
         dtm_modified: now,
         modified_by: user,
       })

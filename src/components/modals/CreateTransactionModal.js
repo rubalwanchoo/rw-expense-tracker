@@ -105,6 +105,33 @@ export default function CreateTransactionModal({
               placeholder="Enter source (e.g., Credit Card, Cash)"
             />
           </div>
+          <div>
+            <label
+              htmlFor="category"
+              className="mb-2 block text-sm font-medium text-gray-600"
+            >
+              Category
+            </label>
+            <select
+              id="category"
+              name="category"
+              value={formData.category}
+              onChange={onInputChange}
+              required
+              className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-gray-800 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+            >
+              <option value="" disabled>Select category</option>
+              <option value="Groceries">Groceries</option>
+              <option value="Dining">Dining</option>
+              <option value="Gas">Gas</option>
+              <option value="Shopping">Shopping</option>
+              <option value="Entertainment">Entertainment</option>
+              <option value="Travel">Travel</option>
+              <option value="Utilities">Utilities</option>
+              <option value="Healthcare">Healthcare</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
           <div className="flex gap-3 pt-2">
             <button
               type="button"

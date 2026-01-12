@@ -35,6 +35,7 @@ export default function TransactionModals({
     type: "",
     description: "",
     source: "",
+    category: "",
   });
 
   // Update form data when initialFormData changes (from receipt scan)
@@ -46,6 +47,7 @@ export default function TransactionModals({
         type: initialFormData.type || "Expense",
         description: initialFormData.description || "",
         source: initialFormData.source || "",
+        category: initialFormData.category || "",
       });
     }
   }, [initialFormData]);
@@ -56,6 +58,7 @@ export default function TransactionModals({
     type: "",
     description: "",
     source: "",
+    category: "",
   });
 
   const [deletePassword, setDeletePassword] = useState("");
@@ -84,6 +87,7 @@ export default function TransactionModals({
       type: "",
       description: "",
       source: "",
+      category: "",
     });
     onCloseCreateModal();
   };
@@ -95,6 +99,7 @@ export default function TransactionModals({
       type: "",
       description: "",
       source: "",
+      category: "",
     });
     onCloseEditModal();
   };
@@ -112,6 +117,7 @@ export default function TransactionModals({
       type: transactionToEdit.type || "",
       description: transactionToEdit.description || "",
       source: transactionToEdit.source || "",
+      category: transactionToEdit.category || "",
     });
   }
 
@@ -136,6 +142,7 @@ export default function TransactionModals({
         type: formData.type,
         description: formData.description,
         source: formData.source,
+        category: formData.category || "Other",
       }, username);
 
       if (error) throw error;
@@ -164,6 +171,7 @@ export default function TransactionModals({
         type: editFormData.type,
         description: editFormData.description,
         source: editFormData.source,
+        category: editFormData.category || "Other",
       }, username);
 
       if (error) throw error;

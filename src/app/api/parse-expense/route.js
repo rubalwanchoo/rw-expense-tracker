@@ -104,13 +104,23 @@ For each transaction, return:
 - amount: number only (positive value)
 - type: "Expense" or "Income"
 - source: null
+- category: classify into ONE of these categories based on the merchant/description:
+  "Groceries" (supermarkets, food stores)
+  "Dining" (restaurants, fast food, cafes, coffee shops)
+  "Gas" (gas stations, fuel)
+  "Shopping" (retail, Amazon, clothing, electronics)
+  "Entertainment" (movies, streaming, games, events)
+  "Travel" (hotels, flights, transportation, uber, lyft)
+  "Utilities" (electric, water, internet, phone)
+  "Healthcare" (pharmacy, doctor, medical)
+  "Other" (anything else)
 
 YEAR RULES (when year not shown on receipt):
 - If the date (month/day) has already occurred this year → use ${currentYear}
 - If the date (month/day) has NOT yet occurred this year → use ${currentYear - 1}
 
 Return ONLY a JSON array:
-[{"raw_date":"01/09","trans_date":"${currentYear}-01-09","description":"STORE","amount":10.50,"type":"Expense","source":null}]`;
+[{"raw_date":"01/09","trans_date":"${currentYear}-01-09","description":"STORE","amount":10.50,"type":"Expense","source":null,"category":"Shopping"}]`;
 
     console.log("🤖 Sending to GPT-4o-mini...");
     const apiStartTime = Date.now();
@@ -210,6 +220,7 @@ Return ONLY a JSON array:
           amount: t.amount,
           type: t.type,
           source: t.source,
+          category: t.category || "Other",
         };
       });
       
