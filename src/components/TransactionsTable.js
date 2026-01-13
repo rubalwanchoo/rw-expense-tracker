@@ -194,7 +194,7 @@ export default function TransactionsTable({
                       </span>
                     )}
                     {/* Item count */}
-                    <span className="text-[10px] font-medium text-blue-500 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/40 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-medium text-blue-600 dark:text-blue-300 bg-transparent dark:bg-blue-900/40 px-2 py-0.5 rounded-full border border-blue-600 dark:border-blue-400">
                       {dateTransactions.length} item{dateTransactions.length !== 1 ? "s" : ""}
                     </span>
                   </div>
@@ -241,10 +241,10 @@ export default function TransactionsTable({
                         <span
                           className={`text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded border ${
                             transaction.type === "Payment"
-                              ? "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700"
+                              ? "bg-transparent text-emerald-600 border-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-400"
                               : transaction.type === "Expense"
-                              ? "bg-red-50 text-red-600 border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-700"
-                              : "bg-gray-50 text-gray-600 border-gray-100 dark:bg-gray-700/30 dark:text-gray-400 dark:border-gray-600"
+                              ? "bg-transparent text-red-600 border-red-600 dark:bg-red-900/30 dark:text-red-400 dark:border-red-400"
+                              : "bg-transparent text-gray-600 border-gray-600 dark:bg-gray-700/30 dark:text-gray-400 dark:border-gray-400"
                           }`}
                         >
                           {transaction.type || "N/A"}
