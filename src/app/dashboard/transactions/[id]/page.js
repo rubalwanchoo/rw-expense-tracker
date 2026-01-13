@@ -915,11 +915,17 @@ export default function TransactionsPage() {
             
             {/* Transaction Counts */}
             <div className="flex items-center gap-3 text-xs">
-              <span className="flex items-center gap-1.5 rounded-md bg-red-50 border border-red-100 px-2 py-1 text-red-600 dark:bg-red-900/30 dark:border-red-700 dark:text-red-400">
+              <span 
+                className="flex items-center gap-1.5 rounded-md border px-2 py-1"
+                style={{ backgroundColor: 'transparent', color: '#dc2626', borderColor: '#dc2626' }}
+              >
                 <span className="font-medium">Expenses:</span>
                 <span className="font-bold">{filteredTransactions.filter(t => t.type === "Expense").length}</span>
               </span>
-              <span className="flex items-center gap-1.5 rounded-md bg-emerald-50 border border-emerald-100 px-2 py-1 text-emerald-600 dark:bg-emerald-900/30 dark:border-emerald-700 dark:text-emerald-400">
+              <span 
+                className="flex items-center gap-1.5 rounded-md border px-2 py-1"
+                style={{ backgroundColor: 'transparent', color: '#059669', borderColor: '#059669' }}
+              >
                 <span className="font-medium">Payments:</span>
                 <span className="font-bold">{filteredTransactions.filter(t => t.type === "Payment").length}</span>
               </span>
