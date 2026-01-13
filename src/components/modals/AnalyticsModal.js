@@ -604,21 +604,28 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
                   </div>
                   
                   {/* Status Message */}
-                  <div className={`mt-3 sm:mt-4 rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 text-center ${
-                    parseFloat(summary.paymentRate) >= 100 ? "bg-emerald-50" :
-                    parseFloat(summary.paymentRate) >= 75 ? "bg-blue-50" :
-                    parseFloat(summary.paymentRate) >= 50 ? "bg-amber-50" : "bg-red-50"
-                  }`}>
-                    <p className={`text-xs sm:text-sm font-medium ${
-                      parseFloat(summary.paymentRate) >= 100 ? "text-emerald-700" :
-                      parseFloat(summary.paymentRate) >= 75 ? "text-blue-700" :
-                      parseFloat(summary.paymentRate) >= 50 ? "text-amber-700" : "text-red-700"
-                    }`}>
+                  <div 
+                    className="mt-3 sm:mt-4 rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 text-center border-2"
+                    style={{ 
+                      backgroundColor: 'transparent',
+                      borderColor: parseFloat(summary.paymentRate) >= 100 ? '#059669' :
+                                   parseFloat(summary.paymentRate) >= 75 ? '#2563eb' :
+                                   parseFloat(summary.paymentRate) >= 50 ? '#f59e0b' : '#dc2626'
+                    }}
+                  >
+                    <p 
+                      className="text-xs sm:text-sm font-medium"
+                      style={{
+                        color: parseFloat(summary.paymentRate) >= 100 ? '#059669' :
+                               parseFloat(summary.paymentRate) >= 75 ? '#2563eb' :
+                               parseFloat(summary.paymentRate) >= 50 ? '#d97706' : '#dc2626'
+                      }}
+                    >
                       {parseFloat(summary.paymentRate) >= 100 ? "Fully covered! 🎉" :
                        parseFloat(summary.paymentRate) >= 75 ? "Almost there!" :
                        parseFloat(summary.paymentRate) >= 50 ? "Making progress" : "Needs attention"}
                     </p>
-                    <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">
+                    <p className="text-[10px] sm:text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
                       ${summary.totalPayments.toFixed(2)} of ${summary.totalExpenses.toFixed(2)}
                     </p>
                   </div>
