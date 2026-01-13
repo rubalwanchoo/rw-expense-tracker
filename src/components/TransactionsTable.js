@@ -213,11 +213,13 @@ export default function TransactionsTable({
                 {dateTransactions.map((transaction, index) => (
                   <div
                     key={transaction.id}
-                    className={`flex items-center gap-3 px-3 py-3 sm:px-4 ${
-                      index !== dateTransactions.length - 1 || groupIndex !== groupedTransactions.length - 1 
-                        ? "border-b border-gray-100 dark:border-slate-700" 
-                        : ""
-                    } ${selectedIds.includes(transaction.id) ? "bg-emerald-50 dark:bg-emerald-900/20" : ""}`}
+                    className="flex items-center gap-3 px-3 py-3 sm:px-4"
+                    style={{
+                      borderBottom: (index !== dateTransactions.length - 1 || groupIndex !== groupedTransactions.length - 1) 
+                        ? '1px solid var(--card-border)' 
+                        : 'none',
+                      backgroundColor: selectedIds.includes(transaction.id) ? 'rgba(16, 185, 129, 0.1)' : 'transparent'
+                    }}
                   >
                     {/* Checkbox */}
                     {onSelectionChange && (
