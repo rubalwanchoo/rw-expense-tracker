@@ -500,25 +500,46 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-2 gap-2 sm:gap-4 border-b px-3 sm:px-6 py-3 sm:py-4 sm:grid-cols-4" style={{ borderColor: 'var(--card-border)' }}>
-          <div className="rounded-lg sm:rounded-xl bg-emerald-50 dark:bg-emerald-900/30 p-2 sm:p-4">
-            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-emerald-600 dark:text-emerald-400">Total Payments</p>
-            <p className="mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold text-emerald-700 dark:text-emerald-300">${summary.totalPayments.toFixed(2)}</p>
+          <div 
+            className="rounded-lg sm:rounded-xl p-2 sm:p-4 border-2"
+            style={{ backgroundColor: 'transparent', borderColor: '#059669' }}
+          >
+            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide" style={{ color: '#059669' }}>Total Payments</p>
+            <p className="mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold" style={{ color: '#059669' }}>${summary.totalPayments.toFixed(2)}</p>
           </div>
-          <div className="rounded-lg sm:rounded-xl bg-red-50 dark:bg-red-900/30 p-2 sm:p-4">
-            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-red-600 dark:text-red-400">Total Expenses</p>
-            <p className="mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold text-red-700 dark:text-red-300">${summary.totalExpenses.toFixed(2)}</p>
+          <div 
+            className="rounded-lg sm:rounded-xl p-2 sm:p-4 border-2"
+            style={{ backgroundColor: 'transparent', borderColor: '#dc2626' }}
+          >
+            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide" style={{ color: '#dc2626' }}>Total Expenses</p>
+            <p className="mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold" style={{ color: '#dc2626' }}>${summary.totalExpenses.toFixed(2)}</p>
           </div>
-          <div className={`rounded-lg sm:rounded-xl p-2 sm:p-4 ${summary.netBalance >= 0 ? "bg-blue-50 dark:bg-blue-900/30" : "bg-orange-50 dark:bg-orange-900/30"}`}>
-            <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wide ${summary.netBalance >= 0 ? "text-blue-600 dark:text-blue-400" : "text-orange-600 dark:text-orange-400"}`}>
+          <div 
+            className="rounded-lg sm:rounded-xl p-2 sm:p-4 border-2"
+            style={{ 
+              backgroundColor: 'transparent', 
+              borderColor: summary.netBalance >= 0 ? '#2563eb' : '#ea580c' 
+            }}
+          >
+            <p 
+              className="text-[10px] sm:text-xs font-medium uppercase tracking-wide"
+              style={{ color: summary.netBalance >= 0 ? '#2563eb' : '#ea580c' }}
+            >
               {summary.netBalance >= 0 ? "Overpaid" : "Remaining"}
             </p>
-            <p className={`mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold ${summary.netBalance >= 0 ? "text-blue-700 dark:text-blue-300" : "text-orange-700 dark:text-orange-300"}`}>
+            <p 
+              className="mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold"
+              style={{ color: summary.netBalance >= 0 ? '#2563eb' : '#ea580c' }}
+            >
               ${Math.abs(summary.netBalance).toFixed(2)}
             </p>
           </div>
-          <div className="rounded-lg sm:rounded-xl bg-purple-50 dark:bg-purple-900/30 p-2 sm:p-4">
-            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-purple-600 dark:text-purple-400">Payment Rate</p>
-            <p className="mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold text-purple-700 dark:text-purple-300">{summary.paymentRate}%</p>
+          <div 
+            className="rounded-lg sm:rounded-xl p-2 sm:p-4 border-2"
+            style={{ backgroundColor: 'transparent', borderColor: '#9333ea' }}
+          >
+            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide" style={{ color: '#9333ea' }}>Payment Rate</p>
+            <p className="mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold" style={{ color: '#9333ea' }}>{summary.paymentRate}%</p>
           </div>
         </div>
 
