@@ -19,15 +19,15 @@ const CATEGORY_COLORS = {
 // Month abbreviations
 const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 
-// Format date as "MON - DD - YYYY" (e.g., "JAN - 15 - 2025")
+// Format date as "MON-DD-YY" (e.g., "JAN-15-25")
 const formatDateHeader = (dateStr) => {
   if (!dateStr) return "No Date";
   const parts = dateStr.split("-");
   if (parts.length !== 3) return dateStr;
-  const year = parts[0];
+  const year = parts[0].slice(-2); // Last 2 digits of year
   const month = parseInt(parts[1], 10) - 1; // 0-indexed
   const day = parts[2];
-  return `${MONTHS[month]} - ${day} - ${year}`;
+  return `${MONTHS[month]}-${day}-${year}`;
 };
 
 export default function TransactionsTable({
@@ -164,7 +164,7 @@ export default function TransactionsTable({
                   <svg className="h-4 w-4 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  <span className="text-xs font-bold tracking-wide text-blue-700 dark:text-blue-300">
+                  <span className="text-xs font-bold tracking-wide text-blue-800 dark:text-blue-300">
                     {formatDateHeader(dateKey)}
                   </span>
                   <div className="ml-auto flex items-center gap-2">
