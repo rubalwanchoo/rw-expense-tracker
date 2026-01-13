@@ -97,10 +97,10 @@ export default function ProjectsTable({
                   </p>
                   {/* Payment/Expenses Labels */}
                   <div className="flex gap-2">
-                    <span className="rounded bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-600 border border-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700">
+                    <span className="rounded-md bg-emerald-100 px-2.5 py-1 text-[10px] font-bold text-emerald-800 border-2 border-emerald-300 shadow-sm dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700 dark:shadow-none">
                       Payments: ${(projectTotals[project.id]?.payments || 0).toFixed(2)}
                     </span>
-                    <span className="rounded bg-red-50 px-2 py-0.5 text-[10px] font-medium text-red-600 border border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-700">
+                    <span className="rounded-md bg-red-100 px-2.5 py-1 text-[10px] font-bold text-red-800 border-2 border-red-300 shadow-sm dark:bg-red-900/30 dark:text-red-400 dark:border-red-700 dark:shadow-none">
                       Expenses: ${(projectTotals[project.id]?.expenses || 0).toFixed(2)}
                     </span>
                   </div>
@@ -111,13 +111,13 @@ export default function ProjectsTable({
                   </div>
                   {/* Category Badges (excluding Payment) */}
                   {projectTotals[project.id]?.categories?.filter(c => c !== "Payment").length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1">
+                    <div className="flex flex-wrap gap-1.5 mt-1.5">
                       {projectTotals[project.id].categories
                         .filter((category) => category !== "Payment")
                         .map((category) => (
                         <span
                           key={category}
-                          className={`text-[8px] font-medium px-1.5 py-0.5 rounded-full border ${
+                          className={`text-[9px] font-bold px-2 py-0.5 rounded-md border-2 shadow-sm dark:shadow-none ${
                             CATEGORY_COLORS[category] || CATEGORY_COLORS.Other
                           }`}
                         >
