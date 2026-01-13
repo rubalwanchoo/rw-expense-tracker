@@ -238,7 +238,7 @@ export default function DashboardPage() {
     }
 
     // Validate password
-    const correctPassword = process.env.NEXT_PUBLIC_PROJECT_DELETE_PASSWORD || "rw";
+    const correctPassword = process.env.NEXT_PUBLIC_PROJECT_DELETE_PASSWORD;
     if (deletePassword !== correctPassword) {
       showNotification("Incorrect delete password. Please try again.", "error");
       return;
