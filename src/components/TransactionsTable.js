@@ -112,7 +112,7 @@ export default function TransactionsTable({
           <div>
             {/* Select All Header */}
             {onSelectionChange && (
-              <div className="flex items-center gap-3 border-b border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 px-3 py-2 sm:px-4">
+              <div className="flex items-center gap-3 border-b border-gray-100 dark:border-slate-700 bg-transparent dark:bg-slate-800/50 px-3 py-2 sm:px-4">
                 <button
                   type="button"
                   onClick={handleSelectAll}
@@ -125,8 +125,8 @@ export default function TransactionsTable({
                     isAllSelected
                       ? "border-emerald-500 bg-emerald-500 text-white"
                       : isSomeSelected
-                      ? "border-emerald-500 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
-                      : "border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-transparent"
+                      ? "border-emerald-500 bg-transparent dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
+                      : "border-gray-400 dark:border-slate-600 bg-transparent dark:bg-slate-700 text-transparent"
                   }`}
                 >
                   {isAllSelected ? (
@@ -222,7 +222,7 @@ export default function TransactionsTable({
                         } ${
                           selectedIds.includes(transaction.id)
                             ? "border-emerald-500 bg-emerald-500 text-white"
-                            : "border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-transparent"
+                            : "border-gray-400 dark:border-slate-600 bg-transparent dark:bg-slate-700 text-transparent"
                         }`}
                       >
                         {selectedIds.includes(transaction.id) && (
