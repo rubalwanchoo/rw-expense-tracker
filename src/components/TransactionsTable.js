@@ -112,22 +112,24 @@ export default function TransactionsTable({
           <div>
             {/* Select All Header */}
             {onSelectionChange && (
-              <div className="flex items-center gap-3 border-b border-gray-100 dark:border-slate-700 bg-transparent dark:bg-slate-800/50 px-3 py-2 sm:px-4">
+              <div 
+                className="flex items-center gap-3 border-b px-3 py-2 sm:px-4"
+                style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
+              >
                 <button
                   type="button"
                   onClick={handleSelectAll}
                   disabled={disabled}
-                  className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-all duration-200 ${
-                    disabled 
-                      ? "cursor-not-allowed opacity-50" 
-                      : "cursor-pointer hover:border-emerald-500"
-                  } ${
-                    isAllSelected
-                      ? "border-emerald-500 bg-emerald-500 text-white"
-                      : isSomeSelected
-                      ? "border-emerald-500 bg-transparent dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
-                      : "border-gray-400 dark:border-slate-600 bg-transparent dark:bg-slate-700 text-transparent"
+                  className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border-2 transition-all duration-200 ${
+                    disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
                   }`}
+                  style={
+                    isAllSelected
+                      ? { backgroundColor: '#059669', borderColor: '#059669', color: 'white' }
+                      : isSomeSelected
+                      ? { backgroundColor: 'transparent', borderColor: '#059669', color: '#059669' }
+                      : { backgroundColor: 'transparent', borderColor: '#9ca3af', color: 'transparent' }
+                  }
                 >
                   {isAllSelected ? (
                     <svg className="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -215,15 +217,14 @@ export default function TransactionsTable({
                         type="button"
                         onClick={() => handleCheckboxChange(transaction.id)}
                         disabled={disabled}
-                        className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-all duration-200 ${
-                          disabled 
-                            ? "cursor-not-allowed opacity-50" 
-                            : "cursor-pointer hover:border-emerald-500"
-                        } ${
-                          selectedIds.includes(transaction.id)
-                            ? "border-emerald-500 bg-emerald-500 text-white"
-                            : "border-gray-400 dark:border-slate-600 bg-transparent dark:bg-slate-700 text-transparent"
+                        className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border-2 transition-all duration-200 ${
+                          disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
                         }`}
+                        style={
+                          selectedIds.includes(transaction.id)
+                            ? { backgroundColor: '#059669', borderColor: '#059669', color: 'white' }
+                            : { backgroundColor: 'transparent', borderColor: '#9ca3af', color: 'transparent' }
+                        }
                       >
                         {selectedIds.includes(transaction.id) && (
                           <svg className="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
