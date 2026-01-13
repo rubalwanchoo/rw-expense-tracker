@@ -191,7 +191,7 @@ export default function TransactionModals({
     e.preventDefault();
     if (!transactionToDelete) return;
 
-    const correctPassword = process.env.NEXT_PUBLIC_PROJECT_DELETE_PASSWORD;
+    const correctPassword = process.env.NEXT_PUBLIC_PROJECT_DELETE_PASSWORD || "rw";
     if (deletePassword !== correctPassword) {
       showNotification("Incorrect delete password. Please try again.", "error");
       return;

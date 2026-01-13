@@ -597,7 +597,7 @@ export default function TransactionsPage() {
     if (selectedTransactionIds.length === 0) return;
     
     // Validate password
-    const correctPassword = process.env.NEXT_PUBLIC_PROJECT_DELETE_PASSWORD;
+    const correctPassword = process.env.NEXT_PUBLIC_PROJECT_DELETE_PASSWORD || "rw";
     if (bulkDeletePassword !== correctPassword) {
       showNotification("Incorrect delete password. Please try again.", "error");
       return;
