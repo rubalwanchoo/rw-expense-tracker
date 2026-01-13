@@ -375,32 +375,6 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
     return buckets;
   }, [filteredTransactions]);
 
-  // Monthly budget tracking (default budget of $1000, can be customized later)
-  const [monthlyBudget] = useState(2000);
-  const budgetData = useMemo(() => {
-    const now = new Date();
-    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-    
-    let currentMonthSpending = 0;
-    filteredTransactions.forEach((t) => {
-      if (t.type !== "Expense" || !t.trans_date) return;
-      if (t.trans_date.startsWith(currentMonth)) {
-        currentMonthSpending += parseFloat(t.amount) || 0;
-      }
-    });
-
-    const percentUsed = monthlyBudget > 0 ? (currentMonthSpending / monthlyBudget) * 100 : 0;
-    const remaining = monthlyBudget - currentMonthSpending;
-
-    return {
-      budget: monthlyBudget,
-      spent: currentMonthSpending,
-      remaining,
-      percentUsed: Math.min(percentUsed, 100),
-      isOverBudget: currentMonthSpending > monthlyBudget,
-    };
-  }, [filteredTransactions, monthlyBudget]);
-
   // Custom tooltip for charts
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -790,52 +764,6 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
                     <p className="mt-0.5 sm:mt-1 text-base sm:text-xl font-bold text-gray-800">
                       {filteredTransactions.filter(t => t.type === "Expense").length}
                     </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Budget vs Actual */}
-              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
-                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Monthly Budget vs Actual</h4>
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="flex items-center justify-between text-xs sm:text-sm">
-                    <span className="text-gray-600">Budget: ${budgetData.budget.toFixed(0)}</span>
-                    <span className={`font-semibold ${budgetData.isOverBudget ? "text-red-600" : "text-emerald-600"}`}>
-                      {budgetData.isOverBudget ? "Over!" : `$${budgetData.remaining.toFixed(0)} left`}
-                    </span>
-                  </div>
-                  
-                  {/* Progress Bar */}
-                  <div className="relative h-5 sm:h-6 w-full overflow-hidden rounded-full bg-gray-200">
-                    <div
-                      className={`absolute left-0 top-0 h-full rounded-full transition-all duration-500 ${
-                        budgetData.percentUsed > 90 ? "bg-red-500" : 
-                        budgetData.percentUsed > 70 ? "bg-orange-500" : "bg-emerald-500"
-                      }`}
-                      style={{ width: `${Math.min(budgetData.percentUsed, 100)}%` }}
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center text-[10px] sm:text-xs font-semibold text-gray-800">
-                      ${budgetData.spent.toFixed(0)} ({budgetData.percentUsed.toFixed(0)}%)
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-center">
-                    <div className="rounded-lg bg-gray-50 p-1.5 sm:p-2">
-                      <p className="text-[10px] sm:text-xs text-gray-500">Budget</p>
-                      <p className="text-xs sm:text-sm font-bold text-gray-800">${budgetData.budget.toFixed(0)}</p>
-                    </div>
-                    <div className="rounded-lg bg-red-50 p-1.5 sm:p-2">
-                      <p className="text-[10px] sm:text-xs text-red-500">Spent</p>
-                      <p className="text-xs sm:text-sm font-bold text-red-600">${budgetData.spent.toFixed(0)}</p>
-                    </div>
-                    <div className={`rounded-lg p-1.5 sm:p-2 ${budgetData.isOverBudget ? "bg-red-50" : "bg-emerald-50"}`}>
-                      <p className={`text-[10px] sm:text-xs ${budgetData.isOverBudget ? "text-red-500" : "text-emerald-500"}`}>
-                        {budgetData.isOverBudget ? "Over" : "Left"}
-                      </p>
-                      <p className={`text-xs sm:text-sm font-bold ${budgetData.isOverBudget ? "text-red-600" : "text-emerald-600"}`}>
-                        ${Math.abs(budgetData.remaining).toFixed(0)}
-                      </p>
-                    </div>
                   </div>
                 </div>
               </div>
