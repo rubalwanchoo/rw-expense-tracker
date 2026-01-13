@@ -3,17 +3,18 @@
 import { useMemo } from "react";
 
 // Category color mapping with dark mode support
+// Light theme: transparent background, matching text/border colors
 const CATEGORY_COLORS = {
-  Payment: "bg-emerald-100 text-emerald-600 border-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-400",
-  Groceries: "bg-green-100 text-green-600 border-green-600 dark:bg-green-900/40 dark:text-green-400 dark:border-green-400",
-  Dining: "bg-orange-100 text-orange-600 border-orange-600 dark:bg-orange-900/40 dark:text-orange-400 dark:border-orange-400",
-  Gas: "bg-yellow-100 text-yellow-600 border-yellow-600 dark:bg-yellow-900/40 dark:text-yellow-400 dark:border-yellow-400",
-  Shopping: "bg-pink-100 text-pink-600 border-pink-600 dark:bg-pink-900/40 dark:text-pink-400 dark:border-pink-400",
-  Entertainment: "bg-purple-100 text-purple-600 border-purple-600 dark:bg-purple-900/40 dark:text-purple-400 dark:border-purple-400",
-  Travel: "bg-blue-100 text-blue-600 border-blue-600 dark:bg-blue-900/40 dark:text-blue-400 dark:border-blue-400",
-  Utilities: "bg-cyan-100 text-cyan-600 border-cyan-600 dark:bg-cyan-900/40 dark:text-cyan-400 dark:border-cyan-400",
-  Healthcare: "bg-rose-100 text-rose-600 border-rose-600 dark:bg-rose-900/40 dark:text-rose-400 dark:border-rose-400",
-  Other: "bg-gray-100 text-gray-600 border-gray-600 dark:bg-gray-700/40 dark:text-gray-400 dark:border-gray-400",
+  Payment: "bg-transparent text-emerald-600 border-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-400",
+  Groceries: "bg-transparent text-green-600 border-green-600 dark:bg-green-900/40 dark:text-green-400 dark:border-green-400",
+  Dining: "bg-transparent text-orange-600 border-orange-600 dark:bg-orange-900/40 dark:text-orange-400 dark:border-orange-400",
+  Gas: "bg-transparent text-yellow-600 border-yellow-600 dark:bg-yellow-900/40 dark:text-yellow-400 dark:border-yellow-400",
+  Shopping: "bg-transparent text-pink-600 border-pink-600 dark:bg-pink-900/40 dark:text-pink-400 dark:border-pink-400",
+  Entertainment: "bg-transparent text-purple-600 border-purple-600 dark:bg-purple-900/40 dark:text-purple-400 dark:border-purple-400",
+  Travel: "bg-transparent text-blue-600 border-blue-600 dark:bg-blue-900/40 dark:text-blue-400 dark:border-blue-400",
+  Utilities: "bg-transparent text-cyan-600 border-cyan-600 dark:bg-cyan-900/40 dark:text-cyan-400 dark:border-cyan-400",
+  Healthcare: "bg-transparent text-rose-600 border-rose-600 dark:bg-rose-900/40 dark:text-rose-400 dark:border-rose-400",
+  Other: "bg-transparent text-gray-600 border-gray-600 dark:bg-gray-700/40 dark:text-gray-400 dark:border-gray-400",
 };
 
 // Month abbreviations
@@ -171,7 +172,7 @@ export default function TransactionsTable({
                     {/* Total Payments for this day */}
                     {dayTotalPayments > 0 && (
                       <span 
-                        className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full border border-emerald-100 dark:border-emerald-700"
+                        className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-transparent dark:bg-emerald-900/30 px-2 py-0.5 rounded-full border border-emerald-600 dark:border-emerald-400"
                         title="Total Payments"
                       >
                         <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -183,7 +184,7 @@ export default function TransactionsTable({
                     {/* Total Expenses for this day */}
                     {dayTotalExpenses > 0 && (
                       <span 
-                        className="flex items-center gap-1 text-[10px] font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-2 py-0.5 rounded-full border border-red-100 dark:border-red-700"
+                        className="flex items-center gap-1 text-[10px] font-semibold text-red-600 dark:text-red-400 bg-transparent dark:bg-red-900/30 px-2 py-0.5 rounded-full border border-red-600 dark:border-red-400"
                         title="Total Expenses"
                       >
                         <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
