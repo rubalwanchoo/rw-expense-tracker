@@ -6,16 +6,16 @@ import { formatDateEST } from "@/lib/dateUtils";
 
 // Category color mapping (same as TransactionsTable) - with dark mode support
 const CATEGORY_COLORS = {
-  Payment: "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-700",
-  Groceries: "bg-green-100 text-green-800 border-green-300 dark:bg-green-900/40 dark:text-green-300 dark:border-green-700",
-  Dining: "bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900/40 dark:text-orange-300 dark:border-orange-700",
-  Gas: "bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/40 dark:text-yellow-300 dark:border-yellow-700",
-  Shopping: "bg-pink-100 text-pink-800 border-pink-300 dark:bg-pink-900/40 dark:text-pink-300 dark:border-pink-700",
-  Entertainment: "bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900/40 dark:text-purple-300 dark:border-purple-700",
-  Travel: "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700",
-  Utilities: "bg-cyan-100 text-cyan-800 border-cyan-300 dark:bg-cyan-900/40 dark:text-cyan-300 dark:border-cyan-700",
-  Healthcare: "bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-900/40 dark:text-rose-300 dark:border-rose-700",
-  Other: "bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-700/40 dark:text-gray-300 dark:border-gray-600",
+  Payment: "bg-emerald-100 text-emerald-600 border-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-400",
+  Groceries: "bg-green-100 text-green-600 border-green-600 dark:bg-green-900/40 dark:text-green-400 dark:border-green-400",
+  Dining: "bg-orange-100 text-orange-600 border-orange-600 dark:bg-orange-900/40 dark:text-orange-400 dark:border-orange-400",
+  Gas: "bg-yellow-100 text-yellow-600 border-yellow-600 dark:bg-yellow-900/40 dark:text-yellow-400 dark:border-yellow-400",
+  Shopping: "bg-pink-100 text-pink-600 border-pink-600 dark:bg-pink-900/40 dark:text-pink-400 dark:border-pink-400",
+  Entertainment: "bg-purple-100 text-purple-600 border-purple-600 dark:bg-purple-900/40 dark:text-purple-400 dark:border-purple-400",
+  Travel: "bg-blue-100 text-blue-600 border-blue-600 dark:bg-blue-900/40 dark:text-blue-400 dark:border-blue-400",
+  Utilities: "bg-cyan-100 text-cyan-600 border-cyan-600 dark:bg-cyan-900/40 dark:text-cyan-400 dark:border-cyan-400",
+  Healthcare: "bg-rose-100 text-rose-600 border-rose-600 dark:bg-rose-900/40 dark:text-rose-400 dark:border-rose-400",
+  Other: "bg-gray-100 text-gray-600 border-gray-600 dark:bg-gray-700/40 dark:text-gray-400 dark:border-gray-400",
 };
 
 export default function ProjectsTable({
@@ -97,10 +97,10 @@ export default function ProjectsTable({
                   </p>
                   {/* Payment/Expenses Labels */}
                   <div className="flex gap-2">
-                    <span className="rounded-md bg-emerald-100 px-2.5 py-1 text-[10px] font-bold text-emerald-800 border-2 border-emerald-300 shadow-sm dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700 dark:shadow-none">
+                    <span className="rounded-md bg-emerald-100 px-2.5 py-1 text-[10px] font-bold text-emerald-600 border-2 border-emerald-600 shadow-sm dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-400 dark:shadow-none">
                       Payments: ${(projectTotals[project.id]?.payments || 0).toFixed(2)}
                     </span>
-                    <span className="rounded-md bg-red-100 px-2.5 py-1 text-[10px] font-bold text-red-800 border-2 border-red-300 shadow-sm dark:bg-red-900/30 dark:text-red-400 dark:border-red-700 dark:shadow-none">
+                    <span className="rounded-md bg-red-100 px-2.5 py-1 text-[10px] font-bold text-red-600 border-2 border-red-600 shadow-sm dark:bg-red-900/30 dark:text-red-400 dark:border-red-400 dark:shadow-none">
                       Expenses: ${(projectTotals[project.id]?.expenses || 0).toFixed(2)}
                     </span>
                   </div>
