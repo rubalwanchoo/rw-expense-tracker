@@ -145,7 +145,13 @@ export default function TransactionsTable({
                 </span>
               </div>
             )}
-            {groupedTransactions.map(([dateKey, dateTransactions], groupIndex) => (
+            {groupedTransactions.map(([dateKey, dateTransactions], groupIndex) => {
+              // Calculate total expenses for this date
+              const dayTotalExpenses = dateTransactions
+                .filter(t => t.type === "Expense")
+                .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+              
+              return (
               <div key={dateKey}>
                 {/* Date Header Row */}
                 <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-2 sm:px-4 border-b border-blue-100">
@@ -155,9 +161,24 @@ export default function TransactionsTable({
                   <span className="text-xs font-bold tracking-wide text-blue-700">
                     {formatDateHeader(dateKey)}
                   </span>
-                  <span className="ml-auto text-[10px] font-medium text-blue-500 bg-blue-100 px-2 py-0.5 rounded-full">
-                    {dateTransactions.length} item{dateTransactions.length !== 1 ? "s" : ""}
-                  </span>
+                  <div className="ml-auto flex items-center gap-2">
+                    {/* Total Expenses for this day */}
+                    {dayTotalExpenses > 0 && (
+                      <span 
+                        className="flex items-center gap-1 text-[10px] font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-full border border-red-100"
+                        title="Total Expenses"
+                      >
+                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        ${dayTotalExpenses.toFixed(2)}
+                      </span>
+                    )}
+                    {/* Item count */}
+                    <span className="text-[10px] font-medium text-blue-500 bg-blue-100 px-2 py-0.5 rounded-full">
+                      {dateTransactions.length} item{dateTransactions.length !== 1 ? "s" : ""}
+                    </span>
+                  </div>
                 </div>
                 
                 {/* Transactions for this date */}
@@ -289,7 +310,8 @@ export default function TransactionsTable({
                   </div>
                 ))}
               </div>
-            ))}
+            );
+            })}
           </div>
         )}
       </div>
