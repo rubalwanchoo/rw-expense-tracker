@@ -19,12 +19,12 @@ const CATEGORY_STYLES = {
 // Month abbreviations
 const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 
-// Format date as "MON-DD-YY" (e.g., "JAN-15-25")
+// Format date as "MON-DD-YYYY" (e.g., "JAN-15-2025")
 const formatDateHeader = (dateStr) => {
   if (!dateStr) return "No Date";
   const parts = dateStr.split("-");
   if (parts.length !== 3) return dateStr;
-  const year = parts[0].slice(-2); // Last 2 digits of year
+  const year = parts[0]; // Full 4-digit year
   const month = parseInt(parts[1], 10) - 1; // 0-indexed
   const day = parts[2];
   return `${MONTHS[month]}-${day}-${year}`;
