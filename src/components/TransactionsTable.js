@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 // Category color mapping - using hex colors for inline styles (works reliably on mobile)
 const CATEGORY_STYLES = {
@@ -39,6 +39,46 @@ export default function TransactionsTable({
   selectedIds = [],
   onSelectionChange,
 }) {
+  // Track which date groups are collapsed (by dateKey)
+  const [collapsedDates, setCollapsedDates] = useState(new Set());
+
+  // Group transactions by date (moved up so collapse functions can use it)
+  const groupedTransactions = useMemo(() => {
+    const groups = {};
+    transactions.forEach((t) => {
+      const dateKey = t.trans_date || "no-date";
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(t);
+    });
+    
+    // Convert to array of [date, transactions[]] and sort by date descending
+    return Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]));
+  }, [transactions]);
+
+  // Toggle collapse state for a date group
+  const toggleDateCollapse = (dateKey) => {
+    setCollapsedDates((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(dateKey)) {
+        newSet.delete(dateKey);
+      } else {
+        newSet.add(dateKey);
+      }
+      return newSet;
+    });
+  };
+
+  // Expand all date groups
+  const expandAll = () => setCollapsedDates(new Set());
+
+  // Collapse all date groups
+  const collapseAll = () => {
+    const allDates = new Set(groupedTransactions.map(([dateKey]) => dateKey));
+    setCollapsedDates(allDates);
+  };
+
   // Handle individual checkbox toggle
   const handleCheckboxChange = (transactionId) => {
     if (!onSelectionChange) return;
@@ -63,21 +103,6 @@ export default function TransactionsTable({
 
   const isAllSelected = transactions.length > 0 && selectedIds.length === transactions.length;
   const isSomeSelected = selectedIds.length > 0 && selectedIds.length < transactions.length;
-
-  // Group transactions by date
-  const groupedTransactions = useMemo(() => {
-    const groups = {};
-    transactions.forEach((t) => {
-      const dateKey = t.trans_date || "no-date";
-      if (!groups[dateKey]) {
-        groups[dateKey] = [];
-      }
-      groups[dateKey].push(t);
-    });
-    
-    // Convert to array of [date, transactions[]] and sort by date descending
-    return Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]));
-  }, [transactions]);
 
   return (
     <div className="w-full">
@@ -110,44 +135,77 @@ export default function TransactionsTable({
           </div>
         ) : (
           <div>
-            {/* Select All Header */}
-            {onSelectionChange && (
-              <div 
-                className="flex items-center gap-3 border-b px-3 py-2 sm:px-4"
-                style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
-              >
+            {/* Select All Header + Expand/Collapse Controls */}
+            <div 
+              className="flex items-center justify-between gap-3 border-b px-3 py-2 sm:px-4"
+              style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
+            >
+              {/* Left side: Select all checkbox */}
+              {onSelectionChange && (
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleSelectAll}
+                    disabled={disabled}
+                    className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border-2 transition-all duration-200 ${
+                      disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                    }`}
+                    style={
+                      isAllSelected
+                        ? { backgroundColor: '#059669', borderColor: '#059669', color: 'white' }
+                        : isSomeSelected
+                        ? { backgroundColor: 'transparent', borderColor: '#059669', color: '#059669' }
+                        : { backgroundColor: 'transparent', borderColor: '#9ca3af', color: 'transparent' }
+                    }
+                  >
+                    {isAllSelected ? (
+                      <svg className="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : isSomeSelected ? (
+                      <svg className="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 24 24">
+                        <rect x="4" y="10" width="16" height="4" rx="1" />
+                      </svg>
+                    ) : null}
+                  </button>
+                  <span className="text-xs font-medium" style={{ color: 'var(--muted)' }}>
+                    {selectedIds.length > 0 
+                      ? `${selectedIds.length} selected` 
+                      : "Select all"}
+                  </span>
+                </div>
+              )}
+              
+              {/* Right side: Expand/Collapse All buttons */}
+              <div className="flex items-center gap-1 ml-auto">
                 <button
                   type="button"
-                  onClick={handleSelectAll}
-                  disabled={disabled}
-                  className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border-2 transition-all duration-200 ${
-                    disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-                  }`}
-                  style={
-                    isAllSelected
-                      ? { backgroundColor: '#059669', borderColor: '#059669', color: 'white' }
-                      : isSomeSelected
-                      ? { backgroundColor: 'transparent', borderColor: '#059669', color: '#059669' }
-                      : { backgroundColor: 'transparent', borderColor: '#9ca3af', color: 'transparent' }
-                  }
+                  onClick={expandAll}
+                  disabled={collapsedDates.size === 0}
+                  className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded transition-all duration-200 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{ color: 'var(--accent)' }}
+                  title="Expand all dates"
                 >
-                  {isAllSelected ? (
-                    <svg className="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
-                    </svg>
-                  ) : isSomeSelected ? (
-                    <svg className="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 24 24">
-                      <rect x="4" y="10" width="16" height="4" rx="1" />
-                    </svg>
-                  ) : null}
+                  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+                  </svg>
+                  Expand
                 </button>
-                <span className="text-xs font-medium" style={{ color: 'var(--muted)' }}>
-                  {selectedIds.length > 0 
-                    ? `${selectedIds.length} selected` 
-                    : "Select all"}
-                </span>
+                <button
+                  type="button"
+                  onClick={collapseAll}
+                  disabled={collapsedDates.size === groupedTransactions.length}
+                  className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded transition-all duration-200 hover:bg-gray-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{ color: 'var(--muted)' }}
+                  title="Collapse all dates"
+                >
+                  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25" />
+                  </svg>
+                  Collapse
+                </button>
               </div>
-            )}
+            </div>
             {groupedTransactions.map(([dateKey, dateTransactions], groupIndex) => {
               // Calculate total expenses for this date
               const dayTotalExpenses = dateTransactions
@@ -159,14 +217,29 @@ export default function TransactionsTable({
                 .filter(t => t.type === "Payment")
                 .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
               
+              const isCollapsed = collapsedDates.has(dateKey);
+              
               return (
               <div key={dateKey}>
-                {/* Date Header Row */}
-                <div 
-                  className="px-3 py-2 sm:px-4 border-b"
+                {/* Date Header Row - Clickable to toggle collapse */}
+                <button 
+                  type="button"
+                  onClick={() => toggleDateCollapse(dateKey)}
+                  className="w-full px-3 py-2 sm:px-4 border-b text-left transition-all duration-200 hover:brightness-95 dark:hover:brightness-110 cursor-pointer"
                   style={{ backgroundColor: 'var(--table-header-bg)', borderColor: 'var(--card-border)' }}
                 >
                   <div className="flex items-center gap-2">
+                    {/* Chevron indicator */}
+                    <svg 
+                      className={`h-4 w-4 transition-transform duration-300 ${isCollapsed ? '-rotate-90' : 'rotate-0'}`} 
+                      style={{ color: 'var(--accent)' }} 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                    {/* Calendar icon */}
                     <svg className="h-4 w-4" style={{ color: 'var(--accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
@@ -205,12 +278,19 @@ export default function TransactionsTable({
                   {/* Item count - small text at bottom right */}
                   <div className="flex justify-end mt-0.5">
                     <span className="text-[9px]" style={{ color: 'var(--muted-light)' }}>
-                      {dateTransactions.length} item{dateTransactions.length !== 1 ? "s" : ""}
+                      {dateTransactions.length} item{dateTransactions.length !== 1 ? "s" : ""} {isCollapsed ? "(collapsed)" : ""}
                     </span>
                   </div>
-                </div>
+                </button>
                 
-                {/* Transactions for this date */}
+                {/* Transactions for this date - Collapsible container */}
+                <div 
+                  className="overflow-hidden transition-all duration-300 ease-in-out"
+                  style={{
+                    maxHeight: isCollapsed ? '0px' : `${dateTransactions.length * 120}px`,
+                    opacity: isCollapsed ? 0 : 1,
+                  }}
+                >
                 {dateTransactions.map((transaction, index) => (
                   <div
                     key={transaction.id}
@@ -347,6 +427,7 @@ export default function TransactionsTable({
                     </div>
                   </div>
                 ))}
+                </div>
               </div>
             );
             })}
