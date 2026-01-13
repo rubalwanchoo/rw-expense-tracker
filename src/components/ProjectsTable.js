@@ -108,10 +108,12 @@ export default function ProjectsTable({
                     <span>Created: {formatDateEST(project.dtm_created)}</span>
                     <span>Updated: {formatDateEST(project.dtm_modified)}</span>
                   </div>
-                  {/* Category Badges */}
-                  {projectTotals[project.id]?.categories?.length > 0 && (
+                  {/* Category Badges (excluding Payment) */}
+                  {projectTotals[project.id]?.categories?.filter(c => c !== "Payment").length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {projectTotals[project.id].categories.map((category) => (
+                      {projectTotals[project.id].categories
+                        .filter((category) => category !== "Payment")
+                        .map((category) => (
                         <span
                           key={category}
                           className={`text-[8px] font-medium px-1.5 py-0.5 rounded-full border ${

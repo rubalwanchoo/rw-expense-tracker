@@ -55,6 +55,93 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
     setFilterEndDate("");
   };
 
+  // NEW: Payment vs Expense by Month (grouped bar)
+  const paymentVsExpenseData = useMemo(() => {
+    if (filteredTransactions.length === 0) return [];
+
+    const monthMap = {};
+    let minMonth = null;
+    let maxMonth = null;
+
+    filteredTransactions.forEach((t) => {
+      if (!t.trans_date) return;
+      const date = new Date(t.trans_date);
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const key = `${year}-${String(month + 1).padStart(2, '0')}`;
+      
+      const monthDate = new Date(year, month, 1);
+      if (!minMonth || monthDate < minMonth) minMonth = new Date(monthDate);
+      if (!maxMonth || monthDate > maxMonth) maxMonth = new Date(monthDate);
+      
+      if (!monthMap[key]) {
+        monthMap[key] = { month: key, payments: 0, expenses: 0 };
+      }
+
+      const amount = parseFloat(t.amount) || 0;
+      if (t.type === "Payment") {
+        monthMap[key].payments += amount;
+      } else {
+        monthMap[key].expenses += amount;
+      }
+    });
+
+    if (!minMonth || !maxMonth) return [];
+
+    const allMonths = [];
+    const current = new Date(minMonth);
+
+    while (current <= maxMonth) {
+      const key = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}`;
+      const existing = monthMap[key];
+      
+      allMonths.push({
+        month: key,
+        payments: existing?.payments || 0,
+        expenses: existing?.expenses || 0,
+        label: `${MONTHS[current.getMonth()]} ${current.getFullYear()}`,
+        balance: (existing?.payments || 0) - (existing?.expenses || 0),
+      });
+      
+      current.setMonth(current.getMonth() + 1);
+    }
+
+    return allMonths;
+  }, [filteredTransactions]);
+
+  // NEW: Outstanding Balance Over Time (running balance)
+  const outstandingBalanceData = useMemo(() => {
+    const transactions = filteredTransactions
+      .filter((t) => t.trans_date)
+      .map((t) => ({
+        date: t.trans_date,
+        amount: parseFloat(t.amount) || 0,
+        type: t.type,
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    let balance = 0;
+    const dateMap = {};
+
+    transactions.forEach((t) => {
+      if (t.type === "Payment") {
+        balance += t.amount;
+      } else {
+        balance -= t.amount;
+      }
+      dateMap[t.date] = balance;
+    });
+
+    return Object.entries(dateMap).map(([date, bal]) => {
+      const d = new Date(date);
+      return {
+        date,
+        balance: bal,
+        label: `${MONTHS[d.getMonth()]} ${d.getDate()}`,
+      };
+    });
+  }, [filteredTransactions]);
+
   // 1. Monthly Spending Trend Data - Shows all months in range
   const monthlyData = useMemo(() => {
     if (filteredTransactions.length === 0) return [];
@@ -229,37 +316,6 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
       }))
       .sort((a, b) => b.amount - a.amount)
       .slice(0, 10);
-  }, [filteredTransactions]);
-
-  // Rolling 7-day average spending
-  const rollingAverageData = useMemo(() => {
-    const expensesByDate = {};
-    
-    filteredTransactions.forEach((t) => {
-      if (t.type !== "Expense" || !t.trans_date) return;
-      const date = t.trans_date;
-      expensesByDate[date] = (expensesByDate[date] || 0) + (parseFloat(t.amount) || 0);
-    });
-
-    const sortedDates = Object.keys(expensesByDate).sort();
-    if (sortedDates.length < 7) return [];
-
-    const result = [];
-    for (let i = 6; i < sortedDates.length; i++) {
-      let sum = 0;
-      for (let j = i - 6; j <= i; j++) {
-        sum += expensesByDate[sortedDates[j]] || 0;
-      }
-      const avg = sum / 7;
-      const date = new Date(sortedDates[i]);
-      result.push({
-        date: sortedDates[i],
-        average: avg,
-        label: `${MONTHS[date.getMonth()]} ${date.getDate()}`,
-      });
-    }
-
-    return result;
   }, [filteredTransactions]);
 
   // Cumulative spending over time
@@ -449,6 +505,149 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
         {/* Charts Sections */}
         <div className="max-h-[65vh] sm:max-h-[60vh] overflow-y-auto px-3 sm:px-6 py-4 sm:py-6 space-y-6 sm:space-y-8">
           
+          {/* Section 0: Payment Analysis (NEW) */}
+          <div>
+            <div className="mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
+              <div className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-emerald-100">
+                <svg className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <h3 className="text-base sm:text-lg font-bold text-gray-800">Payment Analysis</h3>
+            </div>
+            <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
+              
+              {/* Payment Coverage Rate Gauge */}
+              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
+                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Payment Coverage Rate</h4>
+                <div className="flex flex-col items-center justify-center py-4">
+                  {/* Gauge Circle */}
+                  <div className="relative h-32 w-32 sm:h-40 sm:w-40">
+                    <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 100 100">
+                      {/* Background circle */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="40"
+                        fill="none"
+                        stroke="#e5e7eb"
+                        strokeWidth="12"
+                      />
+                      {/* Progress circle */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="40"
+                        fill="none"
+                        stroke={
+                          parseFloat(summary.paymentRate) >= 100 ? "#10b981" :
+                          parseFloat(summary.paymentRate) >= 75 ? "#3b82f6" :
+                          parseFloat(summary.paymentRate) >= 50 ? "#f59e0b" : "#ef4444"
+                        }
+                        strokeWidth="12"
+                        strokeLinecap="round"
+                        strokeDasharray={`${Math.min(parseFloat(summary.paymentRate), 100) * 2.51} 251`}
+                      />
+                    </svg>
+                    {/* Center text */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className={`text-2xl sm:text-3xl font-bold ${
+                        parseFloat(summary.paymentRate) >= 100 ? "text-emerald-600" :
+                        parseFloat(summary.paymentRate) >= 75 ? "text-blue-600" :
+                        parseFloat(summary.paymentRate) >= 50 ? "text-amber-600" : "text-red-600"
+                      }`}>
+                        {summary.paymentRate}%
+                      </span>
+                      <span className="text-[10px] sm:text-xs text-gray-500">Coverage</span>
+                    </div>
+                  </div>
+                  
+                  {/* Status Message */}
+                  <div className={`mt-3 sm:mt-4 rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 text-center ${
+                    parseFloat(summary.paymentRate) >= 100 ? "bg-emerald-50" :
+                    parseFloat(summary.paymentRate) >= 75 ? "bg-blue-50" :
+                    parseFloat(summary.paymentRate) >= 50 ? "bg-amber-50" : "bg-red-50"
+                  }`}>
+                    <p className={`text-xs sm:text-sm font-medium ${
+                      parseFloat(summary.paymentRate) >= 100 ? "text-emerald-700" :
+                      parseFloat(summary.paymentRate) >= 75 ? "text-blue-700" :
+                      parseFloat(summary.paymentRate) >= 50 ? "text-amber-700" : "text-red-700"
+                    }`}>
+                      {parseFloat(summary.paymentRate) >= 100 ? "Fully covered! 🎉" :
+                       parseFloat(summary.paymentRate) >= 75 ? "Almost there!" :
+                       parseFloat(summary.paymentRate) >= 50 ? "Making progress" : "Needs attention"}
+                    </p>
+                    <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">
+                      ${summary.totalPayments.toFixed(2)} of ${summary.totalExpenses.toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment vs Expense by Month */}
+              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
+                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Payment vs Expense by Month</h4>
+                {paymentVsExpenseData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={200}>
+                    <BarChart data={paymentVsExpenseData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis dataKey="label" tick={{ fontSize: 9 }} stroke="#9ca3af" interval={0} angle={-45} textAnchor="end" height={50} />
+                      <YAxis tick={{ fontSize: 9 }} stroke="#9ca3af" tickFormatter={(v) => `$${v}`} width={45} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend wrapperStyle={{ fontSize: "10px" }} />
+                      <Bar dataKey="payments" name="Payments" fill={COLORS.payment} radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="expenses" name="Expenses" fill={COLORS.expense} radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-[200px] items-center justify-center text-gray-400 text-sm">
+                    No data available
+                  </div>
+                )}
+              </div>
+
+              {/* Outstanding Balance Over Time */}
+              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
+                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Outstanding Balance Over Time</h4>
+                {outstandingBalanceData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={200}>
+                    <AreaChart data={outstandingBalanceData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis dataKey="label" tick={{ fontSize: 9 }} stroke="#9ca3af" interval="preserveStartEnd" />
+                      <YAxis tick={{ fontSize: 9 }} stroke="#9ca3af" tickFormatter={(v) => `$${v}`} width={50} />
+                      <Tooltip
+                        formatter={(value) => [`$${value.toFixed(2)}`, value >= 0 ? "Surplus" : "Deficit"]}
+                        labelStyle={{ color: "#374151" }}
+                        contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb" }}
+                      />
+                      <defs>
+                        <linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4}/>
+                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                        </linearGradient>
+                      </defs>
+                      <Area 
+                        type="monotone" 
+                        dataKey="balance" 
+                        name="Balance" 
+                        stroke="#3b82f6" 
+                        fill="url(#balanceGradient)"
+                        strokeWidth={2}
+                      />
+                      {/* Zero line reference */}
+                      <Line type="monotone" dataKey={() => 0} stroke="#9ca3af" strokeDasharray="3 3" dot={false} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-[200px] items-center justify-center text-gray-400 text-sm">
+                    No data available
+                  </div>
+                )}
+              </div>
+
+            </div>
+          </div>
+
           {/* Section 1: Category/Description Analysis */}
           <div>
             <div className="mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
@@ -793,30 +992,6 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
                 ) : (
                   <div className="flex h-[200px] items-center justify-center text-gray-400 text-sm">
                     No expense data available
-                  </div>
-                )}
-              </div>
-
-              {/* Chart: Rolling 7-Day Average */}
-              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
-                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">7-Day Rolling Average</h4>
-                {rollingAverageData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={200}>
-                    <LineChart data={rollingAverageData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis dataKey="label" tick={{ fontSize: 9 }} stroke="#9ca3af" interval="preserveStartEnd" />
-                      <YAxis tick={{ fontSize: 9 }} stroke="#9ca3af" tickFormatter={(v) => `$${v.toFixed(0)}`} width={45} />
-                      <Tooltip
-                        formatter={(value) => [`$${value.toFixed(2)}`, "7-Day Avg"]}
-                        labelStyle={{ color: "#374151" }}
-                        contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb" }}
-                      />
-                      <Line type="monotone" dataKey="average" name="7-Day Avg" stroke="#8b5cf6" strokeWidth={2} dot={false} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="flex h-[200px] items-center justify-center text-gray-400 text-sm">
-                    Need at least 7 days of data
                   </div>
                 )}
               </div>
