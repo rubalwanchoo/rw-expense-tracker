@@ -164,12 +164,12 @@ export default function TransactionsTable({
                 {/* Date Header Row */}
                 <div 
                   className="flex items-center gap-2 px-3 py-2 sm:px-4 border-b"
-                  style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
+                  style={{ backgroundColor: 'var(--table-header-bg)', borderColor: 'var(--card-border)' }}
                 >
-                  <svg className="h-4 w-4" style={{ color: '#2563eb' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-4 w-4" style={{ color: 'var(--accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  <span className="text-xs font-bold tracking-wide" style={{ color: '#1e40af' }}>
+                  <span className="text-xs font-bold tracking-wide" style={{ color: 'var(--accent)' }}>
                     {formatDateHeader(dateKey)}
                   </span>
                   <div className="ml-auto flex items-center gap-2">
@@ -202,7 +202,7 @@ export default function TransactionsTable({
                     {/* Item count */}
                     <span 
                       className="text-[10px] font-medium px-2 py-0.5 rounded-full border"
-                      style={{ backgroundColor: 'transparent', color: '#2563eb', borderColor: '#2563eb' }}
+                      style={{ backgroundColor: 'transparent', color: 'var(--accent)', borderColor: 'var(--accent)' }}
                     >
                       {dateTransactions.length} item{dateTransactions.length !== 1 ? "s" : ""}
                     </span>
