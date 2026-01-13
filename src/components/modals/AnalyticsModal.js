@@ -42,9 +42,9 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
 
     return transactions.filter((t) => {
       if (!t.trans_date) return true;
-      const transDate = new Date(t.trans_date);
-      if (filterStartDate && transDate < new Date(filterStartDate)) return false;
-      if (filterEndDate && transDate > new Date(filterEndDate)) return false;
+      // Use string comparison for YYYY-MM-DD format (avoids timezone issues)
+      if (filterStartDate && t.trans_date < filterStartDate) return false;
+      if (filterEndDate && t.trans_date > filterEndDate) return false;
       return true;
     });
   }, [transactions, filterStartDate, filterEndDate]);
@@ -60,19 +60,23 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
     if (filteredTransactions.length === 0) return [];
 
     const monthMap = {};
-    let minMonth = null;
-    let maxMonth = null;
+    let minKey = null;
+    let maxKey = null;
 
     filteredTransactions.forEach((t) => {
       if (!t.trans_date) return;
-      const date = new Date(t.trans_date);
-      const year = date.getFullYear();
-      const month = date.getMonth();
-      const key = `${year}-${String(month + 1).padStart(2, '0')}`;
       
-      const monthDate = new Date(year, month, 1);
-      if (!minMonth || monthDate < minMonth) minMonth = new Date(monthDate);
-      if (!maxMonth || monthDate > maxMonth) maxMonth = new Date(monthDate);
+      // Parse date string directly to avoid timezone issues (format: YYYY-MM-DD)
+      const dateParts = t.trans_date.split('-');
+      if (dateParts.length < 2) return;
+      
+      const year = parseInt(dateParts[0], 10);
+      const month = parseInt(dateParts[1], 10); // 1-12
+      const key = `${year}-${String(month).padStart(2, '0')}`;
+      
+      // Track min/max keys as strings (they sort correctly in YYYY-MM format)
+      if (!minKey || key < minKey) minKey = key;
+      if (!maxKey || key > maxKey) maxKey = key;
       
       if (!monthMap[key]) {
         monthMap[key] = { month: key, payments: 0, expenses: 0 };
@@ -86,24 +90,34 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
       }
     });
 
-    if (!minMonth || !maxMonth) return [];
+    if (!minKey || !maxKey) return [];
 
+    // Generate all months between min and max
     const allMonths = [];
-    const current = new Date(minMonth);
+    const [minYear, minMonth] = minKey.split('-').map(Number);
+    const [maxYear, maxMonth] = maxKey.split('-').map(Number);
+    
+    let currentYear = minYear;
+    let currentMonth = minMonth;
 
-    while (current <= maxMonth) {
-      const key = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}`;
+    while (currentYear < maxYear || (currentYear === maxYear && currentMonth <= maxMonth)) {
+      const key = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
       const existing = monthMap[key];
       
       allMonths.push({
         month: key,
         payments: existing?.payments || 0,
         expenses: existing?.expenses || 0,
-        label: `${MONTHS[current.getMonth()]} ${current.getFullYear()}`,
+        label: `${MONTHS[currentMonth - 1]} ${currentYear}`,
         balance: (existing?.payments || 0) - (existing?.expenses || 0),
       });
       
-      current.setMonth(current.getMonth() + 1);
+      // Move to next month
+      currentMonth++;
+      if (currentMonth > 12) {
+        currentMonth = 1;
+        currentYear++;
+      }
     }
 
     return allMonths;
@@ -133,11 +147,14 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
     });
 
     return Object.entries(dateMap).map(([date, bal]) => {
-      const d = new Date(date);
+      // Parse date string directly to avoid timezone issues (format: YYYY-MM-DD)
+      const dateParts = date.split('-');
+      const month = parseInt(dateParts[1], 10) - 1; // 0-indexed
+      const day = parseInt(dateParts[2], 10);
       return {
         date,
         balance: bal,
-        label: `${MONTHS[d.getMonth()]} ${d.getDate()}`,
+        label: `${MONTHS[month]} ${day}`,
       };
     });
   }, [filteredTransactions]);
@@ -148,20 +165,23 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
 
     // Collect data from transactions grouped by month
     const monthMap = {};
-    let minMonth = null;
-    let maxMonth = null;
+    let minKey = null;
+    let maxKey = null;
 
     filteredTransactions.forEach((t) => {
       if (!t.trans_date) return;
-      const date = new Date(t.trans_date);
-      const year = date.getFullYear();
-      const month = date.getMonth();
-      const key = `${year}-${String(month + 1).padStart(2, '0')}`; // YYYY-MM
       
-      // Track min/max months
-      const monthDate = new Date(year, month, 1);
-      if (!minMonth || monthDate < minMonth) minMonth = new Date(monthDate);
-      if (!maxMonth || monthDate > maxMonth) maxMonth = new Date(monthDate);
+      // Parse date string directly to avoid timezone issues (format: YYYY-MM-DD)
+      const dateParts = t.trans_date.split('-');
+      if (dateParts.length < 2) return;
+      
+      const year = parseInt(dateParts[0], 10);
+      const month = parseInt(dateParts[1], 10); // 1-12
+      const key = `${year}-${String(month).padStart(2, '0')}`; // YYYY-MM
+      
+      // Track min/max keys as strings
+      if (!minKey || key < minKey) minKey = key;
+      if (!maxKey || key > maxKey) maxKey = key;
       
       if (!monthMap[key]) {
         monthMap[key] = { month: key, expenses: 0 };
@@ -175,40 +195,56 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
 
     // If filter dates are set, use them as boundaries
     if (filterStartDate) {
-      const startD = new Date(filterStartDate);
-      const startMonth = new Date(startD.getFullYear(), startD.getMonth(), 1);
-      if (!minMonth || startMonth < minMonth) minMonth = startMonth;
+      const startParts = filterStartDate.split('-');
+      const startKey = `${startParts[0]}-${startParts[1]}`;
+      if (!minKey || startKey < minKey) minKey = startKey;
     }
     if (filterEndDate) {
-      const endD = new Date(filterEndDate);
-      const endMonth = new Date(endD.getFullYear(), endD.getMonth(), 1);
-      if (!maxMonth || endMonth > maxMonth) maxMonth = endMonth;
+      const endParts = filterEndDate.split('-');
+      const endKey = `${endParts[0]}-${endParts[1]}`;
+      if (!maxKey || endKey > maxKey) maxKey = endKey;
     }
 
-    if (!minMonth || !maxMonth) return [];
+    if (!minKey || !maxKey) return [];
 
     // Generate all months between min and max
     const allMonths = [];
-    const current = new Date(minMonth);
+    const [minYear, minMonth] = minKey.split('-').map(Number);
+    const [maxYear, maxMonth] = maxKey.split('-').map(Number);
+    
+    let currentYear = minYear;
+    let currentMonth = minMonth;
 
-    while (current <= maxMonth) {
-      const key = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}`;
+    while (currentYear < maxYear || (currentYear === maxYear && currentMonth <= maxMonth)) {
+      const key = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
       const existing = monthMap[key];
       
       allMonths.push({
         month: key,
         expenses: existing?.expenses || 0,
-        label: `${MONTHS[current.getMonth()]} ${current.getFullYear()}`,
+        label: `${MONTHS[currentMonth - 1]} ${currentYear}`,
       });
       
       // Move to next month
-      current.setMonth(current.getMonth() + 1);
+      currentMonth++;
+      if (currentMonth > 12) {
+        currentMonth = 1;
+        currentYear++;
+      }
     }
 
     return allMonths;
   }, [filteredTransactions, filterStartDate, filterEndDate]);
 
   // 2. Day of Week Analysis Data
+  // Helper to get day of week from YYYY-MM-DD string (0=Sun, 6=Sat)
+  const getDayOfWeek = (dateStr) => {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    // Use UTC to avoid timezone shifts
+    const date = new Date(Date.UTC(year, month - 1, day));
+    return date.getUTCDay();
+  };
+
   const dayOfWeekData = useMemo(() => {
     const dayTotals = Array(7).fill(null).map((_, i) => ({
       day: DAYS_OF_WEEK[i],
@@ -218,8 +254,7 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
 
     filteredTransactions.forEach((t) => {
       if (!t.trans_date || t.type !== "Expense") return;
-      const date = new Date(t.trans_date);
-      const dayIndex = date.getDay();
+      const dayIndex = getDayOfWeek(t.trans_date);
       dayTotals[dayIndex].amount += parseFloat(t.amount) || 0;
       dayTotals[dayIndex].count += 1;
     });
@@ -271,14 +306,19 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
     const maxAmount = Math.max(...Object.values(dayMap), 1);
 
     // Create calendar-like grid (last 35 days for 5 weeks)
-    const result = sortedDates.map((date) => {
-      const d = new Date(date);
+    const result = sortedDates.map((dateStr) => {
+      // Parse date string directly to avoid timezone issues
+      const dateParts = dateStr.split('-');
+      const month = parseInt(dateParts[1], 10) - 1; // 0-indexed for MONTHS array
+      const day = parseInt(dateParts[2], 10);
+      const dayOfWeek = getDayOfWeek(dateStr);
+      
       return {
-        date,
-        dayOfWeek: d.getDay(),
-        amount: dayMap[date],
-        intensity: dayMap[date] / maxAmount,
-        label: `${MONTHS[d.getMonth()]} ${d.getDate()}`,
+        date: dateStr,
+        dayOfWeek,
+        amount: dayMap[dateStr],
+        intensity: dayMap[dateStr] / maxAmount,
+        label: `${MONTHS[month]} ${day}`,
       };
     });
 
@@ -337,12 +377,15 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
       dateMap[e.date] = cumulative;
     });
 
-    Object.entries(dateMap).forEach(([date, total]) => {
-      const d = new Date(date);
+    Object.entries(dateMap).forEach(([dateStr, total]) => {
+      // Parse date string directly to avoid timezone issues
+      const dateParts = dateStr.split('-');
+      const month = parseInt(dateParts[1], 10) - 1; // 0-indexed for MONTHS array
+      const day = parseInt(dateParts[2], 10);
       result.push({
-        date,
+        date: dateStr,
         total,
-        label: `${MONTHS[d.getMonth()]} ${d.getDate()}`,
+        label: `${MONTHS[month]} ${day}`,
       });
     });
 
