@@ -293,7 +293,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 font-sans">
+    <div className="min-h-screen font-sans transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
       <Notification
         notification={notification}
         onClose={() => setNotification(null)}
@@ -303,10 +303,10 @@ export default function DashboardPage() {
       <main className="relative mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-16">
         <div className="flex flex-col items-center justify-center text-center">
           <div className="mb-6 sm:mb-8">
-            <h2 className="mb-2 text-2xl font-semibold text-gray-800 sm:mb-3 sm:text-3xl">
+            <h2 className="mb-2 text-2xl font-semibold sm:mb-3 sm:text-3xl" style={{ color: 'var(--foreground)' }}>
               Track Your Expenses
             </h2>
-            <p className="text-base text-gray-500 sm:text-lg">
+            <p className="text-base sm:text-lg" style={{ color: 'var(--muted)' }}>
               Keep your finances organized and under control
             </p>
           </div>
@@ -370,8 +370,8 @@ export default function DashboardPage() {
 
       {/* Loading overlay for analytics */}
       {loadingAnalytics && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-gray-900/60 backdrop-blur-sm">
-          <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-2xl">
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center backdrop-blur-sm" style={{ backgroundColor: 'var(--modal-overlay)' }}>
+          <div className="rounded-2xl border p-8 shadow-2xl" style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)' }}>
             <div className="flex flex-col items-center">
               <div className="h-12 w-12 animate-spin rounded-full border-4 border-purple-500 border-t-transparent"></div>
               <p className="mt-4 text-lg font-medium text-purple-600">

@@ -12,17 +12,18 @@ export default function DeleteTransactionModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 p-4 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-gray-200 bg-white p-5 shadow-2xl sm:p-8">
-        <h3 className="mb-3 text-xl font-semibold text-gray-800 sm:mb-4 sm:text-2xl">Delete Transaction</h3>
-        <p className="mb-4 text-sm text-gray-500 sm:mb-6 sm:text-base">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm" style={{ backgroundColor: 'var(--modal-overlay)' }}>
+      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border p-5 shadow-2xl transition-colors duration-300 sm:p-8" style={{ backgroundColor: 'var(--modal-bg)', borderColor: 'var(--card-border)' }}>
+        <h3 className="mb-3 text-xl font-semibold sm:mb-4 sm:text-2xl" style={{ color: 'var(--foreground)' }}>Delete Transaction</h3>
+        <p className="mb-4 text-sm sm:mb-6 sm:text-base" style={{ color: 'var(--muted)' }}>
           Are you sure you want to delete this transaction? This action cannot be undone.
         </p>
         <form onSubmit={onSubmit} className="space-y-4 sm:space-y-5">
           <div>
             <label
               htmlFor="delete_password"
-              className="mb-2 block text-sm font-medium text-gray-600"
+              className="mb-2 block text-sm font-medium"
+              style={{ color: 'var(--muted)' }}
             >
               Delete Password <span className="text-red-500">*</span>
             </label>
@@ -33,7 +34,8 @@ export default function DeleteTransactionModal({
               value={deletePassword}
               onChange={onPasswordChange}
               required
-              className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-gray-800 placeholder-gray-400 transition-colors focus:border-red-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
+              className="w-full rounded-lg border px-4 py-3 transition-colors focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+              style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--foreground)' }}
               placeholder="Enter delete password"
             />
           </div>
@@ -41,7 +43,8 @@ export default function DeleteTransactionModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-3 font-semibold text-gray-600 transition-colors hover:bg-gray-50"
+              className="flex-1 rounded-lg border px-4 py-3 font-semibold transition-colors hover:bg-gray-50 dark:hover:bg-slate-700"
+              style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--muted)' }}
             >
               Cancel
             </button>

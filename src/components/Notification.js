@@ -58,16 +58,17 @@ export default function Notification({ notification, onClose }) {
   return (
     <div className="fixed inset-x-0 top-6 z-[100] flex justify-center animate-[fadeIn_0.2s_ease-out]">
       <div
-        className={`flex items-center gap-3 rounded-xl border px-4 py-3 shadow-lg bg-white ${
+        className={`flex items-center gap-3 rounded-xl border px-4 py-3 shadow-lg transition-colors duration-300 ${
           notification.type === "success"
-            ? "border-emerald-200"
-            : "border-red-200"
+            ? "border-emerald-200 dark:border-emerald-700"
+            : "border-red-200 dark:border-red-700"
         }`}
+        style={{ backgroundColor: 'var(--card-bg)' }}
       >
         {getIcon()}
         <span
           className={`font-medium ${
-            notification.type === "success" ? "text-emerald-700" : "text-red-700"
+            notification.type === "success" ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"
           }`}
         >
           {notification.message}
@@ -76,8 +77,8 @@ export default function Notification({ notification, onClose }) {
           onClick={onClose}
           className={`ml-2 rounded-lg p-1 transition-colors ${
             notification.type === "success"
-              ? "text-emerald-600 hover:bg-emerald-50"
-              : "text-red-600 hover:bg-red-50"
+              ? "text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/30"
+              : "text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
           }`}
         >
           <svg

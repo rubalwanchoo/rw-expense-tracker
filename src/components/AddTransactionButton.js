@@ -5,7 +5,7 @@ export default function AddTransactionButton({ onClick, disabled }) {
     <button
       onClick={onClick}
       disabled={disabled}
-      className="flex h-10 w-40 items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 text-sm font-medium text-emerald-700 transition-all hover:bg-emerald-100 hover:text-emerald-800 disabled:cursor-not-allowed disabled:opacity-50 whitespace-nowrap"
+      className="flex h-10 w-40 items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 text-sm font-medium text-emerald-700 transition-all hover:bg-emerald-100 hover:text-emerald-800 disabled:cursor-not-allowed disabled:opacity-50 whitespace-nowrap dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 dark:hover:text-emerald-300"
     >
       <svg
         className="h-4 w-4"

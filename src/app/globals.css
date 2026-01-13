@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
-:root {
+/* Light theme (default) */
+:root,
+.light {
   --background: #f3f4f6;
   --foreground: #1f2937;
   --card-bg: #ffffff;
@@ -9,6 +11,40 @@
   --muted-light: #9ca3af;
   --accent: #059669;
   --accent-light: #10b981;
+  --header-bg: #ffffff;
+  --header-border: #e5e7eb;
+  --input-bg: #f9fafb;
+  --input-border: #d1d5db;
+  --modal-bg: #ffffff;
+  --modal-overlay: rgba(17, 24, 39, 0.5);
+  --table-header-bg: #f9fafb;
+  --date-header-from: #eff6ff;
+  --date-header-to: #eef2ff;
+  --date-header-border: #dbeafe;
+  --date-header-text: #1d4ed8;
+}
+
+/* Dark theme */
+.dark {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --card-bg: #1e293b;
+  --card-border: #334155;
+  --muted: #94a3b8;
+  --muted-light: #64748b;
+  --accent: #10b981;
+  --accent-light: #34d399;
+  --header-bg: #1e293b;
+  --header-border: #334155;
+  --input-bg: #1e293b;
+  --input-border: #475569;
+  --modal-bg: #1e293b;
+  --modal-overlay: rgba(0, 0, 0, 0.7);
+  --table-header-bg: #1e293b;
+  --date-header-from: #1e3a5f;
+  --date-header-to: #1e1b4b;
+  --date-header-border: #3b82f6;
+  --date-header-text: #93c5fd;
 }
 
 @theme inline {
@@ -22,6 +58,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 @keyframes fadeIn {
@@ -51,8 +88,14 @@ body {
 }
 
 /* Modern Date Input Styling - Light Theme */
-.date-input-modern {
+.light .date-input-modern {
   color-scheme: light;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.dark .date-input-modern {
+  color-scheme: dark;
   appearance: none;
   -webkit-appearance: none;
 }
@@ -75,15 +118,29 @@ body {
   padding: 0;
 }
 
-.date-input-modern::-webkit-datetime-edit-text {
+.light .date-input-modern::-webkit-datetime-edit-text {
   color: #6b7280;
   padding: 0 4px;
 }
 
-.date-input-modern::-webkit-datetime-edit-month-field,
-.date-input-modern::-webkit-datetime-edit-day-field,
-.date-input-modern::-webkit-datetime-edit-year-field {
+.dark .date-input-modern::-webkit-datetime-edit-text {
+  color: #94a3b8;
+  padding: 0 4px;
+}
+
+.light .date-input-modern::-webkit-datetime-edit-month-field,
+.light .date-input-modern::-webkit-datetime-edit-day-field,
+.light .date-input-modern::-webkit-datetime-edit-year-field {
   color: #1f2937;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.dark .date-input-modern::-webkit-datetime-edit-month-field,
+.dark .date-input-modern::-webkit-datetime-edit-day-field,
+.dark .date-input-modern::-webkit-datetime-edit-year-field {
+  color: #f1f5f9;
   padding: 2px 4px;
   border-radius: 4px;
   transition: background-color 0.2s ease;
@@ -122,6 +179,10 @@ body {
 }
 
 /* Placeholder styling when empty */
-.date-input-modern:invalid::-webkit-datetime-edit {
+.light .date-input-modern:invalid::-webkit-datetime-edit {
   color: #9ca3af;
+}
+
+.dark .date-input-modern:invalid::-webkit-datetime-edit {
+  color: #64748b;
 }

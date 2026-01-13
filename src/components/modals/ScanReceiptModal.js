@@ -161,18 +161,20 @@ export default function ScanReceiptModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm"
+        className="absolute inset-0 backdrop-blur-sm"
+        style={{ backgroundColor: 'var(--modal-overlay)' }}
         onClick={handleCloseModal}
       ></div>
-      <div className="relative z-10 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-gray-200 bg-white p-5 shadow-2xl sm:p-6">
+      <div className="relative z-10 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border p-5 shadow-2xl transition-colors duration-300 sm:p-6" style={{ backgroundColor: 'var(--modal-bg)', borderColor: 'var(--card-border)' }}>
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-800 sm:text-xl">
+          <h3 className="text-lg font-semibold sm:text-xl" style={{ color: 'var(--foreground)' }}>
             Scan Receipt
           </h3>
           <button
             type="button"
             onClick={handleCloseModal}
-            className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-1 transition-colors hover:bg-gray-100 dark:hover:bg-slate-700"
+            style={{ color: 'var(--muted-light)' }}
           >
             <svg
               className="h-5 w-5"
@@ -194,7 +196,8 @@ export default function ScanReceiptModal({
           <div>
             <label
               htmlFor="bankSource"
-              className="mb-2 block text-sm font-medium text-gray-600"
+              className="mb-2 block text-sm font-medium"
+              style={{ color: 'var(--muted)' }}
             >
               Bank Account Source <span className="text-red-500">*</span>
             </label>
@@ -204,27 +207,28 @@ export default function ScanReceiptModal({
               value={bankSource}
               onChange={(e) => setBankSource(e.target.value)}
               placeholder="e.g., Chase Checking, Amex Credit Card"
-              className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-gray-800 placeholder-gray-400 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full rounded-lg border px-4 py-3 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+              style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--foreground)' }}
               autoComplete="off"
               autoCorrect="off"
               autoCapitalize="off"
               spellCheck="false"
             />
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-xs" style={{ color: 'var(--muted-light)' }}>
               This will be applied to all transactions from this receipt
             </p>
           </div>
 
           {/* File Input Section */}
           <div>
-            <span className="mb-2 block text-sm font-medium text-gray-600">
+            <span className="mb-2 block text-sm font-medium" style={{ color: 'var(--muted)' }}>
               Receipt Image or PDF <span className="text-red-500">*</span>
             </span>
 
             {/* File Preview or Selection */}
             {selectedFile ? (
               <div className="relative">
-                <div className="overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                <div className="overflow-hidden rounded-lg border" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
                   {fileType === "pdf" ? (
                     // PDF Preview
                     <div className="flex h-32 flex-col items-center justify-center gap-2 p-4">

@@ -2,18 +2,18 @@
 
 import { useMemo } from "react";
 
-// Category color mapping
+// Category color mapping with dark mode support
 const CATEGORY_COLORS = {
-  Payment: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  Groceries: "bg-green-100 text-green-700 border-green-200",
-  Dining: "bg-orange-100 text-orange-700 border-orange-200",
-  Gas: "bg-yellow-100 text-yellow-700 border-yellow-200",
-  Shopping: "bg-pink-100 text-pink-700 border-pink-200",
-  Entertainment: "bg-purple-100 text-purple-700 border-purple-200",
-  Travel: "bg-blue-100 text-blue-700 border-blue-200",
-  Utilities: "bg-cyan-100 text-cyan-700 border-cyan-200",
-  Healthcare: "bg-rose-100 text-rose-700 border-rose-200",
-  Other: "bg-gray-100 text-gray-600 border-gray-200",
+  Payment: "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-700",
+  Groceries: "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/40 dark:text-green-300 dark:border-green-700",
+  Dining: "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/40 dark:text-orange-300 dark:border-orange-700",
+  Gas: "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/40 dark:text-yellow-300 dark:border-yellow-700",
+  Shopping: "bg-pink-100 text-pink-700 border-pink-200 dark:bg-pink-900/40 dark:text-pink-300 dark:border-pink-700",
+  Entertainment: "bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/40 dark:text-purple-300 dark:border-purple-700",
+  Travel: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700",
+  Utilities: "bg-cyan-100 text-cyan-700 border-cyan-200 dark:bg-cyan-900/40 dark:text-cyan-300 dark:border-cyan-700",
+  Healthcare: "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/40 dark:text-rose-300 dark:border-rose-700",
+  Other: "bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-700/40 dark:text-gray-300 dark:border-gray-600",
 };
 
 // Month abbreviations
@@ -81,16 +81,17 @@ export default function TransactionsTable({
 
   return (
     <div className="w-full">
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+      <div className="overflow-hidden rounded-xl border shadow-lg transition-colors duration-300" style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)' }}>
         {loading ? (
           <div className="flex flex-col items-center gap-2 px-4 py-8">
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent"></div>
-            <p className="text-sm text-gray-500">Loading transactions...</p>
+            <p className="text-sm" style={{ color: 'var(--muted)' }}>Loading transactions...</p>
           </div>
         ) : transactions.length === 0 ? (
           <div className="flex flex-col items-center gap-2 px-4 py-8">
             <svg
-              className="h-10 w-10 text-gray-300"
+              className="h-10 w-10"
+              style={{ color: 'var(--muted-light)' }}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -102,8 +103,8 @@ export default function TransactionsTable({
                 d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"
               />
             </svg>
-            <p className="text-sm text-gray-500">No transactions yet</p>
-            <p className="text-xs text-gray-400">
+            <p className="text-sm" style={{ color: 'var(--muted)' }}>No transactions yet</p>
+            <p className="text-xs" style={{ color: 'var(--muted-light)' }}>
               Click &quot;Add Transaction&quot; to record your first expense
             </p>
           </div>
@@ -111,7 +112,7 @@ export default function TransactionsTable({
           <div>
             {/* Select All Header */}
             {onSelectionChange && (
-              <div className="flex items-center gap-3 border-b border-gray-100 bg-gray-50 px-3 py-2 sm:px-4">
+              <div className="flex items-center gap-3 border-b border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 px-3 py-2 sm:px-4">
                 <button
                   type="button"
                   onClick={handleSelectAll}
@@ -124,8 +125,8 @@ export default function TransactionsTable({
                     isAllSelected
                       ? "border-emerald-500 bg-emerald-500 text-white"
                       : isSomeSelected
-                      ? "border-emerald-500 bg-emerald-100 text-emerald-600"
-                      : "border-gray-300 bg-white text-transparent"
+                      ? "border-emerald-500 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
+                      : "border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-transparent"
                   }`}
                 >
                   {isAllSelected ? (
@@ -138,7 +139,7 @@ export default function TransactionsTable({
                     </svg>
                   ) : null}
                 </button>
-                <span className="text-xs font-medium text-gray-500">
+                <span className="text-xs font-medium" style={{ color: 'var(--muted)' }}>
                   {selectedIds.length > 0 
                     ? `${selectedIds.length} selected` 
                     : "Select all"}
@@ -151,21 +152,38 @@ export default function TransactionsTable({
                 .filter(t => t.type === "Expense")
                 .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
               
+              // Calculate total payments for this date
+              const dayTotalPayments = dateTransactions
+                .filter(t => t.type === "Payment")
+                .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+              
               return (
               <div key={dateKey}>
                 {/* Date Header Row */}
-                <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-2 sm:px-4 border-b border-blue-100">
-                  <svg className="h-4 w-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center gap-2 bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 px-3 py-2 sm:px-4 border-b border-blue-200 dark:border-blue-600">
+                  <svg className="h-4 w-4 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  <span className="text-xs font-bold tracking-wide text-blue-700">
+                  <span className="text-xs font-bold tracking-wide text-blue-700 dark:text-blue-300">
                     {formatDateHeader(dateKey)}
                   </span>
                   <div className="ml-auto flex items-center gap-2">
+                    {/* Total Payments for this day */}
+                    {dayTotalPayments > 0 && (
+                      <span 
+                        className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full border border-emerald-100 dark:border-emerald-700"
+                        title="Total Payments"
+                      >
+                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        ${dayTotalPayments.toFixed(2)}
+                      </span>
+                    )}
                     {/* Total Expenses for this day */}
                     {dayTotalExpenses > 0 && (
                       <span 
-                        className="flex items-center gap-1 text-[10px] font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-full border border-red-100"
+                        className="flex items-center gap-1 text-[10px] font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-2 py-0.5 rounded-full border border-red-100 dark:border-red-700"
                         title="Total Expenses"
                       >
                         <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -175,7 +193,7 @@ export default function TransactionsTable({
                       </span>
                     )}
                     {/* Item count */}
-                    <span className="text-[10px] font-medium text-blue-500 bg-blue-100 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-medium text-blue-500 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/40 px-2 py-0.5 rounded-full">
                       {dateTransactions.length} item{dateTransactions.length !== 1 ? "s" : ""}
                     </span>
                   </div>
@@ -185,11 +203,11 @@ export default function TransactionsTable({
                 {dateTransactions.map((transaction, index) => (
                   <div
                     key={transaction.id}
-                    className={`flex items-center gap-3 px-3 py-3 transition-all duration-200 hover:bg-gray-50 sm:px-4 ${
+                    className={`flex items-center gap-3 px-3 py-3 sm:px-4 ${
                       index !== dateTransactions.length - 1 || groupIndex !== groupedTransactions.length - 1 
-                        ? "border-b border-gray-100" 
+                        ? "border-b border-gray-100 dark:border-slate-700" 
                         : ""
-                    } ${selectedIds.includes(transaction.id) ? "bg-emerald-50" : ""}`}
+                    } ${selectedIds.includes(transaction.id) ? "bg-emerald-50 dark:bg-emerald-900/20" : ""}`}
                   >
                     {/* Checkbox */}
                     {onSelectionChange && (
@@ -204,7 +222,7 @@ export default function TransactionsTable({
                         } ${
                           selectedIds.includes(transaction.id)
                             ? "border-emerald-500 bg-emerald-500 text-white"
-                            : "border-gray-300 bg-white text-transparent"
+                            : "border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-transparent"
                         }`}
                       >
                         {selectedIds.includes(transaction.id) && (
@@ -222,10 +240,10 @@ export default function TransactionsTable({
                         <span
                           className={`text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded border ${
                             transaction.type === "Payment"
-                              ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                              ? "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700"
                               : transaction.type === "Expense"
-                              ? "bg-red-50 text-red-600 border-red-100"
-                              : "bg-gray-50 text-gray-600 border-gray-100"
+                              ? "bg-red-50 text-red-600 border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-700"
+                              : "bg-gray-50 text-gray-600 border-gray-100 dark:bg-gray-700/30 dark:text-gray-400 dark:border-gray-600"
                           }`}
                         >
                           {transaction.type || "N/A"}
@@ -233,11 +251,12 @@ export default function TransactionsTable({
                         <span
                           className={`text-base font-bold ${
                             transaction.type === "Payment"
-                              ? "text-emerald-600"
+                              ? "text-emerald-600 dark:text-emerald-400"
                               : transaction.type === "Expense"
-                              ? "text-red-600"
-                              : "text-gray-800"
+                              ? "text-red-600 dark:text-red-400"
+                              : ""
                           }`}
+                          style={{ color: transaction.type !== "Payment" && transaction.type !== "Expense" ? 'var(--foreground)' : undefined }}
                         >
                           {transaction.amount != null
                             ? `$${parseFloat(transaction.amount).toFixed(2)}`
@@ -245,11 +264,11 @@ export default function TransactionsTable({
                         </span>
                       </div>
                       {/* Description */}
-                      <p className="text-xs text-gray-600 line-clamp-1">
+                      <p className="text-xs line-clamp-1" style={{ color: 'var(--muted)' }}>
                         {transaction.description || "No description"}
                       </p>
                       {/* Source */}
-                      <p className="text-[10px] text-gray-400">
+                      <p className="text-[10px]" style={{ color: 'var(--muted-light)' }}>
                         Source: {transaction.source || "-"}
                       </p>
                       {/* Category Badge */}
@@ -267,7 +286,7 @@ export default function TransactionsTable({
                     {/* Actions */}
                     <div className="flex items-center gap-1">
                       <button
-                        className="group rounded-md p-1.5 text-blue-500 transition-all duration-200 hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="group rounded-md p-1.5 text-blue-500 transition-all duration-200 hover:bg-blue-50 hover:text-blue-600 dark:text-blue-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-300 disabled:cursor-not-allowed disabled:opacity-50"
                         title="Edit"
                         onClick={() => onEdit(transaction)}
                         disabled={disabled}
@@ -287,7 +306,7 @@ export default function TransactionsTable({
                         </svg>
                       </button>
                       <button
-                        className="group rounded-md p-1.5 text-red-500 transition-all duration-200 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="group rounded-md p-1.5 text-red-500 transition-all duration-200 hover:bg-red-50 hover:text-red-600 dark:text-red-400 dark:hover:bg-red-900/30 dark:hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
                         title="Delete"
                         onClick={() => onDelete(transaction)}
                         disabled={disabled}

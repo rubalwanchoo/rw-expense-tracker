@@ -13,15 +13,17 @@ export default function BulkDeleteTransactionsModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm"
+        className="absolute inset-0 backdrop-blur-sm"
+        style={{ backgroundColor: 'var(--modal-overlay)' }}
         onClick={onClose}
       ></div>
-      <div className="relative z-10 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-gray-200 bg-white p-5 shadow-2xl sm:p-6">
+      <div className="relative z-10 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border p-5 shadow-2xl transition-colors duration-300 sm:p-6" style={{ backgroundColor: 'var(--modal-bg)', borderColor: 'var(--card-border)' }}>
         <div className="mb-4 flex items-center justify-between sm:mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 sm:text-xl">Delete Transactions</h2>
+          <h2 className="text-lg font-semibold sm:text-xl" style={{ color: 'var(--foreground)' }}>Delete Transactions</h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-1 transition-colors hover:bg-gray-100 dark:hover:bg-slate-700"
+            style={{ color: 'var(--muted-light)' }}
           >
             <svg
               className="h-5 w-5"
@@ -42,9 +44,9 @@ export default function BulkDeleteTransactionsModal({
         <form onSubmit={onSubmit}>
           <div className="mb-6">
             <div className="mb-4 flex justify-center">
-              <div className="rounded-full bg-red-50 p-4">
+              <div className="rounded-full bg-red-50 dark:bg-red-900/30 p-4">
                 <svg
-                  className="h-8 w-8 text-red-500"
+                  className="h-8 w-8 text-red-500 dark:text-red-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -58,14 +60,14 @@ export default function BulkDeleteTransactionsModal({
                 </svg>
               </div>
             </div>
-            <p className="text-center text-gray-600">
+            <p className="text-center" style={{ color: 'var(--muted)' }}>
               Are you sure you want to delete{" "}
-              <span className="font-semibold text-gray-800">
+              <span className="font-semibold" style={{ color: 'var(--foreground)' }}>
                 {selectedCount} transaction{selectedCount !== 1 ? "s" : ""}
               </span>
               ?
             </p>
-            <p className="mt-2 text-center text-sm text-gray-400">
+            <p className="mt-2 text-center text-sm" style={{ color: 'var(--muted-light)' }}>
               This action cannot be undone.
             </p>
           </div>
@@ -73,7 +75,8 @@ export default function BulkDeleteTransactionsModal({
           <div className="mb-6">
             <label
               htmlFor="bulk_delete_password"
-              className="mb-2 block text-sm font-medium text-gray-600"
+              className="mb-2 block text-sm font-medium"
+              style={{ color: 'var(--muted)' }}
             >
               Delete Password <span className="text-red-500">*</span>
             </label>
@@ -85,7 +88,8 @@ export default function BulkDeleteTransactionsModal({
               onChange={(e) => onPasswordChange(e.target.value)}
               required
               placeholder="Enter delete password"
-              className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-gray-800 placeholder-gray-400 transition-colors focus:border-red-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
+              className="w-full rounded-lg border px-4 py-3 transition-colors focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+              style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--foreground)' }}
             />
           </div>
 
@@ -93,7 +97,8 @@ export default function BulkDeleteTransactionsModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-lg border border-gray-300 px-4 py-3 font-medium text-gray-600 transition-colors hover:bg-gray-50"
+              className="flex-1 rounded-lg border px-4 py-3 font-medium transition-colors hover:bg-gray-50 dark:hover:bg-slate-700"
+              style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--muted)' }}
             >
               Cancel
             </button>

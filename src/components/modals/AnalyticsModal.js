@@ -438,26 +438,27 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-gray-900/60 p-2 sm:p-4 backdrop-blur-sm">
-      <div className="my-2 sm:my-8 w-full max-w-5xl rounded-xl sm:rounded-2xl border border-gray-200 bg-white shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-2 sm:p-4 backdrop-blur-sm" style={{ backgroundColor: 'var(--modal-overlay)' }}>
+      <div className="my-2 sm:my-8 w-full max-w-5xl rounded-xl sm:rounded-2xl border shadow-2xl transition-colors duration-300" style={{ backgroundColor: 'var(--modal-bg)', borderColor: 'var(--card-border)' }}>
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 px-3 sm:px-6 py-3 sm:py-4">
+        <div className="flex items-center justify-between border-b px-3 sm:px-6 py-3 sm:py-4" style={{ borderColor: 'var(--card-border)' }}>
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-blue-100">
-              <svg className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/40">
+              <svg className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
             <div>
-              <h2 className="text-base sm:text-xl font-bold text-gray-800">Spending Analysis</h2>
-              <p className="text-xs sm:text-sm text-gray-500">
+              <h2 className="text-base sm:text-xl font-bold" style={{ color: 'var(--foreground)' }}>Spending Analysis</h2>
+              <p className="text-xs sm:text-sm" style={{ color: 'var(--muted)' }}>
                 {filteredTransactions.length} transaction{filteredTransactions.length !== 1 ? "s" : ""}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 sm:p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-1.5 sm:p-2 transition-colors hover:bg-gray-100 dark:hover:bg-slate-700"
+            style={{ color: 'var(--muted-light)' }}
           >
             <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -466,27 +467,29 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
         </div>
 
         {/* Date Range Filter */}
-        <div className="border-b border-gray-100 bg-gray-50 px-3 sm:px-6 py-2 sm:py-3">
+        <div className="border-b px-3 sm:px-6 py-2 sm:py-3" style={{ borderColor: 'var(--card-border)', backgroundColor: 'var(--table-header-bg)' }}>
           <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-3">
-            <span className="text-xs sm:text-sm font-medium text-gray-600">Filter by Date:</span>
+            <span className="text-xs sm:text-sm font-medium" style={{ color: 'var(--muted)' }}>Filter by Date:</span>
             <div className="flex flex-wrap items-center gap-2">
               <input
                 type="date"
                 value={filterStartDate}
                 onChange={(e) => setFilterStartDate(e.target.value)}
-                className="flex-1 sm:flex-none rounded-lg border border-gray-300 bg-white px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="flex-1 sm:flex-none rounded-lg border px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--foreground)' }}
               />
-              <span className="text-gray-400 text-xs sm:text-sm">to</span>
+              <span className="text-xs sm:text-sm" style={{ color: 'var(--muted-light)' }}>to</span>
               <input
                 type="date"
                 value={filterEndDate}
                 onChange={(e) => setFilterEndDate(e.target.value)}
-                className="flex-1 sm:flex-none rounded-lg border border-gray-300 bg-white px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="flex-1 sm:flex-none rounded-lg border px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--foreground)' }}
               />
               {(filterStartDate || filterEndDate) && (
                 <button
                   onClick={clearDateFilter}
-                  className="rounded-lg px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+                  className="rounded-lg px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium text-red-600 dark:text-red-400 transition-colors hover:bg-red-50 dark:hover:bg-red-900/30"
                 >
                   Clear
                 </button>
@@ -496,26 +499,26 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 gap-2 sm:gap-4 border-b border-gray-100 px-3 sm:px-6 py-3 sm:py-4 sm:grid-cols-4">
-          <div className="rounded-lg sm:rounded-xl bg-emerald-50 p-2 sm:p-4">
-            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-emerald-600">Total Payments</p>
-            <p className="mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold text-emerald-700">${summary.totalPayments.toFixed(2)}</p>
+        <div className="grid grid-cols-2 gap-2 sm:gap-4 border-b px-3 sm:px-6 py-3 sm:py-4 sm:grid-cols-4" style={{ borderColor: 'var(--card-border)' }}>
+          <div className="rounded-lg sm:rounded-xl bg-emerald-50 dark:bg-emerald-900/30 p-2 sm:p-4">
+            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-emerald-600 dark:text-emerald-400">Total Payments</p>
+            <p className="mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold text-emerald-700 dark:text-emerald-300">${summary.totalPayments.toFixed(2)}</p>
           </div>
-          <div className="rounded-lg sm:rounded-xl bg-red-50 p-2 sm:p-4">
-            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-red-600">Total Expenses</p>
-            <p className="mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold text-red-700">${summary.totalExpenses.toFixed(2)}</p>
+          <div className="rounded-lg sm:rounded-xl bg-red-50 dark:bg-red-900/30 p-2 sm:p-4">
+            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-red-600 dark:text-red-400">Total Expenses</p>
+            <p className="mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold text-red-700 dark:text-red-300">${summary.totalExpenses.toFixed(2)}</p>
           </div>
-          <div className={`rounded-lg sm:rounded-xl p-2 sm:p-4 ${summary.netBalance >= 0 ? "bg-blue-50" : "bg-orange-50"}`}>
-            <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wide ${summary.netBalance >= 0 ? "text-blue-600" : "text-orange-600"}`}>
+          <div className={`rounded-lg sm:rounded-xl p-2 sm:p-4 ${summary.netBalance >= 0 ? "bg-blue-50 dark:bg-blue-900/30" : "bg-orange-50 dark:bg-orange-900/30"}`}>
+            <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wide ${summary.netBalance >= 0 ? "text-blue-600 dark:text-blue-400" : "text-orange-600 dark:text-orange-400"}`}>
               {summary.netBalance >= 0 ? "Overpaid" : "Remaining"}
             </p>
-            <p className={`mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold ${summary.netBalance >= 0 ? "text-blue-700" : "text-orange-700"}`}>
+            <p className={`mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold ${summary.netBalance >= 0 ? "text-blue-700 dark:text-blue-300" : "text-orange-700 dark:text-orange-300"}`}>
               ${Math.abs(summary.netBalance).toFixed(2)}
             </p>
           </div>
-          <div className="rounded-lg sm:rounded-xl bg-purple-50 p-2 sm:p-4">
-            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-purple-600">Payment Rate</p>
-            <p className="mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold text-purple-700">{summary.paymentRate}%</p>
+          <div className="rounded-lg sm:rounded-xl bg-purple-50 dark:bg-purple-900/30 p-2 sm:p-4">
+            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-purple-600 dark:text-purple-400">Payment Rate</p>
+            <p className="mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold text-purple-700 dark:text-purple-300">{summary.paymentRate}%</p>
           </div>
         </div>
 

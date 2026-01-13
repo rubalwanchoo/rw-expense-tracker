@@ -14,15 +14,17 @@ export default function EditProjectModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm"
+        className="absolute inset-0 backdrop-blur-sm"
+        style={{ backgroundColor: 'var(--modal-overlay)' }}
         onClick={onClose}
       ></div>
-      <div className="relative z-10 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-gray-200 bg-white p-5 shadow-2xl sm:p-6">
+      <div className="relative z-10 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border p-5 shadow-2xl transition-colors duration-300 sm:p-6" style={{ backgroundColor: 'var(--modal-bg)', borderColor: 'var(--card-border)' }}>
         <div className="mb-4 flex items-center justify-between sm:mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 sm:text-xl">Edit Project</h2>
+          <h2 className="text-lg font-semibold sm:text-xl" style={{ color: 'var(--foreground)' }}>Edit Project</h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-1 transition-colors hover:bg-gray-100 dark:hover:bg-slate-700"
+            style={{ color: 'var(--muted-light)' }}
           >
             <svg
               className="h-5 w-5"
@@ -44,7 +46,8 @@ export default function EditProjectModal({
           <div>
             <label
               htmlFor="edit_name"
-              className="mb-2 block text-sm font-medium text-gray-600"
+              className="mb-2 block text-sm font-medium"
+              style={{ color: 'var(--muted)' }}
             >
               Project Name <span className="text-red-500">*</span>
             </label>
@@ -56,14 +59,16 @@ export default function EditProjectModal({
               onChange={onInputChange}
               required
               placeholder="Enter project name"
-              className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-gray-800 placeholder-gray-400 transition-colors focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full rounded-lg border px-4 py-3 transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--foreground)' }}
             />
           </div>
 
           <div>
             <label
               htmlFor="edit_description"
-              className="mb-2 block text-sm font-medium text-gray-600"
+              className="mb-2 block text-sm font-medium"
+              style={{ color: 'var(--muted)' }}
             >
               Description
             </label>
@@ -74,14 +79,16 @@ export default function EditProjectModal({
               onChange={onInputChange}
               rows={3}
               placeholder="Enter project description"
-              className="w-full resize-none rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-gray-800 placeholder-gray-400 transition-colors focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full resize-none rounded-lg border px-4 py-3 transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--foreground)' }}
             />
           </div>
 
           <div>
             <label
               htmlFor="edit_modified_by"
-              className="mb-2 block text-sm font-medium text-gray-600"
+              className="mb-2 block text-sm font-medium"
+              style={{ color: 'var(--muted)' }}
             >
               Modified By <span className="text-red-500">*</span>
             </label>
@@ -93,7 +100,8 @@ export default function EditProjectModal({
               onChange={onInputChange}
               required
               placeholder="Enter your name"
-              className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-gray-800 placeholder-gray-400 transition-colors focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full rounded-lg border px-4 py-3 transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--foreground)' }}
             />
           </div>
 
@@ -101,7 +109,8 @@ export default function EditProjectModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-lg border border-gray-300 px-4 py-3 font-medium text-gray-600 transition-colors hover:bg-gray-50"
+              className="flex-1 rounded-lg border px-4 py-3 font-medium transition-colors hover:bg-gray-50 dark:hover:bg-slate-700"
+              style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--muted)' }}
             >
               Cancel
             </button>

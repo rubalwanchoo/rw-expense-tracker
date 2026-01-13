@@ -65,16 +65,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 font-sans">
+    <div className="min-h-screen font-sans transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
       <Header />
       <main className="mx-auto flex min-h-[70vh] max-w-xl items-center px-4 sm:px-6">
-        <div className="w-full rounded-2xl border border-gray-200 bg-white p-6 shadow-xl sm:p-8">
-          <h2 className="mb-6 text-xl font-semibold text-gray-800 sm:text-2xl">Sign in</h2>
+        <div className="w-full rounded-2xl border p-6 shadow-xl transition-colors duration-300 sm:p-8" style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)' }}>
+          <h2 className="mb-6 text-xl font-semibold sm:text-2xl" style={{ color: 'var(--foreground)' }}>Sign in</h2>
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div>
               <label
                 htmlFor="login_username"
-                className="mb-2 block text-sm font-medium text-gray-600"
+                className="mb-2 block text-sm font-medium"
+                style={{ color: 'var(--muted)' }}
               >
                 Username
               </label>
@@ -85,14 +86,16 @@ export default function LoginPage() {
                 value={form.username}
                 onChange={handleChange}
                 required
-                className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-gray-800 placeholder-gray-400 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full rounded-lg border px-4 py-3 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--foreground)' }}
                 placeholder="Enter username"
               />
-        </div>
+            </div>
             <div>
               <label
                 htmlFor="login_password"
-                className="mb-2 block text-sm font-medium text-gray-600"
+                className="mb-2 block text-sm font-medium"
+                style={{ color: 'var(--muted)' }}
               >
                 Password
               </label>
@@ -103,7 +106,8 @@ export default function LoginPage() {
                 value={form.password}
                 onChange={handleChange}
                 required
-                className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-gray-800 placeholder-gray-400 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full rounded-lg border px-4 py-3 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--foreground)' }}
                 placeholder="Enter password"
               />
             </div>
@@ -114,11 +118,12 @@ export default function LoginPage() {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 cursor-pointer rounded border-gray-300 bg-gray-50 text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0"
+                className="h-4 w-4 cursor-pointer rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0"
               />
               <label
                 htmlFor="remember_me"
-                className="cursor-pointer text-sm text-gray-600"
+                className="cursor-pointer text-sm"
+                style={{ color: 'var(--muted)' }}
               >
                 Remember me
               </label>
@@ -129,7 +134,7 @@ export default function LoginPage() {
             <button
               type="submit"
               className="w-full rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-3 font-semibold text-white shadow-lg shadow-emerald-500/20 transition-all hover:shadow-xl hover:shadow-emerald-500/30"
-          >
+            >
               Login
             </button>
           </form>

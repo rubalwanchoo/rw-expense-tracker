@@ -15,15 +15,17 @@ export default function DeleteProjectModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm"
+        className="absolute inset-0 backdrop-blur-sm"
+        style={{ backgroundColor: 'var(--modal-overlay)' }}
         onClick={onClose}
       ></div>
-      <div className="relative z-10 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-gray-200 bg-white p-5 shadow-2xl sm:p-6">
+      <div className="relative z-10 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border p-5 shadow-2xl transition-colors duration-300 sm:p-6" style={{ backgroundColor: 'var(--modal-bg)', borderColor: 'var(--card-border)' }}>
         <div className="mb-4 flex items-center justify-between sm:mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 sm:text-xl">Delete Project</h2>
+          <h2 className="text-lg font-semibold sm:text-xl" style={{ color: 'var(--foreground)' }}>Delete Project</h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-1 transition-colors hover:bg-gray-100 dark:hover:bg-slate-700"
+            style={{ color: 'var(--muted-light)' }}
           >
             <svg
               className="h-5 w-5"
@@ -44,9 +46,9 @@ export default function DeleteProjectModal({
         <form onSubmit={onSubmit}>
           <div className="mb-6">
             <div className="mb-4 flex justify-center">
-              <div className="rounded-full bg-red-50 p-4">
+              <div className="rounded-full bg-red-50 dark:bg-red-900/30 p-4">
                 <svg
-                  className="h-8 w-8 text-red-500"
+                  className="h-8 w-8 text-red-500 dark:text-red-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -60,25 +62,25 @@ export default function DeleteProjectModal({
                 </svg>
               </div>
             </div>
-            <p className="text-center text-gray-600">
+            <p className="text-center" style={{ color: 'var(--muted)' }}>
               Are you sure you want to delete the project{" "}
-              <span className="font-semibold text-gray-800">
+              <span className="font-semibold" style={{ color: 'var(--foreground)' }}>
                 "{project?.name}"
               </span>
               ?
             </p>
-            <p className="mt-2 text-center text-sm text-gray-400">
+            <p className="mt-2 text-center text-sm" style={{ color: 'var(--muted-light)' }}>
               This action cannot be undone.
             </p>
             {hasTransactions && (
-              <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3">
+              <div className="mt-4 rounded-lg border border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/30 p-3">
                 <div className="flex items-start gap-2">
-                  <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-500 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                   <div>
-                    <p className="text-sm font-medium text-amber-700">Warning</p>
-                    <p className="text-xs text-amber-600">
+                    <p className="text-sm font-medium text-amber-700 dark:text-amber-300">Warning</p>
+                    <p className="text-xs text-amber-600 dark:text-amber-400">
                       This project has transactions. Please delete all transactions first before deleting the project.
                     </p>
                   </div>
@@ -90,7 +92,8 @@ export default function DeleteProjectModal({
           <div className="mb-6">
             <label
               htmlFor="delete_password"
-              className="mb-2 block text-sm font-medium text-gray-600"
+              className="mb-2 block text-sm font-medium"
+              style={{ color: 'var(--muted)' }}
             >
               Delete Password <span className="text-red-500">*</span>
             </label>
@@ -102,7 +105,8 @@ export default function DeleteProjectModal({
               onChange={onPasswordChange}
               required
               placeholder="Enter delete password"
-              className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-gray-800 placeholder-gray-400 transition-colors focus:border-red-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
+              className="w-full rounded-lg border px-4 py-3 transition-colors focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+              style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--foreground)' }}
             />
           </div>
 
@@ -110,7 +114,8 @@ export default function DeleteProjectModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-lg border border-gray-300 px-4 py-3 font-medium text-gray-600 transition-colors hover:bg-gray-50"
+              className="flex-1 rounded-lg border px-4 py-3 font-medium transition-colors hover:bg-gray-50 dark:hover:bg-slate-700"
+              style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--muted)' }}
             >
               Cancel
             </button>

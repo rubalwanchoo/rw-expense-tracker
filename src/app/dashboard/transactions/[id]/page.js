@@ -707,12 +707,12 @@ export default function TransactionsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 font-sans">
+      <div className="min-h-screen font-sans transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
         <Header showLogout onLogout={handleLogout} />
         <main className="mx-auto max-w-4xl px-6 py-16">
           <div className="flex flex-col items-center justify-center gap-4 py-20">
             <div className="h-10 w-10 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent"></div>
-            <p className="text-gray-500">Loading project...</p>
+            <p style={{ color: 'var(--muted)' }}>Loading project...</p>
           </div>
         </main>
       </div>
@@ -720,7 +720,7 @@ export default function TransactionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 font-sans">
+    <div className="min-h-screen font-sans transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
       <Notification
         notification={notification}
         onClose={() => setNotification(null)}
@@ -732,7 +732,8 @@ export default function TransactionsPage() {
         {/* Back Button */}
         <button
           onClick={handleBack}
-          className="group mb-4 flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium text-emerald-600 transition-all duration-300 hover:bg-emerald-50 hover:text-emerald-700 sm:mb-6 sm:px-4 sm:py-2 sm:text-sm"
+          className="group mb-4 flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 sm:mb-6 sm:px-4 sm:py-2 sm:text-sm"
+          style={{ color: 'var(--accent-light)' }}
         >
           <svg
             className="h-5 w-5 transition-transform duration-300 group-hover:-translate-x-1"
@@ -751,26 +752,26 @@ export default function TransactionsPage() {
         </button>
 
         {/* Project Header */}
-        <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-4 shadow-lg sm:mb-8 sm:p-6">
+        <div className="mb-6 rounded-2xl border p-4 shadow-lg transition-colors duration-300 sm:mb-8 sm:p-6" style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)' }}>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex-1">
-              <h2 className="mb-2 text-xl font-bold text-gray-800 sm:text-2xl">
+              <h2 className="mb-2 text-xl font-bold sm:text-2xl" style={{ color: 'var(--foreground)' }}>
                 {project?.name || "Project"}
               </h2>
               {project?.description && (
-                <p className="text-sm text-gray-500 sm:text-base">{project.description}</p>
+                <p className="text-sm sm:text-base" style={{ color: 'var(--muted)' }}>{project.description}</p>
               )}
             </div>
             <div className="flex flex-wrap items-center gap-4 sm:gap-6">
               <div className="text-left sm:text-right">
-                <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-1 sm:text-xs">Total Payments</p>
-                <p className="text-lg font-bold text-emerald-600 sm:text-xl">
+                <p className="text-[10px] uppercase tracking-wide mb-1 sm:text-xs" style={{ color: 'var(--muted-light)' }}>Total Payments</p>
+                <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400 sm:text-xl">
                   ${totalPayments.toFixed(2)}
                 </p>
               </div>
               <div className="text-left sm:text-right">
-                <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-1 sm:text-xs">Total Expenses</p>
-                <p className="text-lg font-bold text-red-600 sm:text-xl">
+                <p className="text-[10px] uppercase tracking-wide mb-1 sm:text-xs" style={{ color: 'var(--muted-light)' }}>Total Expenses</p>
+                <p className="text-lg font-bold text-red-600 dark:text-red-400 sm:text-xl">
                   ${totalExpenses.toFixed(2)}
                 </p>
               </div>
@@ -779,7 +780,8 @@ export default function TransactionsPage() {
                 <button
                   type="button"
                   onClick={openDateRangeModal}
-                  className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 shadow-sm transition-all duration-200 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-600"
+                  className="flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium shadow-sm transition-all duration-200 hover:border-emerald-300 dark:hover:border-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
+                  style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--muted)' }}
                 >
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -795,7 +797,8 @@ export default function TransactionsPage() {
                   <button
                     type="button"
                     onClick={clearDateRange}
-                    className="rounded-lg p-2 text-gray-400 transition-all duration-200 hover:bg-red-50 hover:text-red-500"
+                    className="rounded-lg p-2 transition-all duration-200 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                    style={{ color: 'var(--muted-light)' }}
                     title="Clear date range"
                   >
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -817,10 +820,10 @@ export default function TransactionsPage() {
         </div>
 
         {/* Transactions Section */}
-        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 shadow-lg sm:p-6">
+        <div className="overflow-hidden rounded-2xl border p-4 shadow-lg transition-colors duration-300 sm:p-6" style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)' }}>
           <div className="mb-4 flex flex-col gap-3 sm:mb-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <h3 className="text-lg font-semibold text-gray-800 sm:text-xl">Transactions</h3>
+              <h3 className="text-lg font-semibold sm:text-xl" style={{ color: 'var(--foreground)' }}>Transactions</h3>
               <FilterBox
                 value={filterText}
                 onChange={handleFilterChange}
@@ -860,26 +863,28 @@ export default function TransactionsPage() {
           {/* Sort Options + Counts */}
           <div className="mb-3 flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">Sort by:</span>
+              <span className="text-xs" style={{ color: 'var(--muted)' }}>Sort by:</span>
               {/* Sort Field Toggle */}
-              <div className="flex rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
+              <div className="flex rounded-lg border shadow-sm overflow-hidden" style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)' }}>
                 <button
                   onClick={() => setSortField("date")}
                   className={`px-2.5 py-1.5 text-xs font-medium transition-all duration-200 ${
                     sortField === "date"
                       ? "bg-emerald-500 text-white"
-                      : "text-gray-600 hover:bg-gray-50"
+                      : "hover:bg-gray-50 dark:hover:bg-slate-700"
                   }`}
+                  style={sortField !== "date" ? { color: 'var(--muted)' } : {}}
                 >
                   Date
                 </button>
                 <button
                   onClick={() => setSortField("category")}
-                  className={`px-2.5 py-1.5 text-xs font-medium transition-all duration-200 border-l border-gray-200 ${
+                  className={`px-2.5 py-1.5 text-xs font-medium transition-all duration-200 border-l ${
                     sortField === "category"
                       ? "bg-emerald-500 text-white"
-                      : "text-gray-600 hover:bg-gray-50"
+                      : "hover:bg-gray-50 dark:hover:bg-slate-700"
                   }`}
+                  style={sortField !== "category" ? { color: 'var(--muted)', borderColor: 'var(--card-border)' } : { borderColor: 'var(--card-border)' }}
                 >
                   Category
                 </button>
@@ -887,7 +892,8 @@ export default function TransactionsPage() {
               {/* Sort Direction */}
               <button
                 onClick={() => setSortDirection(sortDirection === "desc" ? "asc" : "desc")}
-                className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm transition-all duration-200 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-600"
+                className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium shadow-sm transition-all duration-200 hover:border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 dark:hover:border-emerald-600"
+                style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--muted)' }}
               >
                 {sortDirection === "desc" ? (
                   <>
@@ -909,11 +915,11 @@ export default function TransactionsPage() {
             
             {/* Transaction Counts */}
             <div className="flex items-center gap-3 text-xs">
-              <span className="flex items-center gap-1.5 rounded-md bg-red-50 border border-red-100 px-2 py-1 text-red-600">
+              <span className="flex items-center gap-1.5 rounded-md bg-red-50 border border-red-100 px-2 py-1 text-red-600 dark:bg-red-900/30 dark:border-red-700 dark:text-red-400">
                 <span className="font-medium">Expenses:</span>
                 <span className="font-bold">{filteredTransactions.filter(t => t.type === "Expense").length}</span>
               </span>
-              <span className="flex items-center gap-1.5 rounded-md bg-emerald-50 border border-emerald-100 px-2 py-1 text-emerald-600">
+              <span className="flex items-center gap-1.5 rounded-md bg-emerald-50 border border-emerald-100 px-2 py-1 text-emerald-600 dark:bg-emerald-900/30 dark:border-emerald-700 dark:text-emerald-400">
                 <span className="font-medium">Payments:</span>
                 <span className="font-bold">{filteredTransactions.filter(t => t.type === "Payment").length}</span>
               </span>
@@ -988,18 +994,18 @@ export default function TransactionsPage() {
 
       {/* Processing Overlay - At root level for proper viewport centering */}
       {(isProcessingReceipt || isBulkDeleting) && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-gray-900/60 backdrop-blur-sm">
-          <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-2xl">
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center backdrop-blur-sm" style={{ backgroundColor: 'var(--modal-overlay)' }}>
+          <div className="rounded-2xl border p-8 shadow-2xl" style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)' }}>
             <div className="flex flex-col items-center">
               <div className={`h-12 w-12 animate-spin rounded-full border-4 border-t-transparent ${isBulkDeleting ? "border-red-500" : "border-emerald-500"}`}></div>
-              <p className={`mt-4 text-lg font-medium ${isBulkDeleting ? "text-red-600" : "text-emerald-600"}`}>
+              <p className={`mt-4 text-lg font-medium ${isBulkDeleting ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}>
                 {isBulkDeleting ? "Deleting transactions..." : "Processing receipt..."}
               </p>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>
                 {isBulkDeleting ? `Removing ${selectedTransactionIds.length} item(s)` : "Analyzing receipt..."}
               </p>
               {!isBulkDeleting && (
-                <p className="mt-4 text-xs text-gray-400">
+                <p className="mt-4 text-xs" style={{ color: 'var(--muted-light)' }}>
                   This may take 15-30 seconds
                 </p>
               )}
