@@ -2,36 +2,46 @@ import { supabase } from "./supabase";
 import { touchProjectModified } from "./projects";
 
 /**
- * Fetch transaction totals (income/expenses) for all projects
+ * Fetch transaction totals (payments/expenses) and unique categories for all projects
  * @returns {Promise<{data: Object, error: Error|null}>}
- * Returns an object keyed by project_id with {income, expenses} totals
+ * Returns an object keyed by project_id with {payments, expenses, categories} 
  */
 export const fetchProjectTotals = async () => {
   try {
     const { data, error } = await supabase
       .from("transactions")
-      .select("project_id, type, amount");
+      .select("project_id, type, amount, category");
 
     if (error) throw error;
 
-    // Aggregate totals by project
+    // Aggregate totals and categories by project
     const totals = {};
     (data || []).forEach((t) => {
       const projectId = t.project_id;
       if (!projectId) return; // Skip if no project_id
       
       if (!totals[projectId]) {
-        totals[projectId] = { income: 0, expenses: 0 };
+        totals[projectId] = { payments: 0, expenses: 0, categories: new Set() };
       }
       
       const amount = parseFloat(t.amount) || 0;
       const type = (t.type || "").toLowerCase();
       
-      if (type === "income") {
-        totals[projectId].income += amount;
+      if (type === "payment") {
+        totals[projectId].payments += amount;
       } else {
         totals[projectId].expenses += amount;
       }
+      
+      // Collect unique categories
+      if (t.category) {
+        totals[projectId].categories.add(t.category);
+      }
+    });
+
+    // Convert Sets to Arrays for serialization
+    Object.keys(totals).forEach((projectId) => {
+      totals[projectId].categories = Array.from(totals[projectId].categories);
     });
 
     return { data: totals, error: null };

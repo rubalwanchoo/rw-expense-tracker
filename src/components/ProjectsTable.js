@@ -4,6 +4,20 @@ import { useRouter } from "next/navigation";
 import FilterBox from "./FilterBox";
 import { formatDateEST } from "@/lib/dateUtils";
 
+// Category color mapping (same as TransactionsTable)
+const CATEGORY_COLORS = {
+  Payment: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  Groceries: "bg-green-100 text-green-700 border-green-200",
+  Dining: "bg-orange-100 text-orange-700 border-orange-200",
+  Gas: "bg-yellow-100 text-yellow-700 border-yellow-200",
+  Shopping: "bg-pink-100 text-pink-700 border-pink-200",
+  Entertainment: "bg-purple-100 text-purple-700 border-purple-200",
+  Travel: "bg-blue-100 text-blue-700 border-blue-200",
+  Utilities: "bg-cyan-100 text-cyan-700 border-cyan-200",
+  Healthcare: "bg-rose-100 text-rose-700 border-rose-200",
+  Other: "bg-gray-100 text-gray-600 border-gray-200",
+};
+
 export default function ProjectsTable({
   projects,
   projectTotals = {},
@@ -80,10 +94,10 @@ export default function ProjectsTable({
                   <p className="text-xs text-gray-500 line-clamp-1">
                     {project.description || "No description"}
                   </p>
-                  {/* Income/Expenses Labels */}
+                  {/* Payment/Expenses Labels */}
                   <div className="flex gap-2">
                     <span className="rounded bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-600 border border-emerald-100">
-                      Income: ${(projectTotals[project.id]?.income || 0).toFixed(2)}
+                      Payments: ${(projectTotals[project.id]?.payments || 0).toFixed(2)}
                     </span>
                     <span className="rounded bg-red-50 px-2 py-0.5 text-[10px] font-medium text-red-600 border border-red-100">
                       Expenses: ${(projectTotals[project.id]?.expenses || 0).toFixed(2)}
@@ -94,6 +108,21 @@ export default function ProjectsTable({
                     <span>Created: {formatDateEST(project.dtm_created)}</span>
                     <span>Updated: {formatDateEST(project.dtm_modified)}</span>
                   </div>
+                  {/* Category Badges */}
+                  {projectTotals[project.id]?.categories?.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {projectTotals[project.id].categories.map((category) => (
+                        <span
+                          key={category}
+                          className={`text-[8px] font-medium px-1.5 py-0.5 rounded-full border ${
+                            CATEGORY_COLORS[category] || CATEGORY_COLORS.Other
+                          }`}
+                        >
+                          {category}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Actions */}

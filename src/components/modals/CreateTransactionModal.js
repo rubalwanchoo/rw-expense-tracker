@@ -10,6 +10,22 @@ export default function CreateTransactionModal({
   onSubmit,
   onInputChange,
 }) {
+  // Check if type is Payment - category should be auto-set
+  const isPaymentType = formData.type === "Payment";
+
+  // Custom handler for type change - auto-set category when Payment is selected
+  const handleTypeChange = (e) => {
+    const newType = e.target.value;
+    onInputChange(e); // Update type first
+    
+    // If Payment is selected, auto-set category to Payment
+    if (newType === "Payment") {
+      onInputChange({
+        target: { name: "category", value: "Payment" }
+      });
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -62,12 +78,12 @@ export default function CreateTransactionModal({
               id="type"
               name="type"
               value={formData.type}
-              onChange={onInputChange}
+              onChange={handleTypeChange}
               required
               className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-gray-800 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
             >
               <option value="" disabled>Select type</option>
-              <option value="Income">Income</option>
+              <option value="Payment">Payment</option>
               <option value="Expense">Expense</option>
             </select>
           </div>
@@ -111,16 +127,25 @@ export default function CreateTransactionModal({
               className="mb-2 block text-sm font-medium text-gray-600"
             >
               Category
+              {isPaymentType && (
+                <span className="ml-2 text-xs text-emerald-600">(Auto-set for Payment)</span>
+              )}
             </label>
             <select
               id="category"
               name="category"
-              value={formData.category}
+              value={isPaymentType ? "Payment" : formData.category}
               onChange={onInputChange}
               required
-              className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-gray-800 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+              disabled={isPaymentType}
+              className={`w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-800 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 ${
+                isPaymentType 
+                  ? "bg-gray-100 cursor-not-allowed opacity-70" 
+                  : "bg-gray-50"
+              }`}
             >
               <option value="" disabled>Select category</option>
+              <option value="Payment">Payment</option>
               <option value="Groceries">Groceries</option>
               <option value="Dining">Dining</option>
               <option value="Gas">Gas</option>

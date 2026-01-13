@@ -229,7 +229,7 @@ export default function DashboardPage() {
 
     // Check if project has transactions
     const hasTransactions =
-      (projectTotals[projectToDelete.id]?.income || 0) > 0 ||
+      (projectTotals[projectToDelete.id]?.payments || 0) > 0 ||
       (projectTotals[projectToDelete.id]?.expenses || 0) > 0;
 
     if (hasTransactions) {
@@ -355,7 +355,7 @@ export default function DashboardPage() {
         onPasswordChange={(e) => setDeletePassword(e.target.value)}
         hasTransactions={
           projectToDelete
-            ? (projectTotals[projectToDelete.id]?.income || 0) > 0 ||
+            ? (projectTotals[projectToDelete.id]?.payments || 0) > 0 ||
               (projectTotals[projectToDelete.id]?.expenses || 0) > 0
             : false
         }

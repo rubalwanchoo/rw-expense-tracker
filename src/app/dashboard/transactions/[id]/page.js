@@ -38,7 +38,8 @@ export default function TransactionsPage() {
   const [pendingDateStart, setPendingDateStart] = useState("");
   const [pendingDateEnd, setPendingDateEnd] = useState("");
   
-  // Sort direction for date (asc = oldest first, desc = newest first)
+  // Sort field and direction
+  const [sortField, setSortField] = useState("date"); // "date" or "category"
   const [sortDirection, setSortDirection] = useState("desc");
   
   // Date range picker dropdown
@@ -655,8 +656,8 @@ export default function TransactionsPage() {
   });
 
   // Calculate totals from date-filtered transactions
-  const totalIncome = dateFilteredTransactions
-    .filter((t) => t.type === "Income")
+  const totalPayments = dateFilteredTransactions
+    .filter((t) => t.type === "Payment")
     .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
 
   const totalExpenses = dateFilteredTransactions
@@ -673,20 +674,31 @@ export default function TransactionsPage() {
             const query = filterText.toLowerCase();
             const description = transaction.description?.toLowerCase() || "";
             const source = transaction.source?.toLowerCase() || "";
+            const category = transaction.category?.toLowerCase() || "";
             return (
               description.includes(query) ||
-              source.includes(query)
+              source.includes(query) ||
+              category.includes(query)
             );
           });
 
-    // Sort by date based on sortDirection
+    // Sort based on sortField and sortDirection
     result.sort((a, b) => {
-      const aVal = a.trans_date || "";
-      const bVal = b.trans_date || "";
-      if (sortDirection === "desc") {
-        return bVal.localeCompare(aVal); // Newest first
+      let aVal, bVal;
+      
+      if (sortField === "category") {
+        aVal = a.category || "Other";
+        bVal = b.category || "Other";
       } else {
-        return aVal.localeCompare(bVal); // Oldest first
+        // Default to date
+        aVal = a.trans_date || "";
+        bVal = b.trans_date || "";
+      }
+      
+      if (sortDirection === "desc") {
+        return bVal.localeCompare(aVal);
+      } else {
+        return aVal.localeCompare(bVal);
       }
     });
 
@@ -751,9 +763,9 @@ export default function TransactionsPage() {
             </div>
             <div className="flex flex-wrap items-center gap-4 sm:gap-6">
               <div className="text-left sm:text-right">
-                <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-1 sm:text-xs">Total Income</p>
+                <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-1 sm:text-xs">Total Payments</p>
                 <p className="text-lg font-bold text-emerald-600 sm:text-xl">
-                  ${totalIncome.toFixed(2)}
+                  ${totalPayments.toFixed(2)}
                 </p>
               </div>
               <div className="text-left sm:text-right">
@@ -845,10 +857,34 @@ export default function TransactionsPage() {
             </div>
           </div>
 
-          {/* Sort Option + Counts */}
+          {/* Sort Options + Counts */}
           <div className="mb-3 flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">Sort by Date:</span>
+              <span className="text-xs text-gray-500">Sort by:</span>
+              {/* Sort Field Toggle */}
+              <div className="flex rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
+                <button
+                  onClick={() => setSortField("date")}
+                  className={`px-2.5 py-1.5 text-xs font-medium transition-all duration-200 ${
+                    sortField === "date"
+                      ? "bg-emerald-500 text-white"
+                      : "text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  Date
+                </button>
+                <button
+                  onClick={() => setSortField("category")}
+                  className={`px-2.5 py-1.5 text-xs font-medium transition-all duration-200 border-l border-gray-200 ${
+                    sortField === "category"
+                      ? "bg-emerald-500 text-white"
+                      : "text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  Category
+                </button>
+              </div>
+              {/* Sort Direction */}
               <button
                 onClick={() => setSortDirection(sortDirection === "desc" ? "asc" : "desc")}
                 className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm transition-all duration-200 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-600"
@@ -858,14 +894,14 @@ export default function TransactionsPage() {
                     <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
-                    Newest First
+                    {sortField === "date" ? "Newest" : "Z-A"}
                   </>
                 ) : (
                   <>
                     <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                     </svg>
-                    Oldest First
+                    {sortField === "date" ? "Oldest" : "A-Z"}
                   </>
                 )}
               </button>
@@ -878,8 +914,8 @@ export default function TransactionsPage() {
                 <span className="font-bold">{filteredTransactions.filter(t => t.type === "Expense").length}</span>
               </span>
               <span className="flex items-center gap-1.5 rounded-md bg-emerald-50 border border-emerald-100 px-2 py-1 text-emerald-600">
-                <span className="font-medium">Income:</span>
-                <span className="font-bold">{filteredTransactions.filter(t => t.type === "Income").length}</span>
+                <span className="font-medium">Payments:</span>
+                <span className="font-bold">{filteredTransactions.filter(t => t.type === "Payment").length}</span>
               </span>
             </div>
           </div>

@@ -2,6 +2,7 @@
 
 // Category color mapping
 const CATEGORY_COLORS = {
+  Payment: "bg-emerald-100 text-emerald-700 border-emerald-200",
   Groceries: "bg-green-100 text-green-700 border-green-200",
   Dining: "bg-orange-100 text-orange-700 border-orange-200",
   Gas: "bg-yellow-100 text-yellow-700 border-yellow-200",
@@ -150,7 +151,7 @@ export default function TransactionsTable({
                   <div className="flex items-center gap-2">
                     <span
                       className={`text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded border ${
-                        transaction.type === "Income"
+                        transaction.type === "Payment"
                           ? "bg-emerald-50 text-emerald-600 border-emerald-100"
                           : transaction.type === "Expense"
                           ? "bg-red-50 text-red-600 border-red-100"
@@ -161,7 +162,7 @@ export default function TransactionsTable({
                     </span>
                     <span
                       className={`text-base font-bold ${
-                        transaction.type === "Income"
+                        transaction.type === "Payment"
                           ? "text-emerald-600"
                           : transaction.type === "Expense"
                           ? "text-red-600"

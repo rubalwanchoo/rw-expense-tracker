@@ -102,7 +102,7 @@ For each transaction, return:
 - trans_date: date in YYYY-MM-DD format (EST timezone, no conversion needed)
 - description: item/merchant name
 - amount: number only (positive value)
-- type: "Expense" or "Income"
+- type: "Expense" or "Payment"
 - source: null
 - category: classify into ONE of these categories based on the merchant/description:
   "Groceries" (supermarkets, food stores)

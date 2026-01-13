@@ -21,7 +21,7 @@ import {
 
 // Color palette for charts
 const COLORS = {
-  income: "#10b981", // emerald-500
+  payment: "#10b981", // emerald-500
   expense: "#ef4444", // red-500
   sources: ["#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b", "#14b8a6", "#6366f1", "#84cc16", "#f97316"],
 };
@@ -200,22 +200,22 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
 
   // Summary statistics
   const summary = useMemo(() => {
-    let totalIncome = 0;
+    let totalPayments = 0;
     let totalExpenses = 0;
 
     filteredTransactions.forEach((t) => {
       const amount = parseFloat(t.amount) || 0;
-      if (t.type === "Income") {
-        totalIncome += amount;
+      if (t.type === "Payment") {
+        totalPayments += amount;
       } else {
         totalExpenses += amount;
       }
     });
 
-    const netSavings = totalIncome - totalExpenses;
-    const savingsRate = totalIncome > 0 ? ((netSavings / totalIncome) * 100).toFixed(1) : 0;
+    const netBalance = totalPayments - totalExpenses;
+    const paymentRate = totalExpenses > 0 ? ((totalPayments / totalExpenses) * 100).toFixed(1) : 0;
 
-    return { totalIncome, totalExpenses, netSavings, savingsRate };
+    return { totalPayments, totalExpenses, netBalance, paymentRate };
   }, [filteredTransactions]);
 
   // Top 10 individual expenses (largest single transactions)
@@ -425,31 +425,317 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
         {/* Summary Cards */}
         <div className="grid grid-cols-2 gap-2 sm:gap-4 border-b border-gray-100 px-3 sm:px-6 py-3 sm:py-4 sm:grid-cols-4">
           <div className="rounded-lg sm:rounded-xl bg-emerald-50 p-2 sm:p-4">
-            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-emerald-600">Total Income</p>
-            <p className="mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold text-emerald-700">${summary.totalIncome.toFixed(2)}</p>
+            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-emerald-600">Total Payments</p>
+            <p className="mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold text-emerald-700">${summary.totalPayments.toFixed(2)}</p>
           </div>
           <div className="rounded-lg sm:rounded-xl bg-red-50 p-2 sm:p-4">
             <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-red-600">Total Expenses</p>
             <p className="mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold text-red-700">${summary.totalExpenses.toFixed(2)}</p>
           </div>
-          <div className={`rounded-lg sm:rounded-xl p-2 sm:p-4 ${summary.netSavings >= 0 ? "bg-blue-50" : "bg-orange-50"}`}>
-            <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wide ${summary.netSavings >= 0 ? "text-blue-600" : "text-orange-600"}`}>
-              Net {summary.netSavings >= 0 ? "Savings" : "Deficit"}
+          <div className={`rounded-lg sm:rounded-xl p-2 sm:p-4 ${summary.netBalance >= 0 ? "bg-blue-50" : "bg-orange-50"}`}>
+            <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wide ${summary.netBalance >= 0 ? "text-blue-600" : "text-orange-600"}`}>
+              {summary.netBalance >= 0 ? "Overpaid" : "Remaining"}
             </p>
-            <p className={`mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold ${summary.netSavings >= 0 ? "text-blue-700" : "text-orange-700"}`}>
-              ${Math.abs(summary.netSavings).toFixed(2)}
+            <p className={`mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold ${summary.netBalance >= 0 ? "text-blue-700" : "text-orange-700"}`}>
+              ${Math.abs(summary.netBalance).toFixed(2)}
             </p>
           </div>
           <div className="rounded-lg sm:rounded-xl bg-purple-50 p-2 sm:p-4">
-            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-purple-600">Savings Rate</p>
-            <p className="mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold text-purple-700">{summary.savingsRate}%</p>
+            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-purple-600">Payment Rate</p>
+            <p className="mt-0.5 sm:mt-1 text-lg sm:text-2xl font-bold text-purple-700">{summary.paymentRate}%</p>
           </div>
         </div>
 
         {/* Charts Sections */}
         <div className="max-h-[65vh] sm:max-h-[60vh] overflow-y-auto px-3 sm:px-6 py-4 sm:py-6 space-y-6 sm:space-y-8">
           
-          {/* Section 1: Trends & Predictions */}
+          {/* Section 1: Category/Description Analysis */}
+          <div>
+            <div className="mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
+              <div className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-purple-100">
+                <svg className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+              </div>
+              <h3 className="text-base sm:text-lg font-bold text-gray-800">Category/Description Analysis</h3>
+            </div>
+            <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
+              {/* Chart: Spending by Category */}
+              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
+                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Spending by Category</h4>
+                {categoryData.length > 0 ? (
+                  <div className="flex flex-col sm:flex-row items-center">
+                    <ResponsiveContainer width="100%" height={180} className="sm:!w-[60%]">
+                      <PieChart>
+                        <Pie
+                          data={categoryData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={35}
+                          outerRadius={70}
+                          paddingAngle={2}
+                          dataKey="value"
+                        >
+                          {categoryData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS.sources[index % COLORS.sources.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          formatter={(value) => `$${value.toFixed(2)}`}
+                          contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb" }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="w-full sm:w-[40%] mt-2 sm:mt-0 space-y-1 sm:space-y-2">
+                      {categoryData.slice(0, 9).map((entry, index) => (
+                        <div key={entry.name} className="flex items-center gap-2">
+                          <div
+                            className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0 rounded-full"
+                            style={{ backgroundColor: COLORS.sources[index % COLORS.sources.length] }}
+                          />
+                          <span className="truncate text-[10px] sm:text-xs text-gray-600" title={entry.name}>{entry.name}</span>
+                          <span className="ml-auto flex-shrink-0 text-[10px] sm:text-xs font-medium text-gray-800">
+                            ${entry.value.toFixed(0)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex h-[180px] items-center justify-center text-gray-400 text-sm">
+                    No expense data available
+                  </div>
+                )}
+              </div>
+
+              {/* Top 10 Expenses (List) */}
+              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
+                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Top 10 Expenses</h4>
+                {top10Expenses.length > 0 ? (
+                  <div className="space-y-1.5 sm:space-y-2 max-h-[200px] overflow-y-auto">
+                    {top10Expenses.map((expense, index) => (
+                      <div 
+                        key={index} 
+                        className="flex items-center gap-2 sm:gap-3 rounded-lg bg-gray-50 px-2 sm:px-3 py-1.5 sm:py-2"
+                      >
+                        <span className="flex h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 items-center justify-center rounded-full bg-red-100 text-[10px] sm:text-xs font-bold text-red-600">
+                          {index + 1}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="truncate text-xs sm:text-sm text-gray-700" title={expense.description}>
+                            {expense.description}
+                          </p>
+                          <p className="text-[10px] sm:text-xs text-gray-400">{expense.date}</p>
+                        </div>
+                        <span className="flex-shrink-0 text-sm sm:text-base font-bold text-red-600">
+                          ${expense.amount.toFixed(2)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex h-[200px] items-center justify-center text-gray-400 text-sm">
+                    No expense data available
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Budgeting & Goals */}
+          <div>
+            <div className="mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
+              <div className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-emerald-100">
+                <svg className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                </svg>
+              </div>
+              <h3 className="text-base sm:text-lg font-bold text-gray-800">Budgeting & Goals</h3>
+            </div>
+            <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
+              {/* Spending Insights */}
+              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
+                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Spending Insights</h4>
+                <div className="grid grid-cols-2 gap-2 sm:block sm:space-y-3">
+                  {/* Average Daily Spending */}
+                  <div className="rounded-lg bg-gray-50 p-2 sm:p-3">
+                    <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-gray-500">Avg. Daily</p>
+                    <p className="mt-0.5 sm:mt-1 text-base sm:text-xl font-bold text-gray-800">
+                      ${heatmapData.days.length > 0 
+                        ? (summary.totalExpenses / heatmapData.days.length).toFixed(2) 
+                        : "0.00"}
+                    </p>
+                  </div>
+                  
+                  {/* Average Monthly Spending */}
+                  <div className="rounded-lg bg-gray-50 p-2 sm:p-3">
+                    <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-gray-500">Avg. Monthly</p>
+                    <p className="mt-0.5 sm:mt-1 text-base sm:text-xl font-bold text-gray-800">
+                      ${monthlyData.length > 0 
+                        ? (monthlyData.reduce((sum, m) => sum + m.expenses, 0) / monthlyData.length).toFixed(2) 
+                        : "0.00"}
+                    </p>
+                  </div>
+                  
+                  {/* Highest Spending Day of Week */}
+                  <div className="rounded-lg bg-gray-50 p-2 sm:p-3">
+                    <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-gray-500">Top Day</p>
+                    <p className="mt-0.5 sm:mt-1 text-base sm:text-xl font-bold text-gray-800">
+                      {dayOfWeekData.reduce((max, d) => d.amount > max.amount ? d : max, dayOfWeekData[0])?.day || "-"}
+                    </p>
+                  </div>
+                  
+                  {/* Transaction Count */}
+                  <div className="rounded-lg bg-gray-50 p-2 sm:p-3">
+                    <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-gray-500">Transactions</p>
+                    <p className="mt-0.5 sm:mt-1 text-base sm:text-xl font-bold text-gray-800">
+                      {filteredTransactions.filter(t => t.type === "Expense").length}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Budget vs Actual */}
+              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
+                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Monthly Budget vs Actual</h4>
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex items-center justify-between text-xs sm:text-sm">
+                    <span className="text-gray-600">Budget: ${budgetData.budget.toFixed(0)}</span>
+                    <span className={`font-semibold ${budgetData.isOverBudget ? "text-red-600" : "text-emerald-600"}`}>
+                      {budgetData.isOverBudget ? "Over!" : `$${budgetData.remaining.toFixed(0)} left`}
+                    </span>
+                  </div>
+                  
+                  {/* Progress Bar */}
+                  <div className="relative h-5 sm:h-6 w-full overflow-hidden rounded-full bg-gray-200">
+                    <div
+                      className={`absolute left-0 top-0 h-full rounded-full transition-all duration-500 ${
+                        budgetData.percentUsed > 90 ? "bg-red-500" : 
+                        budgetData.percentUsed > 70 ? "bg-orange-500" : "bg-emerald-500"
+                      }`}
+                      style={{ width: `${Math.min(budgetData.percentUsed, 100)}%` }}
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center text-[10px] sm:text-xs font-semibold text-gray-800">
+                      ${budgetData.spent.toFixed(0)} ({budgetData.percentUsed.toFixed(0)}%)
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-center">
+                    <div className="rounded-lg bg-gray-50 p-1.5 sm:p-2">
+                      <p className="text-[10px] sm:text-xs text-gray-500">Budget</p>
+                      <p className="text-xs sm:text-sm font-bold text-gray-800">${budgetData.budget.toFixed(0)}</p>
+                    </div>
+                    <div className="rounded-lg bg-red-50 p-1.5 sm:p-2">
+                      <p className="text-[10px] sm:text-xs text-red-500">Spent</p>
+                      <p className="text-xs sm:text-sm font-bold text-red-600">${budgetData.spent.toFixed(0)}</p>
+                    </div>
+                    <div className={`rounded-lg p-1.5 sm:p-2 ${budgetData.isOverBudget ? "bg-red-50" : "bg-emerald-50"}`}>
+                      <p className={`text-[10px] sm:text-xs ${budgetData.isOverBudget ? "text-red-500" : "text-emerald-500"}`}>
+                        {budgetData.isOverBudget ? "Over" : "Left"}
+                      </p>
+                      <p className={`text-xs sm:text-sm font-bold ${budgetData.isOverBudget ? "text-red-600" : "text-emerald-600"}`}>
+                        ${Math.abs(budgetData.remaining).toFixed(0)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Chart: Daily Spending Heatmap */}
+              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
+                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Daily Spending Intensity</h4>
+                {heatmapData.days.length > 0 ? (
+                  <div className="space-y-2 sm:space-y-3">
+                    {/* Heatmap Legend */}
+                    <div className="flex items-center justify-between text-[10px] sm:text-xs text-gray-500">
+                      <span>Less</span>
+                      <div className="flex gap-0.5 sm:gap-1">
+                        {[0.1, 0.3, 0.5, 0.7, 0.9].map((intensity) => (
+                          <div
+                            key={intensity}
+                            className="h-3 w-3 sm:h-4 sm:w-4 rounded"
+                            style={{
+                              backgroundColor: `rgba(239, 68, 68, ${intensity})`,
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-right">Max: ${heatmapData.maxAmount.toFixed(0)}</span>
+                    </div>
+                    
+                    {/* Heatmap Grid - Show last 28 days in 4 rows of 7 */}
+                    <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
+                      {DAYS_OF_WEEK.map((day) => (
+                        <div key={day} className="text-center text-[8px] sm:text-[10px] font-medium text-gray-400">
+                          {day.slice(0, 1)}
+                        </div>
+                      ))}
+                      {heatmapData.days.slice(-28).map((day, i) => (
+                        <div
+                          key={day.date}
+                          className="group relative h-6 sm:h-8 rounded transition-transform hover:scale-110"
+                          style={{
+                            backgroundColor: day.amount > 0 
+                              ? `rgba(239, 68, 68, ${Math.max(0.15, day.intensity)})`
+                              : "#f3f4f6",
+                          }}
+                          title={`${day.label}: $${day.amount.toFixed(2)}`}
+                        >
+                          <div className="absolute -top-8 left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white group-hover:block">
+                            {day.label}: ${day.amount.toFixed(2)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Top spending days */}
+                    <div className="mt-2 sm:mt-4 space-y-1">
+                      <p className="text-[10px] sm:text-xs font-medium text-gray-500">Top Spending Days:</p>
+                      {[...heatmapData.days]
+                        .sort((a, b) => b.amount - a.amount)
+                        .slice(0, 3)
+                        .map((day) => (
+                          <div key={day.date} className="flex justify-between text-[10px] sm:text-xs">
+                            <span className="text-gray-600">{day.label}</span>
+                            <span className="font-medium text-red-600">${day.amount.toFixed(2)}</span>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex h-[250px] items-center justify-center text-gray-400">
+                    No expense data available
+                  </div>
+                )}
+              </div>
+
+              {/* Expense Distribution (Histogram) */}
+              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
+                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Expense Distribution</h4>
+                {expenseDistribution.some((b) => b.count > 0) ? (
+                  <ResponsiveContainer width="100%" height={200}>
+                    <BarChart data={expenseDistribution}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis dataKey="range" tick={{ fontSize: 8 }} stroke="#9ca3af" interval={0} angle={-30} textAnchor="end" height={40} />
+                      <YAxis tick={{ fontSize: 9 }} stroke="#9ca3af" allowDecimals={false} width={30} />
+                      <Tooltip
+                        formatter={(value) => [`${value} transactions`, "Count"]}
+                        labelStyle={{ color: "#374151" }}
+                        contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb" }}
+                      />
+                      <Bar dataKey="count" name="Transactions" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-[200px] items-center justify-center text-gray-400 text-sm">
+                    No expense data available
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Trends & Predictions */}
           <div>
             <div className="mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
               <div className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-blue-100">
@@ -557,293 +843,6 @@ export default function AnalyticsModal({ isOpen, onClose, transactions = [] }) {
                     No expense data available
                   </div>
                 )}
-              </div>
-            </div>
-          </div>
-
-          {/* Section 2: Category/Description Analysis */}
-          <div>
-            <div className="mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
-              <div className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-purple-100">
-                <svg className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                </svg>
-              </div>
-              <h3 className="text-base sm:text-lg font-bold text-gray-800">Category/Description Analysis</h3>
-            </div>
-            <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
-              {/* Chart: Spending by Category */}
-              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
-                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Spending by Category</h4>
-                {categoryData.length > 0 ? (
-                  <div className="flex flex-col sm:flex-row items-center">
-                    <ResponsiveContainer width="100%" height={180} className="sm:!w-[60%]">
-                      <PieChart>
-                        <Pie
-                          data={categoryData}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={35}
-                          outerRadius={70}
-                          paddingAngle={2}
-                          dataKey="value"
-                        >
-                          {categoryData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS.sources[index % COLORS.sources.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          formatter={(value) => `$${value.toFixed(2)}`}
-                          contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb" }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                    <div className="w-full sm:w-[40%] mt-2 sm:mt-0 space-y-1 sm:space-y-2">
-                      {categoryData.slice(0, 9).map((entry, index) => (
-                        <div key={entry.name} className="flex items-center gap-2">
-                          <div
-                            className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0 rounded-full"
-                            style={{ backgroundColor: COLORS.sources[index % COLORS.sources.length] }}
-                          />
-                          <span className="truncate text-[10px] sm:text-xs text-gray-600" title={entry.name}>{entry.name}</span>
-                          <span className="ml-auto flex-shrink-0 text-[10px] sm:text-xs font-medium text-gray-800">
-                            ${entry.value.toFixed(0)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex h-[180px] items-center justify-center text-gray-400 text-sm">
-                    No expense data available
-                  </div>
-                )}
-              </div>
-
-              {/* Top 10 Expenses (List) */}
-              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
-                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Top 10 Expenses</h4>
-                {top10Expenses.length > 0 ? (
-                  <div className="space-y-1.5 sm:space-y-2 max-h-[200px] overflow-y-auto">
-                    {top10Expenses.map((expense, index) => (
-                      <div 
-                        key={index} 
-                        className="flex items-center gap-2 sm:gap-3 rounded-lg bg-gray-50 px-2 sm:px-3 py-1.5 sm:py-2"
-                      >
-                        <span className="flex h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 items-center justify-center rounded-full bg-red-100 text-[10px] sm:text-xs font-bold text-red-600">
-                          {index + 1}
-                        </span>
-                        <div className="flex-1 min-w-0">
-                          <p className="truncate text-xs sm:text-sm text-gray-700" title={expense.description}>
-                            {expense.description}
-                          </p>
-                          <p className="text-[10px] sm:text-xs text-gray-400">{expense.date}</p>
-                        </div>
-                        <span className="flex-shrink-0 text-sm sm:text-base font-bold text-red-600">
-                          ${expense.amount.toFixed(2)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex h-[200px] items-center justify-center text-gray-400 text-sm">
-                    No expense data available
-                  </div>
-                )}
-              </div>
-
-            </div>
-          </div>
-
-          {/* Section 3: Budgeting & Goals */}
-          <div>
-            <div className="mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
-              <div className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-emerald-100">
-                <svg className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                </svg>
-              </div>
-              <h3 className="text-base sm:text-lg font-bold text-gray-800">Budgeting & Goals</h3>
-            </div>
-            <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
-              {/* Chart: Daily Spending Heatmap */}
-              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
-                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Daily Spending Intensity</h4>
-                {heatmapData.days.length > 0 ? (
-                  <div className="space-y-2 sm:space-y-3">
-                    {/* Heatmap Legend */}
-                    <div className="flex items-center justify-between text-[10px] sm:text-xs text-gray-500">
-                      <span>Less</span>
-                      <div className="flex gap-0.5 sm:gap-1">
-                        {[0.1, 0.3, 0.5, 0.7, 0.9].map((intensity) => (
-                          <div
-                            key={intensity}
-                            className="h-3 w-3 sm:h-4 sm:w-4 rounded"
-                            style={{
-                              backgroundColor: `rgba(239, 68, 68, ${intensity})`,
-                            }}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-right">Max: ${heatmapData.maxAmount.toFixed(0)}</span>
-                    </div>
-                    
-                    {/* Heatmap Grid - Show last 28 days in 4 rows of 7 */}
-                    <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
-                      {DAYS_OF_WEEK.map((day) => (
-                        <div key={day} className="text-center text-[8px] sm:text-[10px] font-medium text-gray-400">
-                          {day.slice(0, 1)}
-                        </div>
-                      ))}
-                      {heatmapData.days.slice(-28).map((day, i) => (
-                        <div
-                          key={day.date}
-                          className="group relative h-6 sm:h-8 rounded transition-transform hover:scale-110"
-                          style={{
-                            backgroundColor: day.amount > 0 
-                              ? `rgba(239, 68, 68, ${Math.max(0.15, day.intensity)})`
-                              : "#f3f4f6",
-                          }}
-                          title={`${day.label}: $${day.amount.toFixed(2)}`}
-                        >
-                          <div className="absolute -top-8 left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white group-hover:block">
-                            {day.label}: ${day.amount.toFixed(2)}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Top spending days */}
-                    <div className="mt-2 sm:mt-4 space-y-1">
-                      <p className="text-[10px] sm:text-xs font-medium text-gray-500">Top Spending Days:</p>
-                      {[...heatmapData.days]
-                        .sort((a, b) => b.amount - a.amount)
-                        .slice(0, 3)
-                        .map((day) => (
-                          <div key={day.date} className="flex justify-between text-[10px] sm:text-xs">
-                            <span className="text-gray-600">{day.label}</span>
-                            <span className="font-medium text-red-600">${day.amount.toFixed(2)}</span>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex h-[250px] items-center justify-center text-gray-400">
-                    No expense data available
-                  </div>
-                )}
-              </div>
-
-              {/* Budget vs Actual */}
-              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
-                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Monthly Budget vs Actual</h4>
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="flex items-center justify-between text-xs sm:text-sm">
-                    <span className="text-gray-600">Budget: ${budgetData.budget.toFixed(0)}</span>
-                    <span className={`font-semibold ${budgetData.isOverBudget ? "text-red-600" : "text-emerald-600"}`}>
-                      {budgetData.isOverBudget ? "Over!" : `$${budgetData.remaining.toFixed(0)} left`}
-                    </span>
-                  </div>
-                  
-                  {/* Progress Bar */}
-                  <div className="relative h-5 sm:h-6 w-full overflow-hidden rounded-full bg-gray-200">
-                    <div
-                      className={`absolute left-0 top-0 h-full rounded-full transition-all duration-500 ${
-                        budgetData.percentUsed > 90 ? "bg-red-500" : 
-                        budgetData.percentUsed > 70 ? "bg-orange-500" : "bg-emerald-500"
-                      }`}
-                      style={{ width: `${Math.min(budgetData.percentUsed, 100)}%` }}
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center text-[10px] sm:text-xs font-semibold text-gray-800">
-                      ${budgetData.spent.toFixed(0)} ({budgetData.percentUsed.toFixed(0)}%)
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-center">
-                    <div className="rounded-lg bg-gray-50 p-1.5 sm:p-2">
-                      <p className="text-[10px] sm:text-xs text-gray-500">Budget</p>
-                      <p className="text-xs sm:text-sm font-bold text-gray-800">${budgetData.budget.toFixed(0)}</p>
-                    </div>
-                    <div className="rounded-lg bg-red-50 p-1.5 sm:p-2">
-                      <p className="text-[10px] sm:text-xs text-red-500">Spent</p>
-                      <p className="text-xs sm:text-sm font-bold text-red-600">${budgetData.spent.toFixed(0)}</p>
-                    </div>
-                    <div className={`rounded-lg p-1.5 sm:p-2 ${budgetData.isOverBudget ? "bg-red-50" : "bg-emerald-50"}`}>
-                      <p className={`text-[10px] sm:text-xs ${budgetData.isOverBudget ? "text-red-500" : "text-emerald-500"}`}>
-                        {budgetData.isOverBudget ? "Over" : "Left"}
-                      </p>
-                      <p className={`text-xs sm:text-sm font-bold ${budgetData.isOverBudget ? "text-red-600" : "text-emerald-600"}`}>
-                        ${Math.abs(budgetData.remaining).toFixed(0)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Expense Distribution (Histogram) */}
-              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
-                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Expense Distribution</h4>
-                {expenseDistribution.some((b) => b.count > 0) ? (
-                  <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={expenseDistribution}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis dataKey="range" tick={{ fontSize: 8 }} stroke="#9ca3af" interval={0} angle={-30} textAnchor="end" height={40} />
-                      <YAxis tick={{ fontSize: 9 }} stroke="#9ca3af" allowDecimals={false} width={30} />
-                      <Tooltip
-                        formatter={(value) => [`${value} transactions`, "Count"]}
-                        labelStyle={{ color: "#374151" }}
-                        contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb" }}
-                      />
-                      <Bar dataKey="count" name="Transactions" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="flex h-[200px] items-center justify-center text-gray-400 text-sm">
-                    No expense data available
-                  </div>
-                )}
-              </div>
-
-              {/* Spending Insights */}
-              <div className="rounded-lg sm:rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
-                <h4 className="mb-2 sm:mb-4 text-sm sm:text-base font-semibold text-gray-700">Spending Insights</h4>
-                <div className="grid grid-cols-2 gap-2 sm:block sm:space-y-3">
-                  {/* Average Daily Spending */}
-                  <div className="rounded-lg bg-gray-50 p-2 sm:p-3">
-                    <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-gray-500">Avg. Daily</p>
-                    <p className="mt-0.5 sm:mt-1 text-base sm:text-xl font-bold text-gray-800">
-                      ${heatmapData.days.length > 0 
-                        ? (summary.totalExpenses / heatmapData.days.length).toFixed(2) 
-                        : "0.00"}
-                    </p>
-                  </div>
-                  
-                  {/* Average Monthly Spending */}
-                  <div className="rounded-lg bg-gray-50 p-2 sm:p-3">
-                    <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-gray-500">Avg. Monthly</p>
-                    <p className="mt-0.5 sm:mt-1 text-base sm:text-xl font-bold text-gray-800">
-                      ${monthlyData.length > 0 
-                        ? (monthlyData.reduce((sum, m) => sum + m.expenses, 0) / monthlyData.length).toFixed(2) 
-                        : "0.00"}
-                    </p>
-                  </div>
-                  
-                  {/* Highest Spending Day of Week */}
-                  <div className="rounded-lg bg-gray-50 p-2 sm:p-3">
-                    <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-gray-500">Top Day</p>
-                    <p className="mt-0.5 sm:mt-1 text-base sm:text-xl font-bold text-gray-800">
-                      {dayOfWeekData.reduce((max, d) => d.amount > max.amount ? d : max, dayOfWeekData[0])?.day || "-"}
-                    </p>
-                  </div>
-                  
-                  {/* Transaction Count */}
-                  <div className="rounded-lg bg-gray-50 p-2 sm:p-3">
-                    <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-gray-500">Transactions</p>
-                    <p className="mt-0.5 sm:mt-1 text-base sm:text-xl font-bold text-gray-800">
-                      {filteredTransactions.filter(t => t.type === "Expense").length}
-                    </p>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
