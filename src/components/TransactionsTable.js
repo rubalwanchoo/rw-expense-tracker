@@ -162,18 +162,22 @@ export default function TransactionsTable({
               return (
               <div key={dateKey}>
                 {/* Date Header Row */}
-                <div className="flex items-center gap-2 bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 px-3 py-2 sm:px-4 border-b border-blue-200 dark:border-blue-600">
-                  <svg className="h-4 w-4 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div 
+                  className="flex items-center gap-2 px-3 py-2 sm:px-4 border-b"
+                  style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
+                >
+                  <svg className="h-4 w-4" style={{ color: '#2563eb' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  <span className="text-xs font-bold tracking-wide text-blue-800 dark:text-blue-300">
+                  <span className="text-xs font-bold tracking-wide" style={{ color: '#1e40af' }}>
                     {formatDateHeader(dateKey)}
                   </span>
                   <div className="ml-auto flex items-center gap-2">
                     {/* Total Payments for this day */}
                     {dayTotalPayments > 0 && (
                       <span 
-                        className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-transparent dark:bg-emerald-900/30 px-2 py-0.5 rounded-full border border-emerald-600 dark:border-emerald-400"
+                        className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border"
+                        style={{ backgroundColor: 'transparent', color: '#059669', borderColor: '#059669' }}
                         title="Total Payments"
                       >
                         <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -185,7 +189,8 @@ export default function TransactionsTable({
                     {/* Total Expenses for this day */}
                     {dayTotalExpenses > 0 && (
                       <span 
-                        className="flex items-center gap-1 text-[10px] font-semibold text-red-600 dark:text-red-400 bg-transparent dark:bg-red-900/30 px-2 py-0.5 rounded-full border border-red-600 dark:border-red-400"
+                        className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border"
+                        style={{ backgroundColor: 'transparent', color: '#dc2626', borderColor: '#dc2626' }}
                         title="Total Expenses"
                       >
                         <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -195,7 +200,10 @@ export default function TransactionsTable({
                       </span>
                     )}
                     {/* Item count */}
-                    <span className="text-[10px] font-medium text-blue-600 dark:text-blue-300 bg-transparent dark:bg-blue-900/40 px-2 py-0.5 rounded-full border border-blue-600 dark:border-blue-400">
+                    <span 
+                      className="text-[10px] font-medium px-2 py-0.5 rounded-full border"
+                      style={{ backgroundColor: 'transparent', color: '#2563eb', borderColor: '#2563eb' }}
+                    >
                       {dateTransactions.length} item{dateTransactions.length !== 1 ? "s" : ""}
                     </span>
                   </div>
@@ -239,13 +247,14 @@ export default function TransactionsTable({
                       {/* Type Badge + Amount */}
                       <div className="flex items-center gap-2">
                         <span
-                          className={`text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded border ${
+                          className="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded border"
+                          style={
                             transaction.type === "Payment"
-                              ? "bg-transparent text-emerald-600 border-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-400"
+                              ? { backgroundColor: 'transparent', color: '#059669', borderColor: '#059669' }
                               : transaction.type === "Expense"
-                              ? "bg-transparent text-red-600 border-red-600 dark:bg-red-900/30 dark:text-red-400 dark:border-red-400"
-                              : "bg-transparent text-gray-600 border-gray-600 dark:bg-gray-700/30 dark:text-gray-400 dark:border-gray-400"
-                          }`}
+                              ? { backgroundColor: 'transparent', color: '#dc2626', borderColor: '#dc2626' }
+                              : { backgroundColor: 'transparent', color: '#4b5563', borderColor: '#4b5563' }
+                          }
                         >
                           {transaction.type || "N/A"}
                         </span>
