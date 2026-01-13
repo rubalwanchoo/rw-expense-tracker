@@ -82,7 +82,7 @@ export default function ProjectsTable({
               <div
                 key={project.id}
                 onClick={() => handleRowClick(project)}
-                className={`flex cursor-pointer items-center justify-between gap-3 px-3 py-3 transition-all duration-200 hover:bg-gray-50 sm:px-4 ${
+                className={`flex cursor-pointer items-center justify-between gap-3 px-3 py-3 transition-all duration-200 sm:px-4 ${
                   index !== projects.length - 1 ? "border-b border-gray-100 dark:border-slate-700" : ""
                 }`}
               >
