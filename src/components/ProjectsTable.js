@@ -4,19 +4,18 @@ import { useRouter } from "next/navigation";
 import FilterBox from "./FilterBox";
 import { formatDateEST } from "@/lib/dateUtils";
 
-// Category color mapping (same as TransactionsTable) - with dark mode support
-// Light theme: transparent background, matching text/border colors
-const CATEGORY_COLORS = {
-  Payment: "bg-transparent text-emerald-600 border-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-400",
-  Groceries: "bg-transparent text-green-600 border-green-600 dark:bg-green-900/40 dark:text-green-400 dark:border-green-400",
-  Dining: "bg-transparent text-orange-600 border-orange-600 dark:bg-orange-900/40 dark:text-orange-400 dark:border-orange-400",
-  Gas: "bg-transparent text-yellow-600 border-yellow-600 dark:bg-yellow-900/40 dark:text-yellow-400 dark:border-yellow-400",
-  Shopping: "bg-transparent text-pink-600 border-pink-600 dark:bg-pink-900/40 dark:text-pink-400 dark:border-pink-400",
-  Entertainment: "bg-transparent text-purple-600 border-purple-600 dark:bg-purple-900/40 dark:text-purple-400 dark:border-purple-400",
-  Travel: "bg-transparent text-blue-600 border-blue-600 dark:bg-blue-900/40 dark:text-blue-400 dark:border-blue-400",
-  Utilities: "bg-transparent text-cyan-600 border-cyan-600 dark:bg-cyan-900/40 dark:text-cyan-400 dark:border-cyan-400",
-  Healthcare: "bg-transparent text-rose-600 border-rose-600 dark:bg-rose-900/40 dark:text-rose-400 dark:border-rose-400",
-  Other: "bg-transparent text-gray-600 border-gray-600 dark:bg-gray-700/40 dark:text-gray-400 dark:border-gray-400",
+// Category color mapping - using hex colors for inline styles (works reliably on mobile)
+const CATEGORY_STYLES = {
+  Payment: { color: "#059669", borderColor: "#059669" },
+  Groceries: { color: "#16a34a", borderColor: "#16a34a" },
+  Dining: { color: "#ea580c", borderColor: "#ea580c" },
+  Gas: { color: "#ca8a04", borderColor: "#ca8a04" },
+  Shopping: { color: "#db2777", borderColor: "#db2777" },
+  Entertainment: { color: "#9333ea", borderColor: "#9333ea" },
+  Travel: { color: "#2563eb", borderColor: "#2563eb" },
+  Utilities: { color: "#0891b2", borderColor: "#0891b2" },
+  Healthcare: { color: "#e11d48", borderColor: "#e11d48" },
+  Other: { color: "#4b5563", borderColor: "#4b5563" },
 };
 
 export default function ProjectsTable({
@@ -97,11 +96,17 @@ export default function ProjectsTable({
                     {project.description || "No description"}
                   </p>
                   {/* Payment/Expenses Labels */}
-                  <div className="flex gap-2">
-                    <span className="rounded-md bg-transparent px-2.5 py-1 text-[10px] font-bold text-emerald-600 border-2 border-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-400">
+                  <div className="flex flex-wrap gap-2">
+                    <span 
+                      className="rounded-md px-2.5 py-1 text-[10px] font-bold border-2 dark:bg-emerald-900/30"
+                      style={{ backgroundColor: 'transparent', color: '#059669', borderColor: '#059669' }}
+                    >
                       Payments: ${(projectTotals[project.id]?.payments || 0).toFixed(2)}
                     </span>
-                    <span className="rounded-md bg-transparent px-2.5 py-1 text-[10px] font-bold text-red-600 border-2 border-red-600 dark:bg-red-900/30 dark:text-red-400 dark:border-red-400">
+                    <span 
+                      className="rounded-md px-2.5 py-1 text-[10px] font-bold border-2 dark:bg-red-900/30"
+                      style={{ backgroundColor: 'transparent', color: '#dc2626', borderColor: '#dc2626' }}
+                    >
                       Expenses: ${(projectTotals[project.id]?.expenses || 0).toFixed(2)}
                     </span>
                   </div>
@@ -115,16 +120,22 @@ export default function ProjectsTable({
                     <div className="flex flex-wrap gap-1.5 mt-1.5">
                       {projectTotals[project.id].categories
                         .filter((category) => category !== "Payment")
-                        .map((category) => (
-                        <span
-                          key={category}
-                          className={`text-[9px] font-bold px-2 py-0.5 rounded-md border-2 shadow-sm dark:shadow-none ${
-                            CATEGORY_COLORS[category] || CATEGORY_COLORS.Other
-                          }`}
-                        >
-                          {category}
-                        </span>
-                      ))}
+                        .map((category) => {
+                          const catStyle = CATEGORY_STYLES[category] || CATEGORY_STYLES.Other;
+                          return (
+                            <span
+                              key={category}
+                              className="text-[9px] font-bold px-2 py-0.5 rounded-md border-2 dark:bg-opacity-30"
+                              style={{ 
+                                backgroundColor: 'transparent', 
+                                color: catStyle.color, 
+                                borderColor: catStyle.borderColor 
+                              }}
+                            >
+                              {category}
+                            </span>
+                          );
+                        })}
                     </div>
                   )}
                 </div>
