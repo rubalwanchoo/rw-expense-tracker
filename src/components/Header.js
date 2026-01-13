@@ -20,14 +20,34 @@ export default function Header({ showLogout = false, onLogout }) {
     <header className="border-b shadow-sm transition-colors duration-300" style={{ backgroundColor: 'var(--header-bg)', borderColor: 'var(--header-border)' }}>
       <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4 sm:px-6 sm:py-5">
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* RW Icon */}
+          {/* RW Coin Icon */}
           <div 
-            className="flex h-8 w-8 items-center justify-center rounded-lg shadow-md sm:h-10 sm:w-10 sm:rounded-xl"
+            className="relative flex h-9 w-9 items-center justify-center rounded-full sm:h-11 sm:w-11"
             style={{ 
-              background: 'linear-gradient(135deg, #059669 0%, #0d9488 50%, #14b8a6 100%)',
+              background: 'linear-gradient(145deg, #fcd34d 0%, #f59e0b 25%, #d97706 50%, #b45309 75%, #92400e 100%)',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2), inset 0 2px 4px rgba(255, 255, 255, 0.3)',
             }}
           >
-            <span className="text-sm font-black italic text-white sm:text-lg" style={{ fontFamily: 'Georgia, serif', letterSpacing: '-1px' }}>
+            {/* Inner ring */}
+            <div 
+              className="absolute inset-[3px] rounded-full sm:inset-1"
+              style={{
+                border: '1.5px solid rgba(255, 255, 255, 0.3)',
+                boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.2)',
+              }}
+            />
+            {/* Decorative dots */}
+            <div className="absolute inset-[5px] rounded-full sm:inset-[6px]" style={{ border: '1px dotted rgba(255, 255, 255, 0.2)' }} />
+            {/* Letters */}
+            <span 
+              className="relative z-10 text-sm font-black sm:text-base"
+              style={{ 
+                fontFamily: 'Georgia, serif',
+                color: '#78350f',
+                textShadow: '0 1px 0 rgba(255, 255, 255, 0.4)',
+                letterSpacing: '-0.5px',
+              }}
+            >
               rw
             </span>
           </div>
