@@ -19,11 +19,24 @@ export default function Header({ showLogout = false, onLogout }) {
   return (
     <header className="border-b shadow-sm transition-colors duration-300" style={{ backgroundColor: 'var(--header-bg)', borderColor: 'var(--header-border)' }}>
       <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4 sm:px-6 sm:py-5">
-        <h1 className="text-lg font-bold tracking-tight sm:text-2xl">
-          <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent dark:from-emerald-400 dark:to-teal-400">
-            rw-expense-tracker
-          </span>
-        </h1>
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* RW Icon */}
+          <div 
+            className="flex h-8 w-8 items-center justify-center rounded-lg shadow-md sm:h-10 sm:w-10 sm:rounded-xl"
+            style={{ 
+              background: 'linear-gradient(135deg, #059669 0%, #0d9488 50%, #14b8a6 100%)',
+            }}
+          >
+            <span className="text-sm font-black italic text-white sm:text-lg" style={{ fontFamily: 'Georgia, serif', letterSpacing: '-1px' }}>
+              rw
+            </span>
+          </div>
+          <h1 className="text-lg font-bold tracking-tight sm:text-2xl">
+            <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent dark:from-emerald-400 dark:to-teal-400">
+              rw-expense-tracker
+            </span>
+          </h1>
+        </div>
         {showLogout && (
           <div className="ml-auto flex flex-col items-end gap-1 text-right">
             {username && (
