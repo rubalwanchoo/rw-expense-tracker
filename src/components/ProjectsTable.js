@@ -6,16 +6,16 @@ import { formatDateEST } from "@/lib/dateUtils";
 
 // Category color mapping (same as TransactionsTable) - with dark mode support
 const CATEGORY_COLORS = {
-  Payment: "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-700",
-  Groceries: "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/40 dark:text-green-300 dark:border-green-700",
-  Dining: "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/40 dark:text-orange-300 dark:border-orange-700",
-  Gas: "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/40 dark:text-yellow-300 dark:border-yellow-700",
-  Shopping: "bg-pink-100 text-pink-700 border-pink-200 dark:bg-pink-900/40 dark:text-pink-300 dark:border-pink-700",
-  Entertainment: "bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/40 dark:text-purple-300 dark:border-purple-700",
-  Travel: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700",
-  Utilities: "bg-cyan-100 text-cyan-700 border-cyan-200 dark:bg-cyan-900/40 dark:text-cyan-300 dark:border-cyan-700",
-  Healthcare: "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/40 dark:text-rose-300 dark:border-rose-700",
-  Other: "bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-700/40 dark:text-gray-300 dark:border-gray-600",
+  Payment: "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-700",
+  Groceries: "bg-green-100 text-green-800 border-green-300 dark:bg-green-900/40 dark:text-green-300 dark:border-green-700",
+  Dining: "bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900/40 dark:text-orange-300 dark:border-orange-700",
+  Gas: "bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/40 dark:text-yellow-300 dark:border-yellow-700",
+  Shopping: "bg-pink-100 text-pink-800 border-pink-300 dark:bg-pink-900/40 dark:text-pink-300 dark:border-pink-700",
+  Entertainment: "bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900/40 dark:text-purple-300 dark:border-purple-700",
+  Travel: "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700",
+  Utilities: "bg-cyan-100 text-cyan-800 border-cyan-300 dark:bg-cyan-900/40 dark:text-cyan-300 dark:border-cyan-700",
+  Healthcare: "bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-900/40 dark:text-rose-300 dark:border-rose-700",
+  Other: "bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-700/40 dark:text-gray-300 dark:border-gray-600",
 };
 
 export default function ProjectsTable({
@@ -133,7 +133,7 @@ export default function ProjectsTable({
                   {/* Analyze Button */}
                   {onAnalyze && (
                     <button
-                      className="group rounded-md p-1.5 text-purple-500 transition-all duration-200 hover:bg-purple-50 hover:text-purple-600 dark:text-purple-400 dark:hover:bg-purple-900/30 dark:hover:text-purple-300"
+                      className="group rounded-md p-1.5 text-purple-700 transition-all duration-200 hover:bg-purple-100 hover:text-purple-800 dark:text-purple-400 dark:hover:bg-purple-900/30 dark:hover:text-purple-300"
                       title="Analyze"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -157,7 +157,7 @@ export default function ProjectsTable({
                   )}
                   {/* Edit Button */}
                   <button
-                    className="group rounded-md p-1.5 text-blue-500 transition-all duration-200 hover:bg-blue-50 hover:text-blue-600 dark:text-blue-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
+                    className="group rounded-md p-1.5 text-blue-700 transition-all duration-200 hover:bg-blue-100 hover:text-blue-800 dark:text-blue-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
                     title="Edit"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -180,7 +180,7 @@ export default function ProjectsTable({
                   </button>
                   {/* Delete Button */}
                   <button
-                    className="group rounded-md p-1.5 text-red-500 transition-all duration-200 hover:bg-red-50 hover:text-red-600 dark:text-red-400 dark:hover:bg-red-900/30 dark:hover:text-red-300"
+                    className="group rounded-md p-1.5 text-red-700 transition-all duration-200 hover:bg-red-100 hover:text-red-800 dark:text-red-400 dark:hover:bg-red-900/30 dark:hover:text-red-300"
                     title="Delete"
                     onClick={(e) => {
                       e.stopPropagation();
